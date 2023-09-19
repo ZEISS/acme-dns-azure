@@ -69,7 +69,7 @@ types-toml = "*"
 types-simplejson = "*"
 
 [tool.poetry.scripts]
-certbot-dns-azure = "acme_dns_azure.cli:main"
+acme-dns-azure = "acme_dns_azure.cli:main"
 
 [tool.pytest.ini_options]
 junit_family = "xunit2"
