@@ -1,0 +1,78 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "acme-dns-azure"
+version = "0.1.0"
+description = "ACME client setup based on Certbot for dns-01 challenges via Azure Cloud services"
+license = "MIT"
+keywords = [
+    "acme", "dns", "azure", "certbot", "letsencrypt",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: Name Service (DNS)",
+    "Topic :: System :: Installation/Setup",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+authors = [
+    "ZEISS Digital Innovation Partners"
+]
+readme = "README.md"
+repository = "https://github.com/ZEISS/acme-dns-azure"
+packages = [
+    { include = "acme_dns_azure" },
+]
+exclude = [ "" ]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+pyyaml = ">=3"
+certbot = ">=2"
+certbot-dns-azure = ">=2"
+requests = ">=2"
+# Optional dependencies required by some targets
+azure-functions = { version = ">=1", optional = true }  # functions
+
+[tool.poetry.extras]
+functions = ["azure-functions"]
+# Extra "full" list must contain all other extras
+full = ["azure-functions"]
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+pytest-cov = "*"
+pytest-xdist = "*"
+vcrpy = "*"
+flake8 = "*"
+isort = "*"
+tox = ">=4"
+black = { version = "*", allow-prereleases = true }
+mypy = "*"
+types-PyYAML = "*"
+types-pytz = "*"
+types-requests = "*"
+types-six = "*"
+types-toml = "*"
+types-simplejson = "*"
+
+[tool.poetry.scripts]
+certbot-dns-azure = "acme_dns_azure.cli:main"
+
+[tool.pytest.ini_options]
+junit_family = "xunit2"
+
+[tool.mypy]
+show_error_codes = true

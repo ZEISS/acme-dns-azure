@@ -1,0 +1,48 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Python Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Local python packages
+.python_packages/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Azure functions
+local.settings.json
+
+# Azurite artifacts
+__blobstorage__
+__queuestorage__
+__azurite_db*__.json
+
+# Intellij
+.idea
+container_settings.json
+src/
+
+# VSCode
+.vscode
+
+# VIM
+*.swp
+
+# macOS
+.DS_Store
