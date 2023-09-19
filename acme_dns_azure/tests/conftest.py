@@ -6,6 +6,10 @@ import pytest
 def working_dir():
     return './'
 
+@pytest.fixture(scope="function", autouse=True)
+def working_server():
+    return 'testserver'
+
 @pytest.fixture(scope="function", autouse=False)
 def cleanup_certbot_init_files(working_dir):
     yield
