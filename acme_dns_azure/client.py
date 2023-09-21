@@ -2,6 +2,8 @@ import sys
 import os
 import tempfile
 
+from azure.identity import DefaultAzureCredential
+
 import acme_dns_azure.config as config
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
@@ -29,7 +31,7 @@ class AcmeDnsAzureClient:
         else:
             raise ConfigurationError('No configuration source defined')
 
-        self.ctx.credentials = '...'        
+        self.ctx.azure_credentials = DefaultAzureCredential()
         self.ctx.config['azure_environment'] = 'AzurePublicCloud'             #TODO: Read from Azure client
         self.ctx.config['tenant_id'] = '82913d90-8716-4025-a8e8-4f8dfa42b719' #TODO: Read from Azure client
 
