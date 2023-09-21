@@ -56,7 +56,7 @@ def test_certbot_dns_azure_ini_is_created_correctly(working_dir, cleanup_certbot
     assert(filecmp.cmp(working_dir + 'certbot_dns_azure.ini', resources_dir + 'certbot_init/expected_certbot_dns_azure.ini'))
     
 @patch.object(CertbotManager, "__init__", certbot_manager_init)
-def test_certbot_dns_azure_ini_is_created_correctly(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
+def test_certbot_domain_file_structure_is_created_successfully(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
     manager = CertbotManager()
     from pathlib import Path
     files = [
@@ -69,4 +69,34 @@ def test_certbot_dns_azure_ini_is_created_correctly(working_dir, cleanup_certbot
     os.makedirs(working_dir + 'config/archive/' + domain)
     for required_file in files:
         Path(working_dir + 'config/archive/' + domain + '/' + required_file).touch()
-    manager.register_domain_file(domain)
+    
+    manager.register_domain_files(domain, 
+                                  certificate="cert",
+                                  chain="chain",
+                                  fullchain="fullchain",
+                                  privkey="privkey")
+    expected_files = [
+        working_dir + 'config/archive/' + domain + '/' + 'cert.pem',
+        working_dir + 'config/archive/' + domain + '/' + 'chain.pem',
+        working_dir + 'config/archive/' + domain + '/' + 'fullchain.pem',
+        working_dir + 'config/archive/' + domain + '/' + 'privkey.pem'
+    ]
+    for a in expected_files:
+        assert(os.path.exists(a))
+    result = open(working_dir + 'config/archive/' + domain + '/' + 'cert.pem', 'rb').read()
+    assert(result == b'cert\n')
+    result = open(working_dir + 'config/archive/' + domain + '/' + 'chain.pem', 'rb').read()
+    assert(result == b'chain\n')
+    result = open(working_dir + 'config/archive/' + domain + '/' + 'fullchain.pem', 'rb').read()
+    assert(result == b'fullchain\n')
+    result = open(working_dir + 'config/archive/' + domain + '/' + 'privkey.pem', 'rb').read()
+    assert(result == b'privkey\n')
+    
+    expected_symlinks = [
+        working_dir + 'config/live/' + domain + '/' + 'cert.pem',
+        working_dir + 'config/live/' + domain + '/' + 'chain.pem',
+        working_dir + 'config/live/' + domain + '/' + 'fullchain.pem',
+        working_dir + 'config/live/' + domain + '/' + 'privkey.pem'
+    ]
+    for a in expected_symlinks:
+        assert(os.path.islink(a))

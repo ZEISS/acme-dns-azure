@@ -84,10 +84,14 @@ class CertbotManager(LoggingHandler):
             return False
         return True
     
-    def register_domain_file(self, domain):
+    def register_domain_files(self, domain: str, certificate: str, chain : str, fullchain : str, privkey : str):
         domain_file_path=self._work_dir + 'config/renewal/' + domain
-        self._os_manager.create_file(file_path=domain_file_path, lines=self._create_domain_conf(domain))
         self._os_manager.create_dir(self._work_dir + 'config/live/' + domain)
+        self._os_manager.create_file(file_path=domain_file_path, lines=self._create_domain_conf(domain))
+        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/cert.pem', [certificate])
+        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/privkey.pem', [privkey])
+        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/chain.pem', [chain])
+        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/fullchain.pem', [fullchain])
         files = [
             "cert.pem",
             "privkey.pem",
@@ -96,7 +100,7 @@ class CertbotManager(LoggingHandler):
         ]
         for cert in files:
             self._os_manager.create_symlink(
-                src=self._work_dir + 'config/archive/' + domain + '/' + cert,
+                src='../../archive/' + domain + '/' + cert,
                 dest=self._work_dir + 'config/live/' + domain + '/' + cert
             )
                 
