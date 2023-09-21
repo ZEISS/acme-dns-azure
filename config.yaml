@@ -1,0 +1,27 @@
+managed_identity_id: 00000000-0000-0000-0000-000000000000
+server: acme-staging-v02.api.letsencrypt.org
+email: me@example.org
+
+key_vault_id: https://czm78dogdeveuwkvacmetest.vault.azure.net/
+# account_secret_name: #optional / default: acme-account-${acme_server} #if non-existing or empty, certbot register will be executed, account directory will be stored as base64 tar.gz file
+eab:
+  enabled: true #optional / default: false
+#  kid_secret_name: #optional / default: acme-eab-kid #must be created upfront with information from CIT
+#   hmac_key_secret_name: #optional / default: acme-eab-hmac-key #must be created upfront with information from CIT
+
+certbot.ini: |
+  key-type = rsa
+  rsa-key-size = 2048
+
+certificates:
+  - name: tls-xyz-example-org
+    domains: # min 1 entry
+      - name: xyz.example.org
+        dns_zone_resource_id: /subscriptions/e7dff497-2e35-4a97-bbcb-da9c1acb86c1/resourceGroups/czm78-dog-dev-euw-dns/providers/Microsoft.Network/dnszones/example.org
+      - name: zyx.example.org
+        dns_zone_resource_id: /subscriptions/e7dff497-2e35-4a97-bbcb-da9c1acb86c1/resourceGroups/czm78-dog-dev-euw-dns/providers/Microsoft.Network/dnszones/hdp-cicd.zeiss.com
+
+  - name: tls-wildcard-abc-example-org
+    domains:
+      - name: '*.abc.example.org'
+        dns_zone_resource_id: /subscriptions/e7dff497-2e35-4a97-bbcb-da9c1acb86c1/resourceGroups/czm78-dog-dev-euw-dns/providers/Microsoft.Network/dnszones/hdp-cicd.zeiss.com
