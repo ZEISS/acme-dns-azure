@@ -1,3 +1,4 @@
+import subprocess
 from acme_dns_azure.os_manager import FileManager
 from acme_dns_azure.logger import LoggingHandler
 
@@ -66,8 +67,38 @@ class CertbotManager(LoggingHandler):
         lines.append('user_managed_identity = %s' %self._user_managed_identity_id)
         lines.append('dns_azure_sp_client_secret = %s' %self._dns_azure_sp_client_secret)
         lines.append('dns_azure_tenant_id = %s'  %self._dns_azure_tenant_id)
-        lines.append('dns_azure_environment = AzurePublicCloud')
+        lines.append('dns_azure_environment = "AzurePublicCloud"')
         for idx, dns_zone in enumerate(self._dns_azure_zones):
-            lines.append('dns_azure_zone{}  = {}'.format(self._dns_azure_zones[idx], dns_zone))
+            lines.append('dns_azure_zone{}  = {}'.format(idx+1, dns_zone))
         return lines
     
+    def renew_certificate(self, domain):
+        try:
+            result : subprocess.CompletedProcess = subprocess.run(
+                args=self._generate_certonly_command(domain),
+                capture_output=True, 
+                check=True)
+            result.check_returncode()
+        except subprocess.CalledProcessError:
+            self._log.error(result.stdout)
+            return False
+        return True
+    
+    def _generate_certonly_command(self, domain) -> [str]:
+        command = [
+            "certbot", 
+            "certonly",
+            "-c",
+            self._work_dir + "certbot.ini",
+            "-m",
+            "brian.rimek@zeiss.com",
+            "-d",
+            domain,
+            "no-reuse-key",
+            "--new-key",
+            "--dns-azure-credentials",
+            self._work_dir + "certbot-dns-azure.ini",
+            "-v"
+        ]
+        #TODO email from config
+        return command
