@@ -49,6 +49,13 @@ def test_certbot_dns_azure_ini_is_created_correctly(working_dir, cleanup_certbot
     assert(filecmp.cmp(working_dir + 'certbot_dns_azure.ini', resources_dir + 'certbot_init/expected_certbot_dns_azure.ini'))
     
 @patch.object(CertbotManager, "__init__", certbot_manager_init)
+def test_certbot_directories_are_created(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
+    CertbotManager(working_dir)
+    base_dirs = ['config', 'work', 'logs']
+    for base_dir in base_dirs:
+        assert(os.path.isdir(working_dir + base_dir))
+    
+@patch.object(CertbotManager, "__init__", certbot_manager_init)
 def test_certbot_domain_file_structure_is_created_successfully(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
     manager = CertbotManager(working_dir)
     from pathlib import Path

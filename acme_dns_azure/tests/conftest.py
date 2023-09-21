@@ -5,7 +5,7 @@ import shutil
 
 @pytest.fixture(scope="function", autouse=True)
 def working_dir():
-    return './'
+    return '/tmp/'
 
 @pytest.fixture(scope="function", autouse=True)
 def working_server():
@@ -21,3 +21,5 @@ def cleanup_certbot_init_files(working_dir):
 def cleanup_certbot_config_dir(working_dir):
     yield
     shutil.rmtree(working_dir + 'config')
+    shutil.rmtree(working_dir + 'work')
+    shutil.rmtree(working_dir + 'logs')
