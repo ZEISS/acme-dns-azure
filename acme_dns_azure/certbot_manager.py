@@ -76,11 +76,11 @@ class CertbotManager(LoggingHandler):
         try:
             result : subprocess.CompletedProcess = subprocess.run(
                 args=self._generate_certonly_command(domain),
-                capture_output=True, 
+                capture_output=True,
                 check=True)
             result.check_returncode()
-        except subprocess.CalledProcessError:
-            self._log.error(result.stdout)
+        except subprocess.CalledProcessError as error:
+            self._log.error(error.stderr)
             return False
         return True
     
