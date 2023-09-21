@@ -1,10 +1,7 @@
 from acme_dns_azure.os_manager import FileManager
+from acme_dns_azure.logger import LoggingHandler
 
-class CertbotConfiguration():
-    def __init__(self) -> None:
-        pass
-
-class CertbotManager():
+class CertbotManager(LoggingHandler):
     def __init__(self, 
                  server : str,
                  dns_azure_sp_client_id: str,
@@ -16,6 +13,7 @@ class CertbotManager():
                  key_type : str = 'rsa',
                  key_size : int = 2048
                  ) -> None:
+        super(CertbotManager, self).__init__()
         self._dns_azure_sp_client_id = dns_azure_sp_client_id
         self._user_managed_identity_id = user_managed_identity_id
         self._dns_azure_sp_client_secret = dns_azure_sp_client_secret
@@ -27,8 +25,10 @@ class CertbotManager():
         self._work_dir = work_dir
         self._os_manager = FileManager()
         self._create_certbot_init_files()
+        self._create_certbot_init_directories()
     
     def _create_certbot_init_files(self):
+        self._log.info("Creating init files...")
         certbot_ini_file_path = self._work_dir + 'certbot.ini'
         certbot_ini_content = self._create_certbot_ini()
         self._os_manager.create_file(file_path=certbot_ini_file_path, lines=certbot_ini_content)
@@ -36,6 +36,18 @@ class CertbotManager():
         certbot_dns_azure_ini_file_path = self._work_dir + 'certbot_dns_azure.ini'
         certbot_dns_azure_ini_content = self._create_certbot_dns_azure_ini()
         self._os_manager.create_file(file_path=certbot_dns_azure_ini_file_path, lines=certbot_dns_azure_ini_content)
+
+    def _create_certbot_init_directories(self):
+        directories = [
+            "config",
+            "config/live",
+            "config/accounts",
+            "config/archive",
+            "config/renewal"
+        ]
+        
+        for dir_name in directories:
+            self._os_manager.create_dir(dir_path=self._work_dir + dir_name, exist_ok=False)
     
     def _create_certbot_ini(self) -> [str]:
         lines = []
@@ -54,8 +66,7 @@ class CertbotManager():
         lines.append('dns_azure_sp_client_secret = %s' %self._dns_azure_sp_client_secret)
         lines.append('dns_azure_tenant_id = %s'  %self._dns_azure_tenant_id)
         lines.append('dns_azure_environment = AzurePublicCloud')
-        for idx, x in enumerate(self._dns_azure_zones):
-            lines.append('dns_azure_zone{}  = {}'.format(self._dns_azure_zones[idx], x))
+        for idx, dns_zone in enumerate(self._dns_azure_zones):
+            lines.append('dns_azure_zone{}  = {}'.format(self._dns_azure_zones[idx], dns_zone))
         return lines
-    
     

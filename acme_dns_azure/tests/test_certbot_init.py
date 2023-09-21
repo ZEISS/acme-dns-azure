@@ -20,6 +20,7 @@ def certbot_manager_init(self,
                  key_type : str = 'rsa',
                  key_size : int = 2048
                  ) -> None:
+        super(CertbotManager, self).__init__()
         self._dns_azure_sp_client_id = dns_azure_sp_client_id
         self._user_managed_identity_id = user_managed_identity_id
         self._dns_azure_sp_client_secret = dns_azure_sp_client_secret
