@@ -47,8 +47,8 @@ class CertbotManager():
         lines.append('server = https://%s/directory' % self._config['server'])
 
         if self._config['eab']['enabled'] == True:
-            lines.append('eab-kid = %s' % self.ctx.keyvault.get_secret(self._config['eab']['kid_secret_name']))
-            lines.append('eab-hmac-key = %s' % self.ctx.keyvault.get_secret(self._config['eab']['hmac_key_secret_name']))
+            lines.append('eab-kid = %s' % self.ctx.keyvault.get_secret(self._config['eab']['kid_secret_name']).value)
+            lines.append('eab-hmac-key = %s' % self.ctx.keyvault.get_secret(self._config['eab']['hmac_key_secret_name']).value)
 
         return lines
 
