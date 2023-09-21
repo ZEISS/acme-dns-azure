@@ -33,23 +33,24 @@ def certbot_manager_init(self,
         from acme_dns_azure.os_manager import FileManager
         self._os_manager = FileManager()
         self._create_certbot_init_files()
+        self._create_certbot_init_directories()
 
 @patch.object(CertbotManager, "__init__", certbot_manager_init)
-def test_certbot_ini_is_created(working_dir, working_server, cleanup_certbot_init_files):
+def test_certbot_ini_is_created(working_dir, working_server, cleanup_certbot_init_files, cleanup_certbot_config_dir):
     CertbotManager()
     assert(os.path.exists(working_dir + 'certbot.ini'))
     
 @patch.object(CertbotManager, "__init__", certbot_manager_init)
-def test_certbot_dns_azure_ini_is_created(working_dir, cleanup_certbot_init_files):
+def test_certbot_dns_azure_ini_is_created(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
     CertbotManager()
     assert(os.path.exists(working_dir + 'certbot_dns_azure.ini'))
     
 @patch.object(CertbotManager, "__init__", certbot_manager_init)
-def test_certbot_ini_is_created_correctly(working_dir, cleanup_certbot_init_files):
+def test_certbot_ini_is_created_correctly(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
     CertbotManager()
     assert(filecmp.cmp(working_dir + 'certbot.ini', resources_dir + 'certbot_init/expected_certbot.ini'))
     
 @patch.object(CertbotManager, "__init__", certbot_manager_init)
-def test_certbot_dns_azure_ini_is_created_correctly(working_dir, cleanup_certbot_init_files):
+def test_certbot_dns_azure_ini_is_created_correctly(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
     CertbotManager()
     assert(filecmp.cmp(working_dir + 'certbot_dns_azure.ini', resources_dir + 'certbot_init/expected_certbot_dns_azure.ini'))

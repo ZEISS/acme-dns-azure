@@ -38,6 +38,7 @@ class CertbotManager(LoggingHandler):
         self._os_manager.create_file(file_path=certbot_dns_azure_ini_file_path, lines=certbot_dns_azure_ini_content)
 
     def _create_certbot_init_directories(self):
+        self._log.info("Creating init directories...")
         directories = [
             "config",
             "config/live",
