@@ -84,6 +84,37 @@ class CertbotManager(LoggingHandler):
             return False
         return True
     
+    def register_domain_file(self, domain):
+        domain_file_path=self._work_dir + 'config/renewal/' + domain
+        self._os_manager.create_file(file_path=domain_file_path, lines=self._create_domain_conf(domain))
+        self._os_manager.create_dir(self._work_dir + 'config/live/' + domain)
+        files = [
+            "cert.pem",
+            "privkey.pem",
+            "chain.pem",
+            "fullchain.pem"
+        ]
+        for cert in files:
+            self._os_manager.create_symlink(
+                src=self._work_dir + 'config/archive/' + domain + '/' + cert,
+                dest=self._work_dir + 'config/live/' + domain + '/' + cert
+            )
+                
+    def _create_domain_conf(self, domain) -> [str]:
+        lines = []
+        lines.append('archive_dir = %s' %(self._work_dir + 'config/archive/' + domain))
+        files = [
+            "cert.pem",
+            "privkey.pem",
+            "chain.pem",
+            "fullchain.pem"
+        ]
+        for cert in files:
+            lines.append('archive_dir = %s' %(self._work_dir + 'config/live/' + domain + '/' + cert))
+
+        lines.append('[renewalparams]')
+        return lines
+    
     def _generate_certonly_command(self, domain) -> [str]:
         command = [
             "certbot", 

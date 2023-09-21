@@ -54,3 +54,19 @@ def test_certbot_ini_is_created_correctly(working_dir, cleanup_certbot_init_file
 def test_certbot_dns_azure_ini_is_created_correctly(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
     CertbotManager()
     assert(filecmp.cmp(working_dir + 'certbot_dns_azure.ini', resources_dir + 'certbot_init/expected_certbot_dns_azure.ini'))
+    
+@patch.object(CertbotManager, "__init__", certbot_manager_init)
+def test_certbot_dns_azure_ini_is_created_correctly(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
+    manager = CertbotManager()
+    from pathlib import Path
+    files = [
+            "cert.pem",
+            "privkey.pem",
+            "chain.pem",
+            "fullchain.pem"
+        ]
+    domain = "test.my.domain"
+    os.makedirs(working_dir + 'config/archive/' + domain)
+    for required_file in files:
+        Path(working_dir + 'config/archive/' + domain + '/' + required_file).touch()
+    manager.register_domain_file(domain)

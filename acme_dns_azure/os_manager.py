@@ -13,3 +13,6 @@ class FileManager(LoggingHandler):
     def create_dir(self, dir_path: str, exist_ok: bool=False):
         os.makedirs(dir_path, exist_ok=exist_ok)
         self._log.info("Created dir")
+    
+    def create_symlink(self, src: str, dest: str):
+        os.symlink(src, dest)
