@@ -78,21 +78,39 @@ class CertbotManager():
                 lines.append('dns_azure_zone%i = %s:%s' % (idx, domain['name'], domain['dns_zone_resource_id']))
         return lines
     
-    def renew_certificate(self, domain):
-        try:
-            result : subprocess.CompletedProcess = subprocess.run(
-                args=self._generate_certonly_command(domain),
-                capture_output=True,
-                check=True)
-            result.check_returncode()
-        except subprocess.CalledProcessError as error:
-            logger.error(error.stderr)
-            return False
+    def renew_certificates(self):
+        cert_names = self.ctx.keyvault.get_certificates()
+        for cert_name in cert_names:
+            logger.info("Renewing cert %s" %cert_name)
+            base64_encoded_pfx = self.ctx.keyvault.get_certificate(name=cert_name)
+            private_key, cert, chain, fullchain, domain = self.ctx.keyvault.extract_pfx_data(base64_encoded_pfx)
+            self._create_certificate_files(
+                domain=domain,
+                certificate=cert.decode('utf-8'),
+                chain=chain.decode('utf-8'),
+                fullchain=fullchain.decode('utf-8'),
+                privkey=private_key.decode('utf-8')
+            )
+            
+            #self._renew_certificate(domain)
+            
+    
+    def _renew_certificate(self, domain):
+        # try:
+        #     result : subprocess.CompletedProcess = subprocess.run(
+        #         args=self._generate_certonly_command(domain),
+        #         capture_output=True,
+        #         check=True)
+        #     result.check_returncode()
+        # except subprocess.CalledProcessError as error:
+        #     logger.error(error.stderr)
+        #     return False
         return True
     
-    def register_domain_files(self, domain: str, certificate: str, chain : str, fullchain : str, privkey : str):
+    def _create_certificate_files(self, domain: str, certificate: str, chain : str, fullchain : str, privkey : str):
         domain_file_path=self._work_dir + 'config/renewal/' + domain
         self._os_manager.create_dir(self._work_dir + 'config/live/' + domain)
+        self._os_manager.create_dir(self._work_dir + 'config/archive/' + domain)
         self._os_manager.create_file(file_path=domain_file_path, lines=self._create_domain_conf(domain))
         self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/cert.pem', [certificate])
         self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/privkey.pem', [privkey])
@@ -141,6 +159,5 @@ class CertbotManager():
             self._work_dir + "certbot-dns-azure.ini",
             "-v"
         ]
-        #TODO email from config
         return command
         
