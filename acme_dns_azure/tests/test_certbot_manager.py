@@ -70,7 +70,7 @@ def test_certbot_domain_file_structure_is_created_successfully(working_dir, clea
     for required_file in files:
         Path(working_dir + 'config/archive/' + domain + '/' + required_file).touch()
     
-    manager.register_domain_files(domain, 
+    manager._create_certificate_files(domain, 
                                   certificate="cert",
                                   chain="chain",
                                   fullchain="fullchain",
