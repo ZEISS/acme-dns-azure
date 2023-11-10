@@ -5,7 +5,7 @@ email: me@example.org
 key_vault_id: https://my12keyvaultdev.vault.azure.net/
 # account_secret_name: #optional / default: acme-account-${acme_server} #if non-existing or empty, certbot register will be executed, account directory will be stored as base64 tar.gz file
 eab:
-  enabled: true #optional / default: false
+  enabled: false #optional / default: false
 #  kid_secret_name: #optional / default: acme-eab-kid #must be created upfront with information from CIT
 #   hmac_key_secret_name: #optional / default: acme-eab-hmac-key #must be created upfront with information from CIT
 

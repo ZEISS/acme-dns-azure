@@ -1,6 +1,7 @@
 import sys
 import os
 import tempfile
+import shutil
 
 from azure.identity import DefaultAzureCredential
 
@@ -16,11 +17,18 @@ logger = setup_custom_logger(__name__)
 class AcmeDnsAzureClient:
     def __init__(self, config_yaml: str = '', config_env_var: str = '', config_file: str = '') -> None:
         self.ctx = Context()
+        
         self._work_dir = tempfile.TemporaryDirectory(prefix = 'acme_dns_azure')
+
+            
 
         #self.ctx.work_dir = self._work_dir.name
         self.ctx.work_dir = '/tmp/acme-dns-azure' #DEBUG: Use fixed directory to keep it after script exits
-        os.mkdir(self.ctx.work_dir)               #DEBUG: Use fixed directory to keep it after script exits
+        try:
+            os.mkdir(self.ctx.work_dir)               #DEBUG: Use fixed directory to keep it after script exits
+        except FileExistsError:
+            shutil.rmtree(self.ctx.work_dir)
+            os.mkdir(self.ctx.work_dir)
 
         if config_yaml != '':
             self.ctx.config = config.load(config_yaml)
@@ -33,7 +41,7 @@ class AcmeDnsAzureClient:
 
         self.ctx.azure_credentials = DefaultAzureCredential()
         self.ctx.config['azure_environment'] = 'AzurePublicCloud'             #TODO: Read from Azure client
-        self.ctx.config['tenant_id'] = '82913d90-8716-4025-a8e8-4f8dfa42b719' #TODO: Read from Azure client
+        self.ctx.config['tenant_id'] = '56578228-5913-11ee-8c99-0242ac120002' #TODO: Read from Azure client
 
         self.ctx.keyvault = KeyVaultManager(self.ctx)
 
@@ -45,6 +53,7 @@ class AcmeDnsAzureClient:
 
     def issue_certificates(self):
         logger.info('Issuing certificates')
+        self.certbot.renew_certificates()
 
 if __name__ == "__main__":
     try:
