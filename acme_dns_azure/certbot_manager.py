@@ -8,7 +8,6 @@ logger = setup_custom_logger(__name__)
 class CertbotManager():
     def __init__(self, ctx: Context) -> None:
         self.ctx = ctx
-
         self._config = ctx.config
         self._work_dir = ctx.work_dir + '/'
         self._os_manager = FileManager()
@@ -18,6 +17,7 @@ class CertbotManager():
     
     def _create_certbot_init_files(self):
         logger.info("Creating init files...")
+        #TODO chmod 500 for dns azure ini file
         certbot_ini_file_path = self._work_dir + 'certbot.ini'
         certbot_ini_content = self._create_certbot_ini()
         self._os_manager.create_file(file_path=certbot_ini_file_path, lines=certbot_ini_content)
@@ -92,10 +92,11 @@ class CertbotManager():
                 privkey=private_key.decode('utf-8')
             )
             
-            #self._renew_certificate(domain)
+            self._renew_certificate(domain)
             
     
     def _renew_certificate(self, domain):
+        # TODO error handling
         # try:
         #     result : subprocess.CompletedProcess = subprocess.run(
         #         args=self._generate_certonly_command(domain),
@@ -108,37 +109,33 @@ class CertbotManager():
         return True
     
     def _create_certificate_files(self, domain: str, certificate: str, chain : str, fullchain : str, privkey : str):
-        domain_file_path=self._work_dir + 'config/renewal/' + domain
+        domain_file_path=self._work_dir + 'config/renewal/' + domain + '.conf'
         self._os_manager.create_dir(self._work_dir + 'config/live/' + domain)
         self._os_manager.create_dir(self._work_dir + 'config/archive/' + domain)
         self._os_manager.create_file(file_path=domain_file_path, lines=self._create_domain_conf(domain))
-        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/cert.pem', [certificate])
-        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/privkey.pem', [privkey])
-        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/chain.pem', [chain])
-        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/fullchain.pem', [fullchain])
+        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/cert1.pem', [certificate])
+        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/privkey1.pem', [privkey])
+        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/chain1.pem', [chain])
+        self._os_manager.create_file(self._work_dir + 'config/archive/' + domain + '/fullchain1.pem', [fullchain])
         files = [
-            "cert.pem",
-            "privkey.pem",
-            "chain.pem",
-            "fullchain.pem"
+            "cert",
+            "privkey",
+            "chain",
+            "fullchain"
         ]
         for cert in files:
             self._os_manager.create_symlink(
-                src='../../archive/' + domain + '/' + cert,
-                dest=self._work_dir + 'config/live/' + domain + '/' + cert
+                src='../../archive/' + domain + '/' + cert + '1.pem',
+                dest=self._work_dir + 'config/live/' + domain + '/' + cert + '.pem'
             )
                 
     def _create_domain_conf(self, domain) -> [str]:
         lines = []
         lines.append('archive_dir = %s' %(self._work_dir + 'config/archive/' + domain))
-        files = [
-            "cert.pem",
-            "privkey.pem",
-            "chain.pem",
-            "fullchain.pem"
-        ]
-        for cert in files:
-            lines.append('archive_dir = %s' %(self._work_dir + 'config/live/' + domain + '/' + cert))
+        lines.append('cert = %s' %(self._work_dir + 'config/live/' + domain + '/cert.pem'))
+        lines.append('privkey = %s' %(self._work_dir + 'config/live/' + domain + '/privkey.pem'))
+        lines.append('chain = %s' %(self._work_dir + 'config/live/' + domain + '/chain.pem'))
+        lines.append('fullchain = %s' %(self._work_dir + 'config/live/' + domain + '/fullchain.pem'))
 
         lines.append('[renewalparams]')
         return lines
@@ -153,7 +150,7 @@ class CertbotManager():
             self._config['email'],
             "-d",
             domain,
-            "no-reuse-key",
+            "--no-reuse-key",
             "--new-key",
             "--dns-azure-credentials",
             self._work_dir + "certbot-dns-azure.ini",
