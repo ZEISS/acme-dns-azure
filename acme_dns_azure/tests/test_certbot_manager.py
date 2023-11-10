@@ -58,18 +58,7 @@ def test_certbot_directories_are_created(working_dir, cleanup_certbot_init_files
 @patch.object(CertbotManager, "__init__", certbot_manager_init)
 def test_certbot_domain_file_structure_is_created_successfully(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
     manager = CertbotManager(working_dir)
-    from pathlib import Path
-    files = [
-            "cert.pem",
-            "privkey.pem",
-            "chain.pem",
-            "fullchain.pem"
-        ]
     domain = "test.my.domain"
-    os.makedirs(working_dir + 'config/archive/' + domain)
-    for required_file in files:
-        Path(working_dir + 'config/archive/' + domain + '/' + required_file).touch()
-    
     manager._create_certificate_files(domain, 
                                   certificate="cert",
                                   chain="chain",
