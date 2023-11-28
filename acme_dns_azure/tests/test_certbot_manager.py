@@ -65,20 +65,20 @@ def test_certbot_domain_file_structure_is_created_successfully(working_dir, clea
                                   fullchain="fullchain",
                                   privkey="privkey")
     expected_files = [
-        working_dir + 'config/archive/' + domain + '/' + 'cert.pem',
-        working_dir + 'config/archive/' + domain + '/' + 'chain.pem',
-        working_dir + 'config/archive/' + domain + '/' + 'fullchain.pem',
-        working_dir + 'config/archive/' + domain + '/' + 'privkey.pem'
+        working_dir + 'config/archive/' + domain + '/' + 'cert1.pem',
+        working_dir + 'config/archive/' + domain + '/' + 'chain1.pem',
+        working_dir + 'config/archive/' + domain + '/' + 'fullchain1.pem',
+        working_dir + 'config/archive/' + domain + '/' + 'privkey1.pem'
     ]
     for a in expected_files:
         assert(os.path.exists(a))
-    result = open(working_dir + 'config/archive/' + domain + '/' + 'cert.pem', 'rb').read()
+    result = open(working_dir + 'config/archive/' + domain + '/' + 'cert1.pem', 'rb').read()
     assert(result == b'cert\n')
-    result = open(working_dir + 'config/archive/' + domain + '/' + 'chain.pem', 'rb').read()
+    result = open(working_dir + 'config/archive/' + domain + '/' + 'chain1.pem', 'rb').read()
     assert(result == b'chain\n')
-    result = open(working_dir + 'config/archive/' + domain + '/' + 'fullchain.pem', 'rb').read()
+    result = open(working_dir + 'config/archive/' + domain + '/' + 'fullchain1.pem', 'rb').read()
     assert(result == b'fullchain\n')
-    result = open(working_dir + 'config/archive/' + domain + '/' + 'privkey.pem', 'rb').read()
+    result = open(working_dir + 'config/archive/' + domain + '/' + 'privkey1.pem', 'rb').read()
     assert(result == b'privkey\n')
     
     expected_symlinks = [
