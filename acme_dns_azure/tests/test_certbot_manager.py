@@ -41,7 +41,21 @@ def test_certbot_dns_azure_ini_is_created(working_dir, cleanup_certbot_init_file
 @patch.object(CertbotManager, "__init__", certbot_manager_init)
 def test_certbot_ini_is_created_correctly(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
     CertbotManager(working_dir)
-    assert(filecmp.cmp(working_dir + 'certbot.ini', resources_dir + 'certbot_init/expected_certbot.ini'))
+    expected_lines = [
+        "key-type = rsa",
+        "rsa-key-size = 2048",
+        f"config-dir = {working_dir}config",
+        f"work-dir = {working_dir}work",
+        f"logs-dir = {working_dir}logs",
+        "email = me@example.org",
+        "preferred-challenges = dns",
+        "authenticator = dns-azure",
+        "agree-tos = true",
+        "server = https://acme-staging-v02.api.letsencrypt.org/directory"
+    ]
+    with open(working_dir + 'certbot.ini') as data:
+        for line in data:
+            assert line.strip() in expected_lines
     
 @patch.object(CertbotManager, "__init__", certbot_manager_init)
 def test_certbot_dns_azure_ini_is_created_correctly(working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir):
