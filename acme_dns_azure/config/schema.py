@@ -1,8 +1,11 @@
 from strictyaml import Map, Str, Seq, Bool, Optional, Regex
 
 schema = Map({
-    'managed_identity_id': Regex(r'^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'),
-    'server': Regex(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)'),
+    Optional('managed_identity_id'): Regex(r'^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'),
+    Optional('sp_client_id'): Str(),
+    Optional('sp_client_secret'): Str(),
+    'server': Str(),
+    #TODO 'server': Regex(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)'),
     'email': Regex(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'),
     'key_vault_id': Regex(r'^https://[-a-zA-Z0-9]{3,24}\.vault\.azure\.net/$'),
 
@@ -19,7 +22,7 @@ schema = Map({
         'name': Regex('^[-a-zA-Z0-9]{1,127}$'),
         'domains': Seq(Map({
             'name': Regex(r'(?=^.{4,253}$)(^((?!-)[*a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)'),
-            'dns_zone_resource_id': Regex('^/subscriptions/[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}/resourceGroups/[^/]{1,90}/providers/Microsoft.Network/dnszones/[-_.A-Za-z0-9]+$'),
+            'dns_zone_resource_id': Str(),
         }))
     }))
 })

@@ -41,7 +41,7 @@ class AcmeDnsAzureClient:
 
         self.ctx.azure_credentials = DefaultAzureCredential()
         self.ctx.config['azure_environment'] = 'AzurePublicCloud'             #TODO: Read from Azure client
-        self.ctx.config['tenant_id'] = '56578228-5913-11ee-8c99-0242ac120002' #TODO: Read from Azure client
+        self.ctx.config['tenant_id'] = '82913d90-8716-4025-a8e8-4f8dfa42b719' #TODO: Read from Azure client
 
         self.ctx.keyvault = KeyVaultManager(self.ctx)
 

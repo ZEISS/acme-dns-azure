@@ -1,7 +1,8 @@
 from OpenSSL import crypto
 from cryptography.hazmat.primitives.serialization import pkcs12
-import cryptography
-import io
+from cryptography.hazmat.primitives import serialization
+from cryptography import x509
+
 import base64
 
 from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
@@ -12,6 +13,7 @@ from azure.core.paging import ItemPaged
 from acme_dns_azure.exceptions import KeyVaultError
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
+
 logger = setup_custom_logger(__name__)
 
 class KeyVaultManager():
@@ -22,7 +24,14 @@ class KeyVaultManager():
 
         self._secret_client = SecretClient(vault_url = self._config['key_vault_id'], credential = self._azure_credentials)
         self._certificate_client = CertificateClient(vault_url = self._config['key_vault_id'], credential = self._azure_credentials)
-
+        
+    def secret_exists(self, name: str):
+        try:
+            self._secret_client.get_secret(name)
+            return True
+        except ResourceNotFoundError:
+            return False
+        
     def get_secret(self, name: str):
         logger.debug("Retrieving secret '%s' from key vault '%s'" % (name, self._config['key_vault_id']))
         try:
@@ -41,7 +50,7 @@ class KeyVaultManager():
         logger.info(names)
         return  names
         
-    def get_certificate(self, name: str) -> KeyVaultCertificate:
+    def get_certificate(self, name: str):
         logger.info("Retrieving certificate '%s' from key vault '%s'" % (name, self._config['key_vault_id']))
         try:
             # https://github.com/Azure/azure-cli/issues/7489
@@ -91,3 +100,21 @@ class KeyVaultManager():
         
         return private_key, cert, chain, fullchain, domain
     
+    def generate_pfx(self, private_key_path: str, certificate_path : str, chain_file_path : str = None) -> bytes:
+        with open(private_key_path, 'rb') as private_key:
+            private_key_bytes=private_key.read()
+        with open(certificate_path, 'rb') as certificate:
+            certificate_bytes=certificate.read()
+        cas=None
+        if chain_file_path is not None:
+            with open(chain_file_path, 'rb') as chain:
+                chain_bytes=chain.read()
+            cas=[x509.load_pem_x509_certificate(chain_bytes)]
+        
+        return pkcs12.serialize_key_and_certificates(
+            name=None,
+            key=serialization.load_pem_private_key(private_key_bytes, password=None),
+            cert=x509.load_pem_x509_certificate(certificate_bytes),
+            cas=cas,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
