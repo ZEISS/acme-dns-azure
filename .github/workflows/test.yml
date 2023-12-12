@@ -23,7 +23,11 @@ jobs:
         run: |
           poetry run pytest --junitxml=test-results/unittests.xml --cov=com --cov-report=xml --cov-report=html
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
+        if: always()
+      - uses: 5monkeys/cobertura-action@master
+        with:
+          path: test-results/unittests.xml
         if: always()
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
