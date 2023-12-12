@@ -50,3 +50,7 @@ src/
 
 # Local testing
 acme_dns_azure/config.yaml
+
+# test results 
+.coverage
+junit
