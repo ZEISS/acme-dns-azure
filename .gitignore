@@ -46,3 +46,7 @@ src/
 
 # macOS
 .DS_Store
+
+
+# Local testing
+acme_dns_azure/config.yaml
