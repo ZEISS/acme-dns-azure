@@ -69,7 +69,8 @@ tox -e py
 
 Prerequisite:
 
-- config.yaml with according configuration within "/acme_dns_azure"
+- config.yaml with according configuration within "/acme_dns_azure" (Note: 'sp_client_id' and 'sp_client_secret' are required. 'managed_identity_id' is not allowed)
+
 - Azure keyvault with required secrets
 
 ```bash
