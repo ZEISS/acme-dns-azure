@@ -24,7 +24,6 @@ jobs:
           poetry run coverage run
           poetry run coverage report
           poetry run coverage xml
-          poetry run pytest --junitxml=test-results/unittests.xml
       - uses: 5monkeys/cobertura-action@master
         with:
           minimum_coverage: 50
