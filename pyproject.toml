@@ -89,6 +89,10 @@ cache_dir = ".cache/pytest_cache"
 branch = true
 source = ["acme_dns_azure"]
 command_line = "-m pytest --junitxml=test-results/unittests.xml"
+omit = [
+    "acme_dns_azure/___init___.py",
+    "acme_dns_azure/tests/*"
+]
 
 [tool.coverage.report]
 show_missing = true
