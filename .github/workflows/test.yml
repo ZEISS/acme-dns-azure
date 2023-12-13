@@ -27,6 +27,7 @@ jobs:
       - uses: 5monkeys/cobertura-action@master
         with:
           minimum_coverage: 50
+          fail_below_threshold: true
         if: always()
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
