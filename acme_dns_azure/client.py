@@ -16,19 +16,19 @@ logger = setup_custom_logger(__name__)
 
 class AcmeDnsAzureClient:
     def __init__(self, config_yaml: str = '', config_env_var: str = '', config_file: str = '') -> None:
-        self.ctx = Context()
         
+        self.ctx = Context()
         self._work_dir = tempfile.TemporaryDirectory(prefix = 'acme_dns_azure')
-
-            
-
-        #self.ctx.work_dir = self._work_dir.name
-        self.ctx.work_dir = '/tmp/acme-dns-azure' #DEBUG: Use fixed directory to keep it after script exits
-        try:
-            os.mkdir(self.ctx.work_dir)               #DEBUG: Use fixed directory to keep it after script exits
-        except FileExistsError:
-            shutil.rmtree(self.ctx.work_dir)
-            os.mkdir(self.ctx.work_dir)
+        logger.info("Setting working directory for certicate renewal: %s", self._work_dir)
+        self.ctx.work_dir = self._work_dir.name
+        
+        #self.ctx.work_dir = '/tmp/acme-dns-azure' #DEBUG: Use fixed directory to keep it after script exits
+        # try:
+        #     os.mkdir(self.ctx.work_dir)               
+        # except FileExistsError:
+        #     logger.warning("%s already exists. Cleaning up...", self.ctx.work_dir)
+        #     shutil.rmtree(self.ctx.work_dir)
+        #     os.mkdir(self.ctx.work_dir)
 
         if config_yaml != '':
             self.ctx.config = config.load(config_yaml)
@@ -40,16 +40,12 @@ class AcmeDnsAzureClient:
             raise ConfigurationError('No configuration source defined')
 
         self.ctx.azure_credentials = DefaultAzureCredential()
-        self.ctx.config['azure_environment'] = 'AzurePublicCloud'             #TODO: Read from Azure client
-        self.ctx.config['tenant_id'] = '82913d90-8716-4025-a8e8-4f8dfa42b719' #TODO: Read from Azure client
-
         self.ctx.keyvault = KeyVaultManager(self.ctx)
-
         self.certbot = CertbotManager(self.ctx)
 
     def __del__(self):
+        logger.info("Cleaning up directory %s", self.ctx.work_dir)
         self._work_dir.cleanup()
-        pass
 
     def issue_certificates(self):
         logger.info('Issuing certificates')
@@ -69,3 +65,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     client.issue_certificates()
+    
