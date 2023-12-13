@@ -94,7 +94,7 @@ class CertbotManager():
             logger.info("Renewing cert %s", cert_name)
             base64_encoded_pfx = self.ctx.keyvault.get_certificate(name=cert_name)
             private_key, cert, chain, fullchain, domain = self.ctx.keyvault.extract_pfx_data(base64_encoded_pfx)
-            #TODO can domain be empty from cert?
+            #TODO currently using domain from certificate itself. Need to refer to domain from config (and validate if matches with actual domain(s) form cert?). Should we loop for list of domain for this cert? 
             self._create_certificate_files(
                 domain=domain,
                 certificate=cert.decode('utf-8'),
@@ -135,7 +135,7 @@ class CertbotManager():
             for error in error.stderr.splitlines():
                 logger.error(error)
             return False
-        #TODO if Certificate not yet due, ...? Should we enable to pass the "--break-my-certs" param?
+        #TODO if Cert is still valid is this success? Should we enable to pass the "--break-my-certs" param?
         for info in result.stdout.splitlines():
             logger.info(info)
         return True
