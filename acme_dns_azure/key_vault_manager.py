@@ -7,7 +7,7 @@ import base64
 
 from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 from azure.keyvault.secrets import SecretClient
-from azure.keyvault.certificates import CertificateClient, KeyVaultCertificate, CertificateProperties
+from azure.keyvault.certificates import CertificateClient, CertificateProperties
 from azure.core.paging import ItemPaged
 
 from acme_dns_azure.exceptions import KeyVaultError

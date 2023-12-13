@@ -1,7 +1,5 @@
 import sys
-import os
 import tempfile
-import shutil
 
 from azure.identity import DefaultAzureCredential
 
