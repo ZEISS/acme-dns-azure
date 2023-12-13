@@ -3,7 +3,7 @@ server: https://acme-staging-v02.api.letsencrypt.org/directory
 email: me@example.org
 
 key_vault_id: https://my12keyvaultdev.vault.azure.net/
-# account_secret_name: #optional / default: acme-account-${acme_server} #if non-existing or empty, certbot register will be executed, account directory will be stored as base64 tar.gz file
+# keyvault_account_secret_name: #optional / default: acme-account-${acme_server} #if non-existing or empty, certbot register will be executed, account directory will be stored as base64 tar.gz file
 eab:
   enabled: false #optional / default: false
 #  kid_secret_name: #optional / default: acme-eab-kid #must be created upfront with information from CIT
