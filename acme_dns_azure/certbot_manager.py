@@ -54,18 +54,18 @@ class CertbotManager():
 
     def _create_certbot_ini(self) -> [str]:
         lines = str(self._config['certbot.ini']).splitlines()
-        lines.append('config-dir = %s', self._work_dir + 'config')
-        lines.append('work-dir = %s', self._work_dir + 'work')
-        lines.append('logs-dir = %s', self._work_dir + 'logs')
-        lines.append('email = %s', self._config['email'])
+        lines.append('config-dir = %s' %self._work_dir + 'config')
+        lines.append('work-dir = %s' %self._work_dir + 'work')
+        lines.append('logs-dir = %s' %self._work_dir + 'logs')
+        lines.append('email = %s' %self._config['email'])
         lines.append('preferred-challenges = dns')
         lines.append('authenticator = dns-azure')
         lines.append('agree-tos = true')
-        lines.append('server = %s', self._config['server'])
+        lines.append('server = %s' %self._config['server'])
 
         if self._config['eab']['enabled'] is True:
-            lines.append('eab-kid = %s', self.ctx.keyvault.get_secret(self._config['eab']['kid_secret_name']).value)
-            lines.append('eab-hmac-key = %s', self.ctx.keyvault.get_secret(self._config['eab']['hmac_key_secret_name']).value)
+            lines.append('eab-kid = %s' %self.ctx.keyvault.get_secret(self._config['eab']['kid_secret_name']).value)
+            lines.append('eab-hmac-key = %s' %self.ctx.keyvault.get_secret(self._config['eab']['hmac_key_secret_name']).value)
 
         return lines
 
@@ -73,24 +73,23 @@ class CertbotManager():
         lines = []
         if 'sp_client_id' in self._config:
             logger.info("Using Azure service principal '%s'", self._config['sp_client_id'])
-            lines.append('dns_azure_sp_client_id = %s', self._config['sp_client_id'])
-            lines.append('dns_azure_sp_client_secret = %s', self._config['sp_client_secret'])
+            lines.append('dns_azure_sp_client_id = %s' %self._config['sp_client_id'])
+            lines.append('dns_azure_sp_client_secret = %s' %self._config['sp_client_secret'])
         else:
             logger.info("Using Azure managed identity '%s'", self._config['managed_identity_id'])
-            lines.append('dns_azure_msi_client_id = %s', self._config['managed_identity_id'])
-        lines.append('dns_azure_tenant_id = %s', self._config['tenant_id'])
-        lines.append('dns_azure_environment = %s', self._config['azure_environment'])
+            lines.append('dns_azure_msi_client_id = %s' %self._config['managed_identity_id'])
+        lines.append('dns_azure_tenant_id = %s' %self._config['tenant_id'])
+        lines.append('dns_azure_environment = %s' %self._config['azure_environment'])
 
         idx = 0
         for certificate in self._config['certificates']:
             for domain in certificate['domains']:
                 idx += 1
-                lines.append('dns_azure_zone%i = %s:%s', (idx, domain['name'], domain['dns_zone_resource_id']))
+                lines.append('dns_azure_zone%i = %s:%s' %(idx, domain['name'], domain['dns_zone_resource_id']))
         return lines
     
     def renew_certificates(self):
-        cert_names = self.ctx.keyvault.get_certificates()
-        #TODO get from config, not from key vault
+        cert_names = self._get_certificate_names_from_config()
         for cert_name in cert_names:
             logger.info("Renewing cert %s", cert_name)
             base64_encoded_pfx = self.ctx.keyvault.get_certificate(name=cert_name)
@@ -120,6 +119,9 @@ class CertbotManager():
         with open(zip_archive_path, 'rb') as data:
             encoded_archive = base64.b64encode(data.read()).decode()
             self.ctx.keyvault._secret_client.set_secret(self._keyvault_acme_account_secret_name, encoded_archive)
+    
+    def _get_certificate_names_from_config(self):
+        return [o['name'] for o in self.ctx.config['certificates']]
     
     def _renew_certificate(self, domain):
         try:
@@ -161,11 +163,11 @@ class CertbotManager():
                 
     def _create_domain_conf(self, domain) -> [str]:
         lines = []
-        lines.append('archive_dir = %s', (self._work_dir + 'config/archive/' + domain))
-        lines.append('cert = %s', (self._work_dir + 'config/live/' + domain + '/cert.pem'))
-        lines.append('privkey = %s', (self._work_dir + 'config/live/' + domain + '/privkey.pem'))
-        lines.append('chain = %s', (self._work_dir + 'config/live/' + domain + '/chain.pem'))
-        lines.append('fullchain = %s', (self._work_dir + 'config/live/' + domain + '/fullchain.pem'))
+        lines.append('archive_dir = %s' %(self._work_dir + 'config/archive/' + domain))
+        lines.append('cert = %s' %(self._work_dir + 'config/live/' + domain + '/cert.pem'))
+        lines.append('privkey = %s' %(self._work_dir + 'config/live/' + domain + '/privkey.pem'))
+        lines.append('chain = %s' %(self._work_dir + 'config/live/' + domain + '/chain.pem'))
+        lines.append('fullchain = %s' %(self._work_dir + 'config/live/' + domain + '/fullchain.pem'))
         lines.append('[renewalparams]')
         return lines
     

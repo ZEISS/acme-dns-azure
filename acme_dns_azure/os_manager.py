@@ -11,7 +11,7 @@ class FileManager():
             file.writelines(s + '\n' for s in lines)
             file.close()
         if chmod is not None:
-            os.chmod(file_path,  chmod)
+            os.chmod(file_path, chmod)
             
     def create_dir(self, dir_path: str, exist_ok: bool=False):
         os.makedirs(dir_path, exist_ok=exist_ok)
@@ -23,9 +23,7 @@ class FileManager():
     def delete_file(self, file_path: str):
         os.remove(file_path)
         
-    #TODO remove meta file
-    #TODO pfad bauen. Nur $acc nehmen
-    
+    #TODO max size of a secret is 25kb, size of the dir with 1 account is 3,4kb. On the long term we could not zip meta.json per account to save space
     def zip_archive(self, src_dir_path: str, dest_file_path: str):
         with zipfile.ZipFile(dest_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(src_dir_path):

@@ -23,7 +23,7 @@ def load(config_yaml: str = ''):
         config['sp_client_secret'] = os.environ['ARM_CLIENT_SECRET']
 
     if config['keyvault_account_secret_name'] == '':
-        config['keyvault_account_secret_name'] = 'acme-account-%s', (re.sub('[^-a-zA-Z0-9]+', '-', urlparse(config['server']).netloc))
+        config['keyvault_account_secret_name'] = 'acme-account-%s' %(re.sub('[^-a-zA-Z0-9]+', '-', urlparse(config['server']).netloc))
 
     return config
 
