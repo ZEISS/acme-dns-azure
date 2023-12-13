@@ -59,6 +59,7 @@ full = ["azure-functions"]
 pytest = "*"
 mock = "*"
 pytest-cov = "*"
+coverage = "*"
 pytest-xdist = "*"
 vcrpy = "*"
 flake8 = "*"
@@ -76,8 +77,21 @@ types-simplejson = "*"
 [tool.poetry.scripts]
 acme-dns-azure = "acme_dns_azure.cli:main"
 
-[tool.pytest.ini_options]
-junit_family = "xunit2"
-
 [tool.mypy]
 show_error_codes = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-s -v --durations=0"
+cache_dir = ".cache/pytest_cache"
+
+[tool.coverage.run]
+branch = true
+source = ["acme_dns_azure"]
+command_line = "-m pytest"
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.xml]
+output = "coverage.xml"

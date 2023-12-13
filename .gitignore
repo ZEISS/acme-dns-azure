@@ -54,3 +54,5 @@ acme_dns_azure/config.yaml
 # test results 
 .coverage
 junit
+test-results
+coverage.xml
