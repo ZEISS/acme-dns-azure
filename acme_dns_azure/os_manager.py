@@ -15,7 +15,7 @@ class FileManager():
             
     def create_dir(self, dir_path: str, exist_ok: bool=False):
         os.makedirs(dir_path, exist_ok=exist_ok)
-        logger.debug("Created directory '%s'" % dir_path)
+        logger.debug("Created directory '%s'", dir_path)
     
     def create_symlink(self, src: str, dest: str):
         os.symlink(src, dest)
