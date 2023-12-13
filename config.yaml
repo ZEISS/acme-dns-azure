@@ -2,8 +2,10 @@ managed_identity_id: 00000000-0000-0000-0000-000000000000
 server: acme-staging-v02.api.letsencrypt.org
 email: me@example.org
 
+tenant_id: 00000000-0000-0000-0000-000000000000
+
 key_vault_id: https://my12keyvaultdev.vault.azure.net/
-# account_secret_name: #optional / default: acme-account-${acme_server} #if non-existing or empty, certbot register will be executed, account directory will be stored as base64 tar.gz file
+# keyvault_account_secret_name: #optional / default: acme-account-${acme_server} #if non-existing or empty, certbot register will be executed, account directory will be stored as base64 tar.gz file
 eab:
   enabled: true #optional / default: false
 #  kid_secret_name: #optional / default: acme-eab-kid #must be created upfront with information from CIT
