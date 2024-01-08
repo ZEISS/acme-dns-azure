@@ -20,7 +20,12 @@ Configure the virtual environment with full targets support and activate it:
 
 ```bash
 poetry install --all-extras
-source .venv/bin/activate
+```
+
+## Lint
+
+```bash
+poetry run black .
 ```
 
 ## Run unit tests
