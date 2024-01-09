@@ -1,7 +1,8 @@
-from mock import patch
-
 import os
 import filecmp
+
+from mock import patch
+
 from acme_dns_azure.certbot_manager import CertbotManager
 from acme_dns_azure.context import Context
 import acme_dns_azure.config as config
@@ -131,3 +132,42 @@ def test_certbot_domain_file_structure_is_created_successfully(
     ]
     for a in expected_symlinks:
         assert os.path.islink(a)
+
+
+def certbot_manager_init_without_creating_init_files(self, working_dir) -> None:
+    ctx = Context()
+    ctx.config = config.load_from_file(resources_dir + "config.yaml")
+    ctx.credentials = "..."
+
+    from acme_dns_azure.os_manager import FileManager
+
+    self.ctx = ctx
+    self._config = ctx.config
+    self._work_dir = working_dir
+    self._os_manager = FileManager()
+
+
+@patch.object(
+    CertbotManager, "__init__", certbot_manager_init_without_creating_init_files
+)
+def test_certbot_certonly_command_created(working_dir):
+    domain = "my-domain"
+    manager = CertbotManager(working_dir)
+    command = manager._generate_certonly_command(domain)
+
+    assert command == [
+        "certbot",
+        "certonly",
+        "-c",
+        working_dir + "certbot.ini",
+        "-m",
+        "me@example.org",
+        "-d",
+        domain,
+        "--no-reuse-key",
+        "--new-key",
+        "--dns-azure-credentials",
+        working_dir + "certbot_dns_azure.ini",
+        "--non-interactive",
+        "-v",
+    ]
