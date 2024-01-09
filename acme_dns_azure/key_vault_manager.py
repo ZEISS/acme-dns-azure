@@ -111,8 +111,8 @@ class KeyVaultManager:
         cert = crypto.dump_certificate(crypto.FILETYPE_PEM, p12.get_certificate())
 
         ca_certificates = p12.get_ca_certificates()
-
         chain: bytes = b""
+        
         for ca in ca_certificates:
             chain = chain + crypto.dump_certificate(crypto.FILETYPE_PEM, ca)
         fullchain: bytes = cert + chain
