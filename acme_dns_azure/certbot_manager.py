@@ -129,7 +129,7 @@ class CertbotManager:
         cert_names = self._get_certificate_names_from_config()
         for cert_name in cert_names:
             logger.info("Renewing cert %s", cert_name)
-            base64_encoded_pfx = self.ctx.keyvault.get_certificate(name=cert_name)
+            base64_encoded_pfx = self.ctx.keyvault.get_certificate(name=cert_name).value
             (
                 private_key,
                 cert,
@@ -162,9 +162,7 @@ class CertbotManager:
                     + domain
                     + "/chain.pem",
                 )
-                self.ctx.keyvault._certificate_client.import_certificate(
-                    cert_name, new_pfx_data
-                )
+                self.ctx.keyvault.import_certificate(cert_name, new_pfx_data)
 
             elif not self._renew_certificate(domain):
                 logger.error("Failed to renew certificate for doamin %s", domain)
@@ -175,7 +173,7 @@ class CertbotManager:
         )
         with open(zip_archive_path, "rb") as data:
             encoded_archive = base64.b64encode(data.read()).decode()
-            self.ctx.keyvault._secret_client.set_secret(
+            self.ctx.keyvault.set_secret(
                 self._keyvault_acme_account_secret_name, encoded_archive
             )
 

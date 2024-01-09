@@ -1,14 +1,12 @@
+import base64
+
 from OpenSSL import crypto
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.primitives import serialization
 from cryptography import x509
-
-import base64
-
 from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
-from azure.keyvault.secrets import SecretClient
-from azure.keyvault.certificates import CertificateClient, CertificateProperties
-from azure.core.paging import ItemPaged
+from azure.keyvault.secrets import SecretClient, KeyVaultSecret
+from azure.keyvault.certificates import CertificateClient, KeyVaultCertificate
 
 from acme_dns_azure.exceptions import KeyVaultError
 from acme_dns_azure.context import Context
@@ -40,56 +38,48 @@ class KeyVaultManager:
         except ResourceNotFoundError:
             return False
 
-    def get_secret(self, name: str):
+    def set_secret(self, secret_name: str, data: str) -> KeyVaultSecret:
+        try:
+            self._secret_client.set_secret(secret_name, data)
+        except HttpResponseError as e:
+            raise KeyVaultError(
+                "Error while creating secret '%s' in key vault '%s': %s"
+                % (secret_name, self._config["key_vault_id"], e)
+            ) from e
+
+    def import_certificate(
+        self, cert_name: str, cert_bytes: bytes
+    ) -> KeyVaultCertificate:
+        try:
+            self._certificate_client.import_certificate(cert_name, cert_bytes)
+        except HttpResponseError as e:
+            raise KeyVaultError(
+                "Error while importing certificate '%s' in key vault '%s': %s"
+                % (cert_name, self._config["key_vault_id"], e)
+            ) from e
+
+    def get_secret(self, name: str) -> KeyVaultSecret:
         logger.debug(
             "Retrieving secret '%s' from key vault '%s'"
             % (name, self._config["key_vault_id"])
         )
         try:
             return self._secret_client.get_secret(name)
-        except ResourceNotFoundError:
+        except ResourceNotFoundError as e:
             raise KeyVaultError(
                 "Secet '%s' not found in key vault '%s'"
                 % (name, self._config["key_vault_id"])
-            )
+            ) from e
         except HttpResponseError as e:
             raise KeyVaultError(
                 "Error while reading from key vault '%s': %s"
                 % (self._config["key_vault_id"], e)
-            )
+            ) from e
 
-    def get_certificates(self):
-        cert_props: ItemPaged[
-            CertificateProperties
-        ] = self._certificate_client.list_properties_of_certificates(
-            include_pending=False
-        )
-        names = []
-        for cert in cert_props:
-            resource_id = cert.id
-            names.append(resource_id.split("/")[-1])
-        logger.info(names)
-        return names
-
-    def get_certificate(self, name: str):
-        logger.info(
-            "Retrieving certificate '%s' from key vault '%s'"
-            % (name, self._config["key_vault_id"])
-        )
-        try:
-            # https://github.com/Azure/azure-cli/issues/7489
-            # For retrieving Certs, one shall also use the secret get API. Cert API does not support getting private key
-            return self._secret_client.get_secret(name).value
-        except ResourceNotFoundError:
-            raise KeyVaultError(
-                "Secet '%s' not found in key vault '%s'"
-                % (name, self._config["key_vault_id"])
-            )
-        except HttpResponseError as e:
-            raise KeyVaultError(
-                "Error while reading from key vault '%s': %s"
-                % (self._config["key_vault_id"], e)
-            )
+    def get_certificate(self, name: str) -> KeyVaultSecret:
+        # https://github.com/Azure/azure-cli/issues/7489
+        # For retrieving Certs, one shall also use the secret get API. Cert API does not support getting private key
+        return self.get_secret(name)
 
     def extract_pfx_data(self, pfx_data: str):
         (
