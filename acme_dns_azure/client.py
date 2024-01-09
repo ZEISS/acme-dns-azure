@@ -24,14 +24,6 @@ class AcmeDnsAzureClient:
         )
         self.ctx.work_dir = self._work_dir.name
 
-        # self.ctx.work_dir = '/tmp/acme-dns-azure' #DEBUG: Use fixed directory to keep it after script exits
-        # try:
-        #     os.mkdir(self.ctx.work_dir)
-        # except FileExistsError:
-        #     logger.warning("%s already exists. Cleaning up...", self.ctx.work_dir)
-        #     shutil.rmtree(self.ctx.work_dir)
-        #     os.mkdir(self.ctx.work_dir)
-
         if config_yaml != "":
             self.ctx.config = config.load(config_yaml)
         elif config_env_var != "":
