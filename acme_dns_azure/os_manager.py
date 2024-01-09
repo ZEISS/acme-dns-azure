@@ -24,7 +24,7 @@ class FileManager:
     def delete_file(self, file_path: str):
         os.remove(file_path)
 
-    # TODO max size of a secret is 25kb, size of the dir with 1 account is 3,4kb. On the long term we could not zip meta.json per account to save space
+    # max size of a secret is 25kb, size of the dir with 1 account is 3,4kb. On the long term we could not zip meta.json per account to save space
     def zip_archive(self, src_dir_path: str, dest_file_path: str):
         with zipfile.ZipFile(dest_file_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(src_dir_path):
