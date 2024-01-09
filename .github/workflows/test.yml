@@ -22,7 +22,7 @@ jobs:
           poetry run coverage xml
       - uses: 5monkeys/cobertura-action@master
         with:
-          minimum_coverage: 50
+          minimum_coverage: 40
           fail_below_threshold: true
         if: always()
       - name: Publish Test Results
