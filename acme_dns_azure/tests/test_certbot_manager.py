@@ -142,6 +142,7 @@ def certbot_manager_init_without_creating_init_files(self, working_dir) -> None:
     from acme_dns_azure.os_manager import FileManager
 
     self.ctx = ctx
+    self.ctx.keyvault = MagicMock()
     self._config = ctx.config
     self._work_dir = working_dir
     self._os_manager = FileManager()

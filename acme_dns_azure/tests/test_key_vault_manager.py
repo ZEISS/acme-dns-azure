@@ -1,7 +1,8 @@
 import os
 import base64
-from mock import patch
+from datetime import datetime, timedelta, timezone
 
+from mock import patch
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -11,7 +12,6 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import PKCS12KeyAndCert
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
 from cryptography.x509 import load_pem_x509_certificate, Certificate
-from datetime import datetime, timedelta, timezone
 
 from acme_dns_azure.key_vault_manager import KeyVaultManager
 import acme_dns_azure.config as config
