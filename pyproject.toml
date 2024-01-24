@@ -81,17 +81,15 @@ acme-dns-azure = "acme_dns_azure.cli:main"
 show_error_codes = true
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests/app"]
 addopts = "-s -v --durations=0"
-cache_dir = ".cache/pytest_cache"
 
 [tool.coverage.run]
 branch = true
 source = ["acme_dns_azure"]
 command_line = "-m pytest --junitxml=test-results/unittests.xml"
 omit = [
-    "acme_dns_azure/___init___.py",
-    "acme_dns_azure/tests/*"
+    "tests/*"
 ]
 
 [tool.coverage.report]

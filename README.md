@@ -19,6 +19,7 @@ Configure the virtual environment with full targets support and activate it:
 ## Install dependencies
 
 ```bash
+source .venv/bin/activate
 poetry install --all-extras
 ```
 
@@ -33,7 +34,6 @@ poetry run black .
 ```bash
 poetry run coverage run
 poetry run coverage report
-poetry run coverage xml
 ```
 
 ## Build
