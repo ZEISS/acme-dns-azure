@@ -1,5 +1,7 @@
 # Introduction
 
+TODO
+
 # Contribute
 
 Fork, then clone the repo:
@@ -36,20 +38,106 @@ poetry run coverage run
 poetry run coverage report
 ```
 
-## Build
+## Integration test
 
-```bash
-poetry export --without-hashes --format=requirements.txt > targets/function/requirements.txt
+See [tests/integration](tests/integration/README.md)
+
+# Usage
+
+## Config
+
+The config is written in [YAML format](http://en.wikipedia.org/wiki/YAML), defined by the scheme described below.
+Brackets indicate that a parameter is optional.
+For non-list parameters the value is set to the specified default.
+
+Generic placeholders are defined as follows:
+
+- `<boolean>`: a boolean that can take the values `true` or `false`
+- `<int>`: a regular integer
+- `<string>`: a regular string
+- `<secret>`: a regular string that is a secret, such as a password
+- `<regex>`: a regular expression
+
+The other placeholders are specified separately.
+
+See [example](example/config.yaml) for configuration examples.
+
+```yml
+[managed_identity_id: <string>]
+
+[sp_client_id: <string>]
+[sp_client_secret: <secret>]
+
+[azure_environment: <regex> | default = "AzurePublicCloud"]
+
+# key vault uri for renewal of certifcate
+key_vault_id : <regex>
+
+# ACME Certificate Authority
+server : <regex>
+
+# Secret name within key vault for storing ACME Certificate authority account information
+[keyvault_account_secret_name: <regex> | default "acme-account-$(network location of server)"]
+# when server=https://example.com/something, then keyvault_account_secret_name="acme-account-example-com"
+
+# config file content for certbot client
+[certbot.ini : <string> | default = ""]
+#
 ```
 
-### Manual testing
+NOTE: Either **managed_identity_id** or **sp_client_id** and **sp_client_secret** must be specified.
 
-Prerequisite:
+NOTE: **certbot.ini** represents the [CERTBOT configuration file](https://eff-certbot.readthedocs.io/en/latest/using.html#configuration-file) and will be passed into certbot by the _acme_dns_azure_ library as defined. Misconfiguration will lead to failures of certbot and therefore of the renewal process.
 
-- config.yaml with according configuration within "/acme_dns_azure" (Note: 'sp_client_id' and 'sp_client_secret' are required. 'managed_identity_id' is not allowed)
+Following values will be added to the configurataion file by the _acme_dns_azure_ library per default:
 
-- Azure keyvault with required secrets
+```yml
+preferred-challenges: dns
+authenticator: dns-azure
+agree-tos: true
+```
+
+### `[<eab>]`
+
+```yml
+
+  # External account binding configuration for ACME, with key ID and base64encoded HMAC key
+  [enabled: <boolean> |  default = false]
+  [kid_secret_name : <regex> | default="acme-eab-kid"]
+  [hmac_key_secret_name : <secret> default="acme-eab-hmac-key"]
+```
+
+```yml
+certificates:
+  - <certificate>
+```
+
+### `<certificate>`
+
+```yml
+# name of key vault certificate
+name: <regex>
+# renewal in days before expiry for certificate to be renewed
+[renew_before_expiry: <int>]
+domains:
+  - <domain>
+```
+
+### `<domain>`
+
+```yml
+# domain name this certificate is valid for. Wildcard supported.
+name: <regex>
+# Azure resource ID to according record set within DNS Zone
+dns_zone_resource_id: <string>
+```
+
+## Manual running the library
+
+For local testing 'sp_client_id' and 'sp_client_secret' are required. 'managed_identity_id' is not supported.
 
 ```bash
-python client.py
+touch config.yaml
+# define configuration as described above
+python acme_dns_azure/client.py
 ```
