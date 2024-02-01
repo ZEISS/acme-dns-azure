@@ -1,6 +1,55 @@
 # Introduction
 
-TODO
+This repository aims to leverage the automatic renewal of SSL certficates within Azure Cloud in a secure manner.
+
+A wrapper library is provided to automatically renew certifactes based on the [ACME DNS-01 challenge](https://letsencrypt.org/docs/challenge-types/#:~:text=all%20of%20them.-,DNS%2D01%20challenge,-This%20challenge%20asks) by using [certbot](https://certbot.eff.org/).
+
+The library supports the usage of best practices for securely handling certificates by:
+
+- using certbot
+- removing the need of a file system for storing certificates
+- Azure Key Vault for central and only storage of secrets and certificates
+- enabling easy and flexible automation
+
+## Scope
+
+Based on the provided configuration and trigger, the wrapper library supports following flow.
+
+![architecture](docs/architecture_concept.png)
+
+1. Receive certificates, receive EAB & ACME credentials (if configured), receive ACME account information (if already present)
+2. Certbot: Init Renewal process to certificate Authority
+3. Certbot: DNS Challenge - create TXT record
+4. Certbot: Renew certificates
+5. Certbot: DNS Challenge - delete TXT record
+6. Upload renewed certificates, create/update ACME account information as secret
+
+### Features
+
+The library handles following use cases:
+
+- (Planned): Create new certificates
+- (Planned): Update domain references in existing certificates
+- Renew existing certificates
+
+Auth is possible by using:
+
+- Service Principal
+- (Planned) User Assigned Identity
+
+### Runtimes
+
+The library can be used by:
+
+- running as script
+- (Planned): Python package within your app
+
+Within [targets](targets) you can find example implementations for running the python package:
+
+- (Planned): Azure function
+- (Planned): container
+
+![usage](docs/wrapper_usage.png)
 
 # Contribute
 
@@ -38,7 +87,7 @@ poetry run coverage run
 poetry run coverage report
 ```
 
-## Integration test
+## Run integration tests
 
 See [tests/integration](tests/integration/README.md)
 
@@ -141,3 +190,7 @@ touch config.yaml
 # define configuration as described above
 python acme_dns_azure/client.py
 ```
+
+## Permission Handling
+
+TODO
