@@ -1,4 +1,4 @@
-from strictyaml import Map, Str, Seq, Bool, Optional, Regex
+from strictyaml import Map, Str, Seq, Bool, Optional, Regex, Int
 
 schema = Map(
     {
@@ -12,7 +12,6 @@ schema = Map(
         "server": Str(),
         "tenant_id": Str(),
         # TODO 'server': Regex(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)'),
-        "email": Regex(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"),
         "key_vault_id": Regex(r"^https://[-a-zA-Z0-9]{3,24}\.vault\.azure\.net/$"),
         Optional("keyvault_account_secret_name", default=""): Regex(
             "^[-a-zA-Z0-9]{1,127}$|"
@@ -28,11 +27,13 @@ schema = Map(
                 ),  # must be created upfront with information from CIT
             }
         ),
+        # TODO--renew-with-new-domains
         Optional("certbot.ini", default=""): Str(),
         "certificates": Seq(
             Map(
                 {
                     "name": Regex("^[-a-zA-Z0-9]{1,127}$"),
+                    Optional("renew_before_expiry"): Int(),
                     "domains": Seq(
                         Map(
                             {
