@@ -87,7 +87,6 @@ class CertbotManager:
         lines.append("config-dir = %s" % self._work_dir + "config")
         lines.append("work-dir = %s" % self._work_dir + "work")
         lines.append("logs-dir = %s" % self._work_dir + "logs")
-        # lines.append("email = %s" % self._config["email"])
         lines.append("preferred-challenges = dns")
         lines.append("authenticator = dns-azure")
         lines.append("agree-tos = true")
