@@ -55,8 +55,15 @@ def test_automatic_renewal_for_existing_cert(
     assert cert_versions[1].enabled
     assert (
         cert_versions[1].expires_on
-        >= datetime.now(timezone.utc) + timedelta(days=89)
-        <= datetime.now(timezone.utc) + timedelta(days=91)
+        > datetime.now(timezone.utc) + timedelta(days=89)
+        < datetime.now(timezone.utc) + timedelta(days=91)
     )
 
     ## cleanup (automatically)
+
+
+##CREATE
+# implement/use TODO --renew-with-new-domains
+
+
+##Skip
