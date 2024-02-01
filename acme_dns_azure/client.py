@@ -15,7 +15,10 @@ logger = setup_custom_logger(__name__)
 
 class AcmeDnsAzureClient:
     def __init__(
-        self, config_yaml: str = "", config_env_var: str = "", config_file: str = ""
+        self,
+        config_yaml: str = None,
+        config_env_var: str = None,
+        config_file: str = None,
     ) -> None:
         self.ctx = Context()
         self._work_dir = tempfile.TemporaryDirectory(prefix="acme_dns_azure")
@@ -24,11 +27,11 @@ class AcmeDnsAzureClient:
         )
         self.ctx.work_dir = self._work_dir.name
 
-        if config_yaml != "":
+        if config_yaml is not None:
             self.ctx.config = config.load(config_yaml)
-        elif config_env_var != "":
+        elif config_env_var is not None:
             self.ctx.config = config.load_from_base64_env_var(config_env_var)
-        elif config_file != "":
+        elif config_file is not None:
             self.ctx.config = config.load_from_file(config_file)
         else:
             raise ConfigurationError("No configuration source defined")
@@ -46,8 +49,26 @@ class AcmeDnsAzureClient:
 
 
 if __name__ == "__main__":
+    import argparse
+
     try:
-        client = AcmeDnsAzureClient(config_file="config.yaml")
+        parser = argparse.ArgumentParser()
+        parser.add_argument(
+            "--config-file-path",
+            dest="file",
+            metavar="path",
+            required=False,
+            help="Path to config file.",
+        )
+        parser.add_argument(
+            "--config-env-var",
+            dest="env",
+            metavar="path",
+            required=False,
+            help="Name of environment variable containing config.",
+        )
+        args = parser.parse_args()
+        client = AcmeDnsAzureClient(config_file=args.file, config_env_var=args.env)
     except ConfigurationError as e:
         logger.error(e)
         sys.exit(1)
