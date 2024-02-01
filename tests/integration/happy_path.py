@@ -11,12 +11,16 @@ def test_automatic_renewal_for_existing_cert(
     azure_key_vault_manager,
     azure_dns_zone_manager,
     config_file_path,
+    resource_prefix,
 ):
     ## Config
     key_vault_cert_name = "testautohappypath"
     cert_validity_in_month = 1
     dns_zone_record_name = "testautohappypath"
     acme_config_renew_before_expiry_in_days = 31
+    if resource_prefix is not None:
+        key_vault_cert_name = resource_prefix + key_vault_cert_name
+        dns_zone_record_name = resource_prefix + dns_zone_record_name
 
     ## Init
     acme_config_manager.base_config_from_file(file_path=config_file_path)
