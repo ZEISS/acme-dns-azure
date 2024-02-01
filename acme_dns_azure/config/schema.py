@@ -1,18 +1,21 @@
-from strictyaml import Map, Str, Seq, Bool, Optional, Regex
+from strictyaml import Map, Str, Seq, Bool, Optional, Regex, Int
 
 schema = Map(
     {
         Optional("managed_identity_id"): Regex(
             r"^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$"
         ),
-        # TODO regex
-        Optional("azure_environment", default="AzurePublicCloud"): Str(),
+        Optional("azure_environment", default="AzurePublicCloud"): Regex(
+            "AzurePublicCloud|AzureUSGovernmentCloud|AzureChinaCloud|AzureGermanCloud"
+        ),
         Optional("sp_client_id"): Str(),
         Optional("sp_client_secret"): Str(),
-        "server": Str(),
-        "tenant_id": Str(),
-        # TODO 'server': Regex(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)'),
-        "email": Regex(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"),
+        "tenant_id": Regex(
+            r"^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$"
+        ),
+        "server": Regex(
+            r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)"
+        ),
         "key_vault_id": Regex(r"^https://[-a-zA-Z0-9]{3,24}\.vault\.azure\.net/$"),
         Optional("keyvault_account_secret_name", default=""): Regex(
             "^[-a-zA-Z0-9]{1,127}$|"
@@ -33,6 +36,7 @@ schema = Map(
             Map(
                 {
                     "name": Regex("^[-a-zA-Z0-9]{1,127}$"),
+                    Optional("renew_before_expiry"): Int(),
                     "domains": Seq(
                         Map(
                             {

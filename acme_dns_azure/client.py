@@ -39,7 +39,6 @@ class AcmeDnsAzureClient:
 
     def __del__(self):
         logger.info("Cleaning up directory %s", self.ctx.work_dir)
-        self._work_dir.cleanup()
 
     def issue_certificates(self):
         logger.info("Issuing certificates")

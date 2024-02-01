@@ -1,10 +1,24 @@
 import subprocess
 import base64
+from dataclasses import dataclass
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
 from acme_dns_azure.os_manager import FileManager
 
 logger = setup_custom_logger(__name__)
+
+
+@dataclass
+class DomainReference:
+    dns_zone_resource_id: str
+    domain_name: str
+
+
+@dataclass
+class RotationCertificate:
+    key_vault_cert_name: str
+    domains: [DomainReference]
+    renew_before_expiry: str = None
 
 
 class CertbotManager:
@@ -73,7 +87,6 @@ class CertbotManager:
         lines.append("config-dir = %s" % self._work_dir + "config")
         lines.append("work-dir = %s" % self._work_dir + "work")
         lines.append("logs-dir = %s" % self._work_dir + "logs")
-        lines.append("email = %s" % self._config["email"])
         lines.append("preferred-challenges = dns")
         lines.append("authenticator = dns-azure")
         lines.append("agree-tos = true")
@@ -126,10 +139,12 @@ class CertbotManager:
         return lines
 
     def renew_certificates(self):
-        cert_names = self._get_certificate_names_from_config()
-        for cert_name in cert_names:
-            logger.info("Renewing cert %s", cert_name)
-            base64_encoded_pfx = self.ctx.keyvault.get_certificate(name=cert_name).value
+        certs = self._get_certificate_from_config()
+        for cert_def in certs:
+            logger.info("Renewing cert %s", cert_def.key_vault_cert_name)
+            base64_encoded_pfx = self.ctx.keyvault.get_certificate(
+                name=cert_def.key_vault_cert_name
+            ).value
             (
                 private_key,
                 cert,
@@ -138,16 +153,19 @@ class CertbotManager:
                 domain,
             ) = self.ctx.keyvault.extract_pfx_data(base64_encoded_pfx)
             # TODO currently using domain from certificate itself. Need to refer to domain from config (and validate if matches with actual domain(s) form cert?). Should we loop for list of domain for this cert?
+            # --> config flag: force_creation --> dann überschreiben. Config is only truth
+            # domain name =/ domain name aus config. Oder cert existiert nicht
             self._create_certificate_files(
                 domain=domain,
                 certificate=cert.decode("utf-8"),
                 chain=chain.decode("utf-8"),
                 fullchain=fullchain.decode("utf-8"),
                 privkey=private_key.decode("utf-8"),
+                renew_before_expiry=cert_def.renew_before_expiry,
             )
 
             if self._renew_certificate(domain):
-                logger.info("Successfully renewed certificate for doamin %s", domain)
+                logger.info("Successfully renewed certificate for domain %s", domain)
                 new_pfx_data = self.ctx.keyvault.generate_pfx(
                     private_key_path=self._work_dir
                     + "config/live/"
@@ -162,23 +180,52 @@ class CertbotManager:
                     + domain
                     + "/chain.pem",
                 )
-                self.ctx.keyvault.import_certificate(cert_name, new_pfx_data)
-
+                # TODO pending
+                self.ctx.keyvault.import_certificate(
+                    cert_def.key_vault_cert_name, new_pfx_data
+                )
+                #
             elif not self._renew_certificate(domain):
-                logger.error("Failed to renew certificate for doamin %s", domain)
+                logger.error("Failed to renew certificate for domain %s", domain)
 
         zip_archive_path = self._os_manager.zip_archive(
             src_dir_path=self._work_dir + "config/accounts/",
             dest_file_path=self._work_dir + "accounts.zip",
         )
+        logger.info("Uploading ACME account information...")
         with open(zip_archive_path, "rb") as data:
             encoded_archive = base64.b64encode(data.read()).decode()
             self.ctx.keyvault.set_secret(
                 self._keyvault_acme_account_secret_name, encoded_archive
             )
 
-    def _get_certificate_names_from_config(self):
-        return [o["name"] for o in self.ctx.config["certificates"]]
+    def _get_certificate_from_config(self) -> [RotationCertificate]:
+        certificates = []
+        for o in self._config["certificates"]:
+            cert_name = o["name"]
+            domains = []
+            renew_before_expiry = None
+            if o["renew_before_expiry"]:
+                renew_before_expiry = o["renew_before_expiry"]
+            for domain in o["domains"]:
+                dns_zone_resource_id = domain["dns_zone_resource_id"]
+                name = domain["name"]
+                domains.append(
+                    DomainReference(
+                        dns_zone_resource_id=dns_zone_resource_id, domain_name=name
+                    )
+                )
+            certificates.append(
+                RotationCertificate(
+                    key_vault_cert_name=cert_name,
+                    domains=domains,
+                    renew_before_expiry=renew_before_expiry,
+                )
+            )
+        return certificates
+
+    def _get_expiry_setting_for_cert_from_config(self, cert_name):
+        return self._config["certificates"][cert_name]["renew_before_expiry"]
 
     def _renew_certificate(self, domain):
         try:
@@ -196,16 +243,29 @@ class CertbotManager:
         # TODO if Cert is still valid is this success? Should we enable to pass the "--break-my-certs" param?
         for info in result.stdout.splitlines():
             logger.info(info)
+            if "Certificate not yet due for renewal" in info:
+                logger.info(
+                    "Cert for domain %s skipped. Not yet due for renewal.", domain
+                )
+                return False
+            # TODO define return State object
         return True
 
     def _create_certificate_files(
-        self, domain: str, certificate: str, chain: str, fullchain: str, privkey: str
+        self,
+        domain: str,
+        certificate: str,
+        chain: str,
+        fullchain: str,
+        privkey: str,
+        renew_before_expiry: int = None,
     ):
         domain_file_path = self._work_dir + "config/renewal/" + domain + ".conf"
         self._os_manager.create_dir(self._work_dir + "config/live/" + domain)
         self._os_manager.create_dir(self._work_dir + "config/archive/" + domain)
         self._os_manager.create_file(
-            file_path=domain_file_path, lines=self._create_domain_conf(domain)
+            file_path=domain_file_path,
+            lines=self._create_domain_conf(domain, renew_before_expiry),
         )
         self._os_manager.create_file(
             self._work_dir + "config/archive/" + domain + "/cert1.pem", [certificate]
@@ -226,7 +286,7 @@ class CertbotManager:
                 dest=self._work_dir + "config/live/" + domain + "/" + cert + ".pem",
             )
 
-    def _create_domain_conf(self, domain) -> [str]:
+    def _create_domain_conf(self, domain, renew_before_expiry: int = None) -> [str]:
         lines = []
         lines.append("archive_dir = %s" % (self._work_dir + "config/archive/" + domain))
         lines.append(
@@ -242,7 +302,12 @@ class CertbotManager:
             "fullchain = %s"
             % (self._work_dir + "config/live/" + domain + "/fullchain.pem")
         )
+
+        if renew_before_expiry:
+            lines.append(f"renew_before_expiry = {renew_before_expiry} days")
+
         lines.append("[renewalparams]")
+
         return lines
 
     def _generate_certonly_command(self, domain) -> [str]:
@@ -251,8 +316,6 @@ class CertbotManager:
             "certonly",
             "-c",
             self._work_dir + "certbot.ini",
-            "-m",
-            self._config["email"],
             "-d",
             domain,
             "--no-reuse-key",
@@ -262,4 +325,5 @@ class CertbotManager:
             "--non-interactive",
             "-v",
         ]
+
         return command

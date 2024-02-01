@@ -40,6 +40,7 @@ class KeyVaultManager:
 
     def set_secret(self, secret_name: str, data: str) -> KeyVaultSecret:
         try:
+            logger.info("Setting keyvault secret %s...", secret_name)
             self._secret_client.set_secret(secret_name, data)
         except HttpResponseError as e:
             raise KeyVaultError(
@@ -51,8 +52,10 @@ class KeyVaultManager:
         self, cert_name: str, cert_bytes: bytes
     ) -> KeyVaultCertificate:
         try:
+            logger.info("Uploading cert %s...", cert_name)
             self._certificate_client.import_certificate(cert_name, cert_bytes)
         except HttpResponseError as e:
+            logger.exception("Failed to upload cert")
             raise KeyVaultError(
                 "Error while importing certificate '%s' in key vault '%s': %s"
                 % (cert_name, self._config["key_vault_id"], e)
@@ -122,15 +125,17 @@ class KeyVaultManager:
     def generate_pfx(
         self, private_key_path: str, certificate_path: str, chain_file_path: str = None
     ) -> bytes:
+        logger.info("Generating pfx certficate...")
         with open(private_key_path, "rb") as private_key:
             private_key_bytes = private_key.read()
         with open(certificate_path, "rb") as certificate:
             certificate_bytes = certificate.read()
         cas = None
-        if chain_file_path is not None:
-            with open(chain_file_path, "rb") as chain:
-                chain_bytes = chain.read()
-            cas = [x509.load_pem_x509_certificate(chain_bytes)]
+        # if chain_file_path is not None:
+        #     with open(chain_file_path, "rb") as chain:
+        #         chain_bytes = chain.read()
+        #     cas = [x509.load_pem_x509_certificate(chain_bytes)]
+        # TODO add test for chain existing
 
         return pkcs12.serialize_key_and_certificates(
             name=None,

@@ -2,7 +2,6 @@ import os
 import pytest
 import shutil
 
-# from mock import patch
 
 testing_dir = "/tmp/acme_local_test/"
 

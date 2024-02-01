@@ -14,7 +14,7 @@ resources_dir = current_directory + "/resources/"
 
 def certbot_manager_init(self, working_dir) -> None:
     ctx = Context()
-    ctx.config = config.load_from_file(resources_dir + "config.yaml")
+    ctx.config = config.load_from_file(resources_dir + "config/accepted.yaml")
     ctx.credentials = "..."
 
     from acme_dns_azure.os_manager import FileManager
@@ -54,7 +54,6 @@ def test_certbot_ini_is_created_correctly(
         f"config-dir = {working_dir}config",
         f"work-dir = {working_dir}work",
         f"logs-dir = {working_dir}logs",
-        "email = me@example.org",
         "preferred-challenges = dns",
         "authenticator = dns-azure",
         "agree-tos = true",
@@ -136,7 +135,7 @@ def test_certbot_domain_file_structure_is_created_successfully(
 
 def certbot_manager_init_without_creating_init_files(self, working_dir) -> None:
     ctx = Context()
-    ctx.config = config.load_from_file(resources_dir + "config.yaml")
+    ctx.config = config.load_from_file(resources_dir + "config/accepted.yaml")
     ctx.credentials = "..."
 
     from acme_dns_azure.os_manager import FileManager
@@ -160,8 +159,6 @@ def test_certbot_certonly_command_created(working_dir):
         "certonly",
         "-c",
         working_dir + "certbot.ini",
-        "-m",
-        "me@example.org",
         "-d",
         domain,
         "--no-reuse-key",
