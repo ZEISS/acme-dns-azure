@@ -186,9 +186,10 @@ dns_zone_resource_id: <string>
 For local testing 'sp_client_id' and 'sp_client_secret' are required. 'managed_identity_id' is not supported.
 
 ```bash
-touch config.yaml
-# define configuration as described above
-python acme_dns_azure/client.py
+# from config file
+python acme_dns_azure/client.py --config-file-path $CONFIG_File_PATH
+# from env
+python acme_dns_azure/client.py --config-env-var $ENV_VAR_NAME_CONTAINING_CONFIG
 ```
 
 ## Permission Handling
