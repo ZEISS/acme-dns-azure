@@ -1,6 +1,5 @@
 managed_identity_id: 00000000-0000-0000-0000-000000000000
 server: https://acme-staging-v02.api.letsencrypt.org/directory
-email: me@example.org
 
 tenant_id: 56578228-5913-11ee-8c99-0242ac120002
 
