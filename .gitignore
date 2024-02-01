@@ -57,3 +57,12 @@ tests/**/*/config.yaml
 junit
 test-results
 coverage.xml
+
+# Terraform
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
