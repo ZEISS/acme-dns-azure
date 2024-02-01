@@ -1,3 +1,9 @@
+## Build
+
+```bash
+poetry export --without-hashes --format=requirements.txt > targets/function/requirements.txt
+```
+
 ## Local dev (WiP)
 
 [Install Azure Function Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=v4%2Clinux%2Cpython%2Cportal%2Cbash#install-the-azure-functions-core-tools) for local development:
