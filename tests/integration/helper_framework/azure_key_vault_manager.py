@@ -50,19 +50,9 @@ class AzureKeyVaultManager:
                 certificate_poller = self._cert_client.begin_delete_certificate(
                     cert.name
                 )
-                certificate_poller.wait(timeout=300)
-                # self._wait_to_finsih(certificate_poller, iterations=30, seconds=1)
+                certificate_poller.wait(timeout=60)
                 self._cert_client.purge_deleted_certificate(cert.name)
             except Exception:
                 logging.exception(
                     "Failed to delete certificate %s. Manual deletion required", cert
                 )
-
-    def _wait_to_finsih(self, poller, iterations=10, seconds=1):
-        counter = 0
-        while counter < iterations:
-            if poller.done():
-                return True
-            time.sleep(seconds)
-            counter = +1
-        raise Exception("Operation not finished")
