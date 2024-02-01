@@ -13,28 +13,6 @@ locals {
         rsa-key-size = ${var.key_size}
         break-my-certs = ${true}
       EOT
-
-    # {
-    #   name = azurerm_key_vault_certificate.renew_candidate.name
-    #   domains = [
-    #     {
-    #       name                 = local.fqdn
-    #       dns_zone_resource_id = azurerm_dns_txt_record.txt_shared.id
-    #     }
-    #   ]
-    # },
-    # #cname propagation
-    # {
-    #   name = azurerm_key_vault_certificate.renew_candidate.name
-    #   domains = [
-    #     {
-    #       name                 = local.fqdn
-    #       dns_zone_resource_id = azurerm_dns_cname_record.cname_dedicated.id
-    #     }
-    #   ]
-    # },
-    # # cname shared 1 und 2 --> failt evtl.
-
   }
 }
 
