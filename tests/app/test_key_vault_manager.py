@@ -23,7 +23,7 @@ resources_dir = current_directory + "/resources/"
 
 
 def keyvault_manager_init(self, working_dir) -> None:
-    self._config = config.load_from_file(resources_dir + "config.yaml")
+    self._config = config.load_from_file(resources_dir + "config/accepted.yaml")
     self._azure_credentials = "..."
     self._work_dir = working_dir
 

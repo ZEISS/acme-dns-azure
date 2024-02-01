@@ -14,7 +14,7 @@ resources_dir = current_directory + "/resources/"
 
 def certbot_manager_init(self, working_dir) -> None:
     ctx = Context()
-    ctx.config = config.load_from_file(resources_dir + "config.yaml")
+    ctx.config = config.load_from_file(resources_dir + "config/accepted.yaml")
     ctx.credentials = "..."
 
     from acme_dns_azure.os_manager import FileManager
@@ -135,7 +135,7 @@ def test_certbot_domain_file_structure_is_created_successfully(
 
 def certbot_manager_init_without_creating_init_files(self, working_dir) -> None:
     ctx = Context()
-    ctx.config = config.load_from_file(resources_dir + "config.yaml")
+    ctx.config = config.load_from_file(resources_dir + "config/accepted.yaml")
     ctx.credentials = "..."
 
     from acme_dns_azure.os_manager import FileManager
