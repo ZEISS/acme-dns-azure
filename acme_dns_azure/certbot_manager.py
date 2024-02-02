@@ -24,9 +24,10 @@ class RotationCertificate:
 
 
 class CertbotResult(Enum):
-    SUCCEEDED = 1
-    STILL_VALID = 2
-    FAILED = 3
+    CREATED = 1
+    RENEWED = 2
+    STILL_VALID = 3
+    FAILED = 4
 
 
 @dataclass
@@ -165,31 +166,44 @@ class CertbotManager:
         results: [RotationResult] = []
         for cert_def in certs:
             try:
-                logger.info("Renewing cert %s", cert_def.key_vault_cert_name)
-                base64_encoded_pfx = self.ctx.keyvault.get_certificate(
-                    name=cert_def.key_vault_cert_name
-                ).value
-                (
-                    private_key,
-                    cert,
-                    chain,
-                    fullchain,
-                    domain,
-                ) = self.ctx.keyvault.extract_pfx_data(base64_encoded_pfx)
-                # TODO currently using domain from certificate itself. Need to refer to domain from config (and validate if matches with actual domain(s) form cert?). Should we loop for list of domain for this cert?
-                # --> config flag: force_creation --> overwrite domain. Config is only truth
-                # case 1 domain name in cert =! domain name from config. Or cert does not exist yet
-                self._create_certificate_files(
-                    domain=domain,
-                    certificate=cert.decode("utf-8"),
-                    chain=chain.decode("utf-8"),
-                    fullchain=fullchain.decode("utf-8"),
-                    privkey=private_key.decode("utf-8"),
-                    renew_before_expiry=cert_def.renew_before_expiry,
-                )
+                if self.ctx.keyvault.certificate_exists(
+                    self._keyvault_acme_account_secret_name
+                ):
+                    logger.info("Renewing cert %s", cert_def.key_vault_cert_name)
+                    base64_encoded_pfx = self.ctx.keyvault.get_certificate(
+                        name=cert_def.key_vault_cert_name
+                    ).value
+                    (
+                        private_key,
+                        cert,
+                        chain,
+                        fullchain,
+                        domain,
+                    ) = self.ctx.keyvault.extract_pfx_data(base64_encoded_pfx)
+                    # TODO multiple domain_name
+                    # TODO throw error in case of flag was not set
+                    # TODO currently using domain from certificate itself. Need to refer to domain from config (and validate if matches with actual domain(s) form cert?). Should we loop for list of domain for this cert?
+                    # --> config flag: force_creation --> overwrite domain. Config is only truth
+                    # case 1 domain name in cert =! domain name from config. Or cert does not exist yet
+                    self._create_certificate_files(
+                        domain=domain,
+                        certificate=cert.decode("utf-8"),
+                        chain=chain.decode("utf-8"),
+                        fullchain=fullchain.decode("utf-8"),
+                        privkey=private_key.decode("utf-8"),
+                        renew_before_expiry=cert_def.renew_before_expiry,
+                    )
+                else:
+                    logger.info("Creating cert %s", cert_def.key_vault_cert_name)
 
-                certbot_result: CertbotResult = self._renew_certificate(domain)
-                if certbot_result == CertbotResult.SUCCEEDED:
+                # TODO multiple domain_name / entries in domain_name
+                certbot_result: CertbotResult = self._create_or_renew_certificate(
+                    domain
+                )
+                if (
+                    certbot_result == CertbotResult.RENEWED
+                    or certbot_result == CertbotResult.CREATED
+                ):
                     logger.info(
                         "Successfully renewed certificate for domain %s", domain
                     )
@@ -252,7 +266,7 @@ class CertbotManager:
             cert_name = o["name"]
             domains = []
             renew_before_expiry = None
-            if o["renew_before_expiry"]:
+            if renew_before_expiry in o:
                 renew_before_expiry = o["renew_before_expiry"]
             for domain in o["domains"]:
                 dns_zone_resource_id = domain["dns_zone_resource_id"]
@@ -271,10 +285,7 @@ class CertbotManager:
             )
         return certificates
 
-    def _get_expiry_setting_for_cert_from_config(self, cert_name):
-        return self._config["certificates"][cert_name]["renew_before_expiry"]
-
-    def _renew_certificate(self, domain) -> CertbotResult:
+    def _create_or_renew_certificate(self, domain) -> CertbotResult:
         try:
             result: subprocess.CompletedProcess = subprocess.run(
                 args=self._generate_certonly_command(domain),
@@ -294,7 +305,8 @@ class CertbotManager:
                     "Cert for domain %s skipped. Not yet due for renewal.", domain
                 )
                 return CertbotResult.STILL_VALID
-        return CertbotResult.SUCCEEDED
+            # TODO CREATE
+        return CertbotResult.RENEWED
 
     def _create_certificate_files(
         self,
