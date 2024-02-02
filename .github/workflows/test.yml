@@ -1,0 +1,35 @@
+name: Python unittest
+on: [push, pull_request]
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          poetry install --all-extras
+        continue-on-error: true
+      - name: Test with pytest
+        run: |
+          poetry run coverage run
+          poetry run coverage report
+          poetry run coverage xml
+      - uses: 5monkeys/cobertura-action@master
+        with:
+          minimum_coverage: 40
+          fail_below_threshold: true
+        if: always()
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            test-results/**/*.xml
+            test-results/**/*.trx
+            test-results/**/*.json

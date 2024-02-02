@@ -46,3 +46,25 @@ src/
 
 # macOS
 .DS_Store
+
+
+# Local testing
+acme_dns_azure/config.yaml
+tests/**/*/config.yaml
+
+# test results 
+.coverage
+junit
+test-results
+coverage.xml
+
+# Terraform
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+poetry.lock

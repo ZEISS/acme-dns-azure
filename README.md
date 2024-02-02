@@ -1,48 +1,200 @@
 # Introduction
 
+This repository aims to leverage the automatic renewal of SSL certficates within Azure Cloud in a secure manner.
+
+A wrapper library is provided to automatically renew certifactes based on the [ACME DNS-01 challenge](https://letsencrypt.org/docs/challenge-types/#:~:text=all%20of%20them.-,DNS%2D01%20challenge,-This%20challenge%20asks) by using [certbot](https://certbot.eff.org/).
+
+The library supports the usage of best practices for securely handling certificates by:
+
+- using certbot
+- removing the need of a file system for storing certificates
+- Azure Key Vault for central and only storage of secrets and certificates
+- enabling easy and flexible automation
+
+## Scope
+
+Based on the provided configuration and trigger, the wrapper library supports following flow.
+
+![architecture](docs/architecture_concept.png)
+
+1. Receive certificates, receive EAB & ACME credentials (if configured), receive ACME account information (if already present)
+2. Certbot: Init Renewal process to certificate Authority
+3. Certbot: DNS Challenge - create TXT record
+4. Certbot: Renew certificates
+5. Certbot: DNS Challenge - delete TXT record
+6. Upload renewed certificates, create/update ACME account information as secret
+
+### Features
+
+The library handles following use cases:
+
+- (Planned): Create new certificates
+- (Planned): Update domain references in existing certificates
+- Renew existing certificates
+
+Auth is possible by using:
+
+- Service Principal
+- (Planned) User Assigned Identity
+
+### Integration
+
+The library can be used by:
+
+- running as script
+- (Planned): Python package within your app
+
+Within [targets](targets) you can find example implementations for running the python package:
+
+- (Planned): Azure function
+- (Planned): container
+
+![usage](docs/wrapper_usage.png)
+
 # Contribute
 
 Fork, then clone the repo:
+
 ```bash
 git clone https://github.com/ZEISS/acme-dns-azure
 ```
 
 Install Poetry if you not have it already:
+
 ```bash
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
 Configure the virtual environment with full targets support and activate it:
+
+## Install dependencies
+
 ```bash
-cd acme-dns-azure
-poetry install --all-extras
 source .venv/bin/activate
-poetry export --without-hashes --format=requirements.txt > targets/function/requirements.txt
+poetry install --all-extras
 ```
 
-[Install Azure Function Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=v4%2Clinux%2Cpython%2Cportal%2Cbash#install-the-azure-functions-core-tools) for local development:
-```bash
-curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
-sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list'
-sudo apt-get update
-sudo apt-get install azure-functions-core-tools-4
-```
-
-Azurite:
-```bash
-docker run --rm -d --name azurite-acme-dns-azure \
-  -p 10000:10000 -p 10001:10001 -p 10002:10002 \
-  mcr.microsoft.com/azure-storage/azurite
-```
-
-Make sure the tests pass:
-```bash
-tox -e py
-```
-
-You can test a specific target using:
+## Lint
 
 ```bash
-pytest acme_dns_azure/tests/targets/test_foo.py
+poetry run black .
 ```
+
+## Run unit tests
+
+```bash
+poetry run coverage run
+poetry run coverage report
+```
+
+## Run integration tests
+
+See [tests/integration](tests/integration/README.md)
+
+# Usage
+
+## Config
+
+The config is written in [YAML format](http://en.wikipedia.org/wiki/YAML), defined by the scheme described below.
+Brackets indicate that a parameter is optional.
+For non-list parameters the value is set to the specified default.
+
+Generic placeholders are defined as follows:
+
+- `<boolean>`: a boolean that can take the values `true` or `false`
+- `<int>`: a regular integer
+- `<string>`: a regular string
+- `<secret>`: a regular string that is a secret, such as a password
+- `<regex>`: a regular expression
+
+The other placeholders are specified separately.
+
+See [example](example/config.yaml) for configuration examples.
+
+```yml
+[managed_identity_id: <string>]
+
+[sp_client_id: <string>]
+[sp_client_secret: <secret>]
+
+[azure_environment: <regex> | default = "AzurePublicCloud"]
+
+# key vault uri for renewal of certifcate
+key_vault_id : <regex>
+
+# ACME Certificate Authority
+server : <regex>
+
+# Secret name within key vault for storing ACME Certificate authority account information
+[keyvault_account_secret_name: <regex> | default "acme-account-$(network location of server)"]
+# when server=https://example.com/something, then keyvault_account_secret_name="acme-account-example-com"
+
+# config file content for certbot client
+[certbot.ini : <string> | default = ""]
+#
+```
+
+NOTE: Either **managed_identity_id** or **sp_client_id** and **sp_client_secret** must be specified.
+
+NOTE: **certbot.ini** represents the [CERTBOT configuration file](https://eff-certbot.readthedocs.io/en/latest/using.html#configuration-file) and will be passed into certbot by the _acme_dns_azure_ library as defined. Misconfiguration will lead to failures of certbot and therefore of the renewal process.
+
+Following values will be added to the configurataion file by the _acme_dns_azure_ library per default:
+
+```yml
+preferred-challenges: dns
+authenticator: dns-azure
+agree-tos: true
+```
+
+### `[<eab>]`
+
+```yml
+
+  # External account binding configuration for ACME, with key ID and base64encoded HMAC key
+  [enabled: <boolean> |  default = false]
+  [kid_secret_name : <regex> | default="acme-eab-kid"]
+  [hmac_key_secret_name : <secret> default="acme-eab-hmac-key"]
+```
+
+```yml
+certificates:
+  - <certificate>
+```
+
+### `<certificate>`
+
+```yml
+# name of key vault certificate
+name: <regex>
+# renewal in days before expiry for certificate to be renewed
+[renew_before_expiry: <int>]
+domains:
+  - <domain>
+```
+
+### `<domain>`
+
+```yml
+# domain name this certificate is valid for. Wildcard supported.
+name: <regex>
+# Azure resource ID to according record set within DNS Zone
+dns_zone_resource_id: <string>
+```
+
+## Manual running the library
+
+For local testing 'sp_client_id' and 'sp_client_secret' are required. 'managed_identity_id' is not supported.
+
+```bash
+# from config file
+python acme_dns_azure/client.py --config-file-path $CONFIG_File_PATH
+# from env
+python acme_dns_azure/client.py --config-env-var $ENV_VAR_NAME_CONTAINING_CONFIG
+```
+
+## Permission Handling
+
+TODO define best practices
+
+
+TODO

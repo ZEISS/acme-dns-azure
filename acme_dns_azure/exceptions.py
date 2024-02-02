@@ -1,19 +1,25 @@
-"""Certbot DNS Azure wrapper exceptions module"""
+"""ACME DNS Azure exceptions module"""
 
 
-class CertbotDNSAzureWrapperError(Exception):
+class AcmeDnsAzureClientError(Exception):
     """
     Base Class for the Certbot DNS Azure wrapper Exception hierarchy
     """
 
 
-class AuthenticationError(CertbotDNSAzureWrapperError):
+class AuthenticationError(AcmeDnsAzureClientError):
     """
     Authentication to ... failed, likely ... mismatch
     """
 
 
-class ConfigurationError(CertbotDNSAzureWrapperError):
+class KeyVaultError(AcmeDnsAzureClientError):
+    """
+    Authentication to ... failed, likely ... mismatch
+    """
+
+
+class ConfigurationError(AcmeDnsAzureClientError):
     """
     Configuration of the Certbot DNS Azure wrapper invalid
     """
