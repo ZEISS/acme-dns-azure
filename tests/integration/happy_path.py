@@ -1,6 +1,12 @@
 import logging
 from datetime import datetime, timedelta, timezone
 from acme_dns_azure.client import AcmeDnsAzureClient
+from acme_dns_azure.certbot_manager import (
+    RotationResult,
+    CertbotResult,
+    RotationCertificate,
+)
+
 from tests.integration.helper_framework.azure_dns_zone_manager import (
     DnsZoneDomainReference,
 )
@@ -43,7 +49,7 @@ def test_automatic_renewal_for_existing_cert(
 
     ## Test
     client = AcmeDnsAzureClient(acme_config_manager.config)
-    client.issue_certificates()
+    results: [RotationResult] = client.issue_certificates()
 
     ## Validate
     cert_versions = list(
@@ -55,9 +61,11 @@ def test_automatic_renewal_for_existing_cert(
     assert cert_versions[1].enabled
     assert (
         cert_versions[1].expires_on
-        > datetime.now(timezone.utc) + timedelta(days=89)
-        < datetime.now(timezone.utc) + timedelta(days=91)
+        >= datetime.now(timezone.utc) + timedelta(days=89)
+        <= datetime.now(timezone.utc) + timedelta(days=91)
     )
+    for result in results:
+        assert result.result == CertbotResult.SUCCEEDED
 
     ## cleanup (automatically)
 
