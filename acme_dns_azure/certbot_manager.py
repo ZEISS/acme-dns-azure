@@ -85,17 +85,24 @@ class CertbotManager:
             )
 
     def _restore_acme_account_from_keyvault(self):
-        zipped_account_dir_data = base64.b64decode(
-            self.ctx.keyvault.get_secret(self._keyvault_acme_account_secret_name).value
-        )
-        with open(self._work_dir + "accounts.zip", "wb") as f:
-            f.write(zipped_account_dir_data)
-        self._os_manager.unzip_archive(
-            src_zip_path=self._work_dir + "accounts.zip",
-            dest_dir_path=self._work_dir + "config/accounts",
-        )
-        self._os_manager.delete_file(self._work_dir + "accounts.zip")
-        logger.info("Successfully restored acme accounts from keyvault")
+        try:
+            zipped_account_dir_data = base64.b64decode(
+                self.ctx.keyvault.get_secret(
+                    self._keyvault_acme_account_secret_name
+                ).value
+            )
+            with open(self._work_dir + "accounts.zip", "wb") as f:
+                f.write(zipped_account_dir_data)
+            self._os_manager.unzip_archive(
+                src_zip_path=self._work_dir + "accounts.zip",
+                dest_dir_path=self._work_dir + "config/accounts",
+            )
+            self._os_manager.delete_file(self._work_dir + "accounts.zip")
+            logger.info("Successfully restored acme accounts from keyvault")
+        except Exception:
+            logger.exception(
+                "Unknown error in restoring ACME account info from keyvault."
+            )
 
     def _create_certbot_ini(self) -> [str]:
         lines = str(self._config["certbot.ini"]).splitlines()
