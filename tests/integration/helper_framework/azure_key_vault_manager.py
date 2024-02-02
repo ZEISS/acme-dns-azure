@@ -1,5 +1,9 @@
 import logging
 import time
+import ssl
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
 
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient, KeyVaultSecret
@@ -42,6 +46,21 @@ class AzureKeyVaultManager:
 
     def list_properties_of_certificate_versions(self, name):
         return self._cert_client.list_properties_of_certificate_versions(name)
+
+    def get_cn_and_san_from_certificate(self, name):
+        cert = self._cert_client.get_certificate(name)
+        certificate = cert.cer
+        loaded_cert = x509.load_pem_x509_certificate(certificate, default_backend())
+
+        common_name = loaded_cert.subject.get_attributes_for_oid(
+            x509.oid.NameOID.COMMON_NAME
+        )
+
+        san = loaded_cert.extensions.get_extension_for_class(
+            x509.SubjectAlternativeName
+        )
+        san_dns_names = san.value.get_values_for_type(x509.DNSName)
+        return common_name, san_dns_names
 
     def clean_up_all_resources(self):
         for cert in self._created_certs:
