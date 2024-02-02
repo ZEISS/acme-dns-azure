@@ -37,7 +37,7 @@ Auth is possible by using:
 - Service Principal
 - (Planned) User Assigned Identity
 
-### Runtimes
+### Integration
 
 The library can be used by:
 

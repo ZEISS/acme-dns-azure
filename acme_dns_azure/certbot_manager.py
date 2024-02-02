@@ -153,8 +153,8 @@ class CertbotManager:
                 domain,
             ) = self.ctx.keyvault.extract_pfx_data(base64_encoded_pfx)
             # TODO currently using domain from certificate itself. Need to refer to domain from config (and validate if matches with actual domain(s) form cert?). Should we loop for list of domain for this cert?
-            # --> config flag: force_creation --> dann überschreiben. Config is only truth
-            # domain name =/ domain name aus config. Oder cert existiert nicht
+            # --> config flag: force_creation --> overwrite domain. Config is only truth
+            # case 1 domain name in cert =! domain name from config. Or cert does not exist yet
             self._create_certificate_files(
                 domain=domain,
                 certificate=cert.decode("utf-8"),
@@ -180,7 +180,6 @@ class CertbotManager:
                     + domain
                     + "/chain.pem",
                 )
-                # TODO pending
                 self.ctx.keyvault.import_certificate(
                     cert_def.key_vault_cert_name, new_pfx_data
                 )
@@ -240,7 +239,7 @@ class CertbotManager:
             for error in error.stderr.splitlines():
                 logger.error(error)
             return False
-        # TODO if Cert is still valid is this success? Should we enable to pass the "--break-my-certs" param?
+        # TODO if Cert is still valid is this success?
         for info in result.stdout.splitlines():
             logger.info(info)
             if "Certificate not yet due for renewal" in info:
