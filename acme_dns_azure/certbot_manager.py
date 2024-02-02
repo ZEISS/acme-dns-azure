@@ -1,6 +1,8 @@
 import subprocess
 import base64
+import traceback
 from dataclasses import dataclass
+from enum import Enum
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
 from acme_dns_azure.os_manager import FileManager
@@ -19,6 +21,19 @@ class RotationCertificate:
     key_vault_cert_name: str
     domains: [DomainReference]
     renew_before_expiry: str = None
+
+
+class CertbotResult(Enum):
+    SUCCEEDED = 1
+    STILL_VALID = 2
+    FAILED = 3
+
+
+@dataclass
+class RotationResult:
+    certificate: RotationCertificate
+    result: CertbotResult
+    message: str = None
 
 
 class CertbotManager:
@@ -70,17 +85,24 @@ class CertbotManager:
             )
 
     def _restore_acme_account_from_keyvault(self):
-        zipped_account_dir_data = base64.b64decode(
-            self.ctx.keyvault.get_secret(self._keyvault_acme_account_secret_name).value
-        )
-        with open(self._work_dir + "accounts.zip", "wb") as f:
-            f.write(zipped_account_dir_data)
-        self._os_manager.unzip_archive(
-            src_zip_path=self._work_dir + "accounts.zip",
-            dest_dir_path=self._work_dir + "config/accounts",
-        )
-        self._os_manager.delete_file(self._work_dir + "accounts.zip")
-        logger.info("Successfully restored acme accounts from keyvault")
+        try:
+            zipped_account_dir_data = base64.b64decode(
+                self.ctx.keyvault.get_secret(
+                    self._keyvault_acme_account_secret_name
+                ).value
+            )
+            with open(self._work_dir + "accounts.zip", "wb") as f:
+                f.write(zipped_account_dir_data)
+            self._os_manager.unzip_archive(
+                src_zip_path=self._work_dir + "accounts.zip",
+                dest_dir_path=self._work_dir + "config/accounts",
+            )
+            self._os_manager.delete_file(self._work_dir + "accounts.zip")
+            logger.info("Successfully restored acme accounts from keyvault")
+        except Exception:
+            logger.exception(
+                "Unknown error in restoring ACME account info from keyvault."
+            )
 
     def _create_certbot_ini(self) -> [str]:
         lines = str(self._config["certbot.ini"]).splitlines()
@@ -138,65 +160,91 @@ class CertbotManager:
                 )
         return lines
 
-    def renew_certificates(self):
+    def renew_certificates(self) -> [RotationResult]:
         certs = self._get_certificate_from_config()
+        results: [RotationResult] = []
         for cert_def in certs:
-            logger.info("Renewing cert %s", cert_def.key_vault_cert_name)
-            base64_encoded_pfx = self.ctx.keyvault.get_certificate(
-                name=cert_def.key_vault_cert_name
-            ).value
-            (
-                private_key,
-                cert,
-                chain,
-                fullchain,
-                domain,
-            ) = self.ctx.keyvault.extract_pfx_data(base64_encoded_pfx)
-            # TODO currently using domain from certificate itself. Need to refer to domain from config (and validate if matches with actual domain(s) form cert?). Should we loop for list of domain for this cert?
-            # --> config flag: force_creation --> overwrite domain. Config is only truth
-            # case 1 domain name in cert =! domain name from config. Or cert does not exist yet
-            self._create_certificate_files(
-                domain=domain,
-                certificate=cert.decode("utf-8"),
-                chain=chain.decode("utf-8"),
-                fullchain=fullchain.decode("utf-8"),
-                privkey=private_key.decode("utf-8"),
-                renew_before_expiry=cert_def.renew_before_expiry,
-            )
-
-            if self._renew_certificate(domain):
-                logger.info("Successfully renewed certificate for domain %s", domain)
-                new_pfx_data = self.ctx.keyvault.generate_pfx(
-                    private_key_path=self._work_dir
-                    + "config/live/"
-                    + domain
-                    + "/privkey.pem",
-                    certificate_path=self._work_dir
-                    + "config/live/"
-                    + domain
-                    + "/cert.pem",
-                    chain_file_path=self._work_dir
-                    + "config/live/"
-                    + domain
-                    + "/chain.pem",
+            try:
+                logger.info("Renewing cert %s", cert_def.key_vault_cert_name)
+                base64_encoded_pfx = self.ctx.keyvault.get_certificate(
+                    name=cert_def.key_vault_cert_name
+                ).value
+                (
+                    private_key,
+                    cert,
+                    chain,
+                    fullchain,
+                    domain,
+                ) = self.ctx.keyvault.extract_pfx_data(base64_encoded_pfx)
+                # TODO currently using domain from certificate itself. Need to refer to domain from config (and validate if matches with actual domain(s) form cert?). Should we loop for list of domain for this cert?
+                # --> config flag: force_creation --> overwrite domain. Config is only truth
+                # case 1 domain name in cert =! domain name from config. Or cert does not exist yet
+                self._create_certificate_files(
+                    domain=domain,
+                    certificate=cert.decode("utf-8"),
+                    chain=chain.decode("utf-8"),
+                    fullchain=fullchain.decode("utf-8"),
+                    privkey=private_key.decode("utf-8"),
+                    renew_before_expiry=cert_def.renew_before_expiry,
                 )
-                self.ctx.keyvault.import_certificate(
-                    cert_def.key_vault_cert_name, new_pfx_data
-                )
-                #
-            elif not self._renew_certificate(domain):
-                logger.error("Failed to renew certificate for domain %s", domain)
 
-        zip_archive_path = self._os_manager.zip_archive(
-            src_dir_path=self._work_dir + "config/accounts/",
-            dest_file_path=self._work_dir + "accounts.zip",
-        )
-        logger.info("Uploading ACME account information...")
-        with open(zip_archive_path, "rb") as data:
-            encoded_archive = base64.b64encode(data.read()).decode()
-            self.ctx.keyvault.set_secret(
-                self._keyvault_acme_account_secret_name, encoded_archive
+                certbot_result: CertbotResult = self._renew_certificate(domain)
+                if certbot_result == CertbotResult.SUCCEEDED:
+                    logger.info(
+                        "Successfully renewed certificate for domain %s", domain
+                    )
+                    new_pfx_data = self.ctx.keyvault.generate_pfx(
+                        private_key_path=self._work_dir
+                        + "config/live/"
+                        + domain
+                        + "/privkey.pem",
+                        certificate_path=self._work_dir
+                        + "config/live/"
+                        + domain
+                        + "/cert.pem",
+                        chain_file_path=self._work_dir
+                        + "config/live/"
+                        + domain
+                        + "/chain.pem",
+                    )
+                    self.ctx.keyvault.import_certificate(
+                        cert_def.key_vault_cert_name, new_pfx_data
+                    )
+                elif certbot_result == CertbotResult.FAILED:
+                    logger.exception(
+                        "Failed to renew certificate for domain %s", domain
+                    )
+                if certbot_result == CertbotResult.STILL_VALID:
+                    logger.info("Skipped renewal for domain %s - still valid.", domain)
+
+                results.append(
+                    RotationResult(certificate=cert_def, result=certbot_result)
+                )
+            except Exception:
+                logger.exception("Unknown error in renewal of certficate")
+                results.append(
+                    RotationResult(
+                        certificate=cert_def,
+                        result=CertbotResult.FAILED,
+                        message=traceback.format_exc(),
+                    )
+                )
+        try:
+            zip_archive_path = self._os_manager.zip_archive(
+                src_dir_path=self._work_dir + "config/accounts/",
+                dest_file_path=self._work_dir + "accounts.zip",
             )
+            logger.info("Uploading ACME account information...")
+            with open(zip_archive_path, "rb") as data:
+                encoded_archive = base64.b64encode(data.read()).decode()
+                self.ctx.keyvault.set_secret(
+                    self._keyvault_acme_account_secret_name, encoded_archive
+                )
+        except Exception:
+            logger.exception(
+                "Unknown error in uploading ACME account information to keyvault"
+            )
+        return results
 
     def _get_certificate_from_config(self) -> [RotationCertificate]:
         certificates = []
@@ -226,7 +274,7 @@ class CertbotManager:
     def _get_expiry_setting_for_cert_from_config(self, cert_name):
         return self._config["certificates"][cert_name]["renew_before_expiry"]
 
-    def _renew_certificate(self, domain):
+    def _renew_certificate(self, domain) -> CertbotResult:
         try:
             result: subprocess.CompletedProcess = subprocess.run(
                 args=self._generate_certonly_command(domain),
@@ -238,17 +286,15 @@ class CertbotManager:
         except subprocess.CalledProcessError as error:
             for error in error.stderr.splitlines():
                 logger.error(error)
-            return False
-        # TODO if Cert is still valid is this success?
+            return CertbotResult.FAILED
         for info in result.stdout.splitlines():
             logger.info(info)
             if "Certificate not yet due for renewal" in info:
                 logger.info(
                     "Cert for domain %s skipped. Not yet due for renewal.", domain
                 )
-                return False
-            # TODO define return State object
-        return True
+                return CertbotResult.STILL_VALID
+        return CertbotResult.SUCCEEDED
 
     def _create_certificate_files(
         self,
@@ -317,8 +363,6 @@ class CertbotManager:
             self._work_dir + "certbot.ini",
             "-d",
             domain,
-            "--no-reuse-key",
-            "--new-key",
             "--dns-azure-credentials",
             self._work_dir + "certbot_dns_azure.ini",
             "--non-interactive",

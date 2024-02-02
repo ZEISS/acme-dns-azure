@@ -80,8 +80,6 @@ class KeyVaultManager:
             ) from e
 
     def get_certificate(self, name: str) -> KeyVaultSecret:
-        # https://github.com/Azure/azure-cli/issues/7489
-        # For retrieving Certs, one shall also use the secret get API. Cert API does not support getting private key
         return self.get_secret(name)
 
     def extract_pfx_data(self, pfx_data: str):
@@ -131,11 +129,11 @@ class KeyVaultManager:
         with open(certificate_path, "rb") as certificate:
             certificate_bytes = certificate.read()
         cas = None
-        # if chain_file_path is not None:
-        #     with open(chain_file_path, "rb") as chain:
-        #         chain_bytes = chain.read()
-        #     cas = [x509.load_pem_x509_certificate(chain_bytes)]
-        # TODO add test for chain existing
+        if chain_file_path is not None:
+            with open(chain_file_path, "rb") as chain:
+                chain_bytes = chain.read()
+            if chain_bytes:
+                cas = [x509.load_pem_x509_certificate(chain_bytes)]
 
         return pkcs12.serialize_key_and_certificates(
             name=None,

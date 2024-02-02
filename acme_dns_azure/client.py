@@ -7,7 +7,7 @@ import acme_dns_azure.config as config
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
 from acme_dns_azure.exceptions import ConfigurationError, KeyVaultError
-from acme_dns_azure.certbot_manager import CertbotManager
+from acme_dns_azure.certbot_manager import CertbotManager, RotationResult
 from acme_dns_azure.key_vault_manager import KeyVaultManager
 
 logger = setup_custom_logger(__name__)
@@ -43,9 +43,9 @@ class AcmeDnsAzureClient:
     def __del__(self):
         logger.info("Cleaning up directory %s", self.ctx.work_dir)
 
-    def issue_certificates(self):
+    def issue_certificates(self) -> [RotationResult]:
         logger.info("Issuing certificates")
-        self.certbot.renew_certificates()
+        return self.certbot.renew_certificates()
 
 
 if __name__ == "__main__":

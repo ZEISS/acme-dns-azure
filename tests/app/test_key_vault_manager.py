@@ -96,7 +96,7 @@ def test_key_and_certs_extraced_from_pfx(working_dir):
 
 
 @patch.object(KeyVaultManager, "__init__", keyvault_manager_init)
-def test_pfx_created(
+def test_pfx_without_chain_created(
     working_dir, tmp_priv_key_path, tmp_cert_path, cleanup_tmp_privkey_and_cert
 ):
     gen_domain = "test.net"
@@ -114,6 +114,47 @@ def test_pfx_created(
     key_vault_manager = KeyVaultManager(working_dir)
     pfx_formatted = key_vault_manager.generate_pfx(
         private_key_path=gen_priv_dir, certificate_path=gen_cert_dir
+    )
+
+    backend = default_backend()
+    pfx_from_module = backend.load_pkcs12(pfx_formatted, None)
+    assert isinstance(pfx_from_module, PKCS12KeyAndCertificates)
+
+
+@patch.object(KeyVaultManager, "__init__", keyvault_manager_init)
+def test_pfx_with_empty_chain_created_and_extracted_correctly(
+    working_dir,
+    tmp_priv_key_path,
+    tmp_cert_path,
+    tmp_chain_path,
+    cleanup_tmp_privkey_and_cert,
+):
+    gen_domain = "test.net"
+    gen_priv_dir = tmp_priv_key_path
+    gen_cert_dir = tmp_cert_path
+    gen_chain_dir = tmp_chain_path
+    gen_private_bytes, gen_certificate_bytes = create_x509_certificate(
+        domain=gen_domain
+    )
+    pfx = create_pkc_s12(gen_private_bytes, gen_certificate_bytes, "test")
+
+    key_vault_manager = KeyVaultManager(working_dir)
+    private_key, cert, chain, fullchain, domain = key_vault_manager.extract_pfx_data(
+        (base64.b64encode(pfx)).decode("ascii")
+    )
+
+    with open(gen_priv_dir, "wb") as file:
+        file.write(private_key)
+    with open(gen_cert_dir, "wb") as file:
+        file.write(cert)
+    with open(gen_chain_dir, "wb") as file:
+        file.write(chain)
+
+    key_vault_manager = KeyVaultManager(working_dir)
+    pfx_formatted = key_vault_manager.generate_pfx(
+        private_key_path=gen_priv_dir,
+        certificate_path=gen_cert_dir,
+        chain_file_path=gen_chain_dir,
     )
 
     backend = default_backend()

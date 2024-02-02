@@ -161,8 +161,6 @@ def test_certbot_certonly_command_created(working_dir):
         working_dir + "certbot.ini",
         "-d",
         domain,
-        "--no-reuse-key",
-        "--new-key",
         "--dns-azure-credentials",
         working_dir + "certbot_dns_azure.ini",
         "--non-interactive",
