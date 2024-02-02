@@ -32,8 +32,12 @@ pytest --help
 ```bash
 params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
 pytest happy_path.py $params  --resource-prefix pdfb01
+
+
 # increase log level
 pytest happy_path.py $params  -s -v --log-cli-level=INFO
+# only run specific test
+pytest happy_path.py $params  -s -v --log-cli-level=INFO -k test_automatic_renewal_for_existing_cert_only_once_then_skipped
 ```
 
 3. Teardown base infrastructure
