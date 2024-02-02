@@ -42,7 +42,7 @@ def pytest_addoption(parser):
         action="store",
         required=False,
         default=current_directory + "/infra/config.yaml",
-        help="Path for config file for testsuite 'happy path'.",
+        help="Path for config file for testsuite.",
     )
     parser.addoption(
         "--resource-prefix",
@@ -51,11 +51,22 @@ def pytest_addoption(parser):
         default=None,
         help="Prefix added to every resource created within the test: Keyvault Certificates and DNS zone record entries.",
     )
+    parser.addoption(
+        "--resource-name",
+        action="store",
+        required=False,
+        default="testautohappypath",
+        help="Name used for every resource created within the test: Keyvault Certificates and DNS zone record entries.",
+    )
 
 
 @pytest.fixture(autouse=True)
-def resource_prefix(request):
-    return request.config.getoption("--resource-prefix")
+def resource_name(request):
+    prefix = request.config.getoption("--resource-prefix")
+    default_name = request.config.getoption("--resource-name")
+    if prefix is not None:
+        default_name = prefix + default_name
+    return default_name
 
 
 @pytest.fixture(autouse=True)

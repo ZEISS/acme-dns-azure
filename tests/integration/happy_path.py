@@ -12,21 +12,26 @@ from tests.integration.helper_framework.azure_dns_zone_manager import (
 )
 
 
+def get_latest_properties_of_certificate_versions(key_vault_certificates):
+    now = datetime.now(timezone.utc)
+    dates = []
+    for version in key_vault_certificates:
+        dates.append(version.created_on)
+    latest = max(dt for dt in dates if dt < now)
+    return key_vault_certificates[dates.index(latest)]
+
+
 def test_automatic_renewal_for_existing_cert(
     acme_config_manager,
     azure_key_vault_manager,
     azure_dns_zone_manager,
     config_file_path,
-    resource_prefix,
+    resource_name,
 ):
     ## Config
-    key_vault_cert_name = "testautohappypath"
+    key_vault_cert_name = dns_zone_record_name = resource_name
     cert_validity_in_month = 1
-    dns_zone_record_name = "testautohappypath"
     acme_config_renew_before_expiry_in_days = 31
-    if resource_prefix is not None:
-        key_vault_cert_name = resource_prefix + key_vault_cert_name
-        dns_zone_record_name = resource_prefix + dns_zone_record_name
 
     ## Init
     acme_config_manager.base_config_from_file(file_path=config_file_path)
@@ -58,9 +63,10 @@ def test_automatic_renewal_for_existing_cert(
         )
     )
     assert len(cert_versions) is 2
-    assert cert_versions[1].enabled
+    cert = get_latest_properties_of_certificate_versions(cert_versions)
+    assert cert.enabled
     assert (
-        cert_versions[1].expires_on
+        cert.expires_on
         >= datetime.now(timezone.utc) + timedelta(days=89)
         <= datetime.now(timezone.utc) + timedelta(days=91)
     )

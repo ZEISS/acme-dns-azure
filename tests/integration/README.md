@@ -15,7 +15,7 @@ The actual test run will:
 
 1. Init base infrastructure
 
-````bash
+`````bash
 terraform -chdir="infra" init
 # define variable file or overwrite with according information, e.g. -var azuread_application_display_name="my-name"
 terraform -chdir="infra" apply -var-file=./default.tfvars
@@ -23,14 +23,22 @@ terraform -chdir="infra" apply -var-file=./default.tfvars
 
 2. Run integration test
 
+
+```bash
+pytest --help
+# check 'Custom options' section for input values
+```
+
 ```bash
 params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
-pytest happy_path.py $params -s -v --log-cli-level=INFO
-````
+pytest happy_path.py $params  --resource-prefix pdfb01
+# increase log level
+pytest happy_path.py $params  -s -v --log-cli-level=INFO
+```
 
 3. Teardown base infrastructure
 
 ````bash
 terraform -chdir="infra" destroy
 ```
-````
+`````
