@@ -38,6 +38,13 @@ class KeyVaultManager:
         except ResourceNotFoundError:
             return False
 
+    def certificate_exists(self, name: str):
+        try:
+            self._certificate_client.get_certificate(name)
+            return True
+        except ResourceNotFoundError:
+            return False
+
     def set_secret(self, secret_name: str, data: str) -> KeyVaultSecret:
         try:
             logger.info("Setting keyvault secret %s...", secret_name)
