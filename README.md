@@ -194,4 +194,7 @@ python acme_dns_azure/client.py --config-env-var $ENV_VAR_NAME_CONTAINING_CONFIG
 
 ## Permission Handling
 
+TODO define best practices
+
+
 TODO

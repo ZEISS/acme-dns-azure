@@ -12,6 +12,7 @@ locals {
         key-type = rsa    
         rsa-key-size = ${var.key_size}
         break-my-certs = ${true}
+        email = admin@localhost.local
       EOT
   }
 }

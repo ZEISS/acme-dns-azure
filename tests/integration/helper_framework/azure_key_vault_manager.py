@@ -5,6 +5,7 @@ import ssl
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
+from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient, KeyVaultSecret
 from azure.keyvault.certificates import (
@@ -71,6 +72,14 @@ class AzureKeyVaultManager:
                 )
                 certificate_poller.wait(timeout=60)
                 self._cert_client.purge_deleted_certificate(cert.name)
+
+                for _ in range(60):
+                    time.sleep(1)
+                    try:
+                        cert = self._cert_client.get_deleted_certificate(cert.name)
+                    except ResourceNotFoundError:
+                        break
+
             except Exception:
                 logging.exception(
                     "Failed to delete certificate %s. Manual deletion required", cert
