@@ -13,6 +13,9 @@ class AcmeConfigManager:
         with open(file_path, "r") as file:
             self._config = load(file.read()).data
 
+    def certbot_ini(self, config: str):
+        self._config["certbot.ini"] = config
+
     def add_certificate_to_config(
         self,
         cert_name,
