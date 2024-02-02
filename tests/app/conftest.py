@@ -17,6 +17,11 @@ def tmp_priv_key_path(working_dir):
 
 
 @pytest.fixture(scope="function", autouse=False)
+def tmp_chain_path(working_dir):
+    return working_dir + "chain.pem"
+
+
+@pytest.fixture(scope="function", autouse=False)
 def tmp_cert_path(working_dir):
     return working_dir + "cert.pem"
 
