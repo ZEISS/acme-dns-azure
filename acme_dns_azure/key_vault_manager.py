@@ -80,8 +80,6 @@ class KeyVaultManager:
             ) from e
 
     def get_certificate(self, name: str) -> KeyVaultSecret:
-        # https://github.com/Azure/azure-cli/issues/7489
-        # For retrieving Certs, one shall also use the secret get API. Cert API does not support getting private key
         return self.get_secret(name)
 
     def extract_pfx_data(self, pfx_data: str):
