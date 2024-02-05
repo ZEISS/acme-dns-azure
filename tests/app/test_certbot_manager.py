@@ -150,19 +150,22 @@ def certbot_manager_init_without_creating_init_files(self, working_dir) -> None:
     CertbotManager, "__init__", certbot_manager_init_without_creating_init_files
 )
 def test_certbot_certonly_command_created(working_dir):
-    domain = "my-domain"
+    domains = ["my-domain"]
+    cert_name = "as"
     manager = CertbotManager(working_dir)
-    command = manager._generate_certonly_command(domain)
+    command = manager._generate_certonly_command(cert_name, domains)
 
     assert command == [
         "certbot",
         "certonly",
+        "--cert-name",
+        cert_name,
         "-c",
         working_dir + "certbot.ini",
-        "-d",
-        domain,
         "--dns-azure-credentials",
         working_dir + "certbot_dns_azure.ini",
         "--non-interactive",
         "-v",
+        "-d",
+        domains[0],
     ]

@@ -28,8 +28,8 @@ Based on the provided configuration and trigger, the wrapper library supports fo
 
 The library handles following use cases:
 
-- (Planned): Create new certificates
-- (Planned): Update domain references in existing certificates
+- Create new certificates
+- Update domain references in existing certificates
 - Renew existing certificates
 
 Auth is possible by using:
@@ -119,6 +119,9 @@ See [example](example/config.yaml) for configuration examples.
 
 [azure_environment: <regex> | default = "AzurePublicCloud"]
 
+# Flag if certificates containing multiple domains should be renewed and updated based on the definition of the config file. If not set, mismatching certificates will be skipped.
+[update_cert_domains: <boolean> | default = False]
+
 # key vault uri for renewal of certifcate
 key_vault_id : <regex>
 
@@ -164,7 +167,7 @@ certificates:
 ### `<certificate>`
 
 ```yml
-# name of key vault certificate
+# Certbot certficate name of the  with '-' seperators instead of '.', e.g. for 'example.domain.com' this should be 'example-domain-com'. The name will be used as is for Azure keyvault certificate name.
 name: <regex>
 # renewal in days before expiry for certificate to be renewed
 [renew_before_expiry: <int>]
@@ -195,6 +198,5 @@ python acme_dns_azure/client.py --config-env-var $ENV_VAR_NAME_CONTAINING_CONFIG
 ## Permission Handling
 
 TODO define best practices
-
 
 TODO

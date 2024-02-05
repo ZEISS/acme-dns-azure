@@ -23,6 +23,7 @@ certificates:
         dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com
 
   - name: tls-wildcard-abc-example-org
+    renew_before_expiry: 40
     domains:
       - name: "*.abc.example.org"
         dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com

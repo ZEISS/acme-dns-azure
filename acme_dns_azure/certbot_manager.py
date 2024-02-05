@@ -19,14 +19,17 @@ class DomainReference:
 @dataclass
 class RotationCertificate:
     key_vault_cert_name: str
+    certbot_cert_name: str
     domains: [DomainReference]
     renew_before_expiry: str = None
 
 
 class CertbotResult(Enum):
-    SUCCEEDED = 1
-    STILL_VALID = 2
-    FAILED = 3
+    CREATED = 1
+    RENEWED = 2
+    STILL_VALID = 3
+    FAILED = 4
+    SKIPPED = 5
 
 
 @dataclass
@@ -161,50 +164,74 @@ class CertbotManager:
         return lines
 
     def renew_certificates(self) -> [RotationResult]:
-        certs = self._get_certificate_from_config()
+        certs: [RotationCertificate] = self._get_certificate_from_config()
         results: [RotationResult] = []
         for cert_def in certs:
+            config_domains = []
+            for domain_ref in cert_def.domains:
+                config_domains.append(domain_ref.domain_name)
             try:
-                logger.info("Renewing cert %s", cert_def.key_vault_cert_name)
-                base64_encoded_pfx = self.ctx.keyvault.get_certificate(
-                    name=cert_def.key_vault_cert_name
-                ).value
-                (
-                    private_key,
-                    cert,
-                    chain,
-                    fullchain,
-                    domain,
-                ) = self.ctx.keyvault.extract_pfx_data(base64_encoded_pfx)
-                # TODO currently using domain from certificate itself. Need to refer to domain from config (and validate if matches with actual domain(s) form cert?). Should we loop for list of domain for this cert?
-                # --> config flag: force_creation --> overwrite domain. Config is only truth
-                # case 1 domain name in cert =! domain name from config. Or cert does not exist yet
-                self._create_certificate_files(
-                    domain=domain,
-                    certificate=cert.decode("utf-8"),
-                    chain=chain.decode("utf-8"),
-                    fullchain=fullchain.decode("utf-8"),
-                    privkey=private_key.decode("utf-8"),
-                    renew_before_expiry=cert_def.renew_before_expiry,
-                )
+                if self.ctx.keyvault.certificate_exists(cert_def.key_vault_cert_name):
+                    logger.info("Renewing cert %s", cert_def.key_vault_cert_name)
+                    base64_encoded_pfx = self.ctx.keyvault.get_certificate(
+                        name=cert_def.key_vault_cert_name
+                    ).value
+                    (
+                        private_key,
+                        cert,
+                        chain,
+                        fullchain,
+                        certificate_domains,
+                    ) = self.ctx.keyvault.extract_pfx_data(base64_encoded_pfx)
 
-                certbot_result: CertbotResult = self._renew_certificate(domain)
-                if certbot_result == CertbotResult.SUCCEEDED:
+                    if (set(certificate_domains) != set(config_domains)) and (
+                        self._config["update_cert_domains"] is False
+                    ):
+                        logger.warning(
+                            "Skipping renewal of cert %s due to multi-domain conflict in cert and config.\n Cert: %s\n Config: %s",
+                            cert_def.key_vault_cert_name,
+                            certificate_domains,
+                            config_domains,
+                        )
+                        results.append(RotationResult(cert_def, CertbotResult.SKIPPED))
+                        continue
+
+                    self._create_certificate_files(
+                        certbot_cert_name=cert_def.certbot_cert_name,
+                        certificate=cert.decode("utf-8"),
+                        chain=chain.decode("utf-8"),
+                        fullchain=fullchain.decode("utf-8"),
+                        privkey=private_key.decode("utf-8"),
+                        renew_before_expiry=cert_def.renew_before_expiry,
+                    )
+                else:
                     logger.info(
-                        "Successfully renewed certificate for domain %s", domain
+                        "Creating new certificate %s", cert_def.key_vault_cert_name
+                    )
+
+                certbot_result: CertbotResult = self._create_or_renew_certificate(
+                    cert_name=cert_def.certbot_cert_name, domains=config_domains
+                )
+                if (
+                    certbot_result == CertbotResult.RENEWED
+                    or certbot_result == CertbotResult.CREATED
+                ):
+                    logger.info(
+                        "Successfully renewed certificate %s",
+                        cert_def.certbot_cert_name,
                     )
                     new_pfx_data = self.ctx.keyvault.generate_pfx(
                         private_key_path=self._work_dir
                         + "config/live/"
-                        + domain
+                        + cert_def.certbot_cert_name
                         + "/privkey.pem",
                         certificate_path=self._work_dir
                         + "config/live/"
-                        + domain
+                        + cert_def.certbot_cert_name
                         + "/cert.pem",
                         chain_file_path=self._work_dir
                         + "config/live/"
-                        + domain
+                        + cert_def.certbot_cert_name
                         + "/chain.pem",
                     )
                     self.ctx.keyvault.import_certificate(
@@ -212,10 +239,12 @@ class CertbotManager:
                     )
                 elif certbot_result == CertbotResult.FAILED:
                     logger.exception(
-                        "Failed to renew certificate for domain %s", domain
+                        "Failed to renew certificate %s", cert_def.certbot_cert_name
                     )
                 if certbot_result == CertbotResult.STILL_VALID:
-                    logger.info("Skipped renewal for domain %s - still valid.", domain)
+                    logger.info(
+                        "Skipped renewal %s - still valid.", cert_def.certbot_cert_name
+                    )
 
                 results.append(
                     RotationResult(certificate=cert_def, result=certbot_result)
@@ -252,7 +281,7 @@ class CertbotManager:
             cert_name = o["name"]
             domains = []
             renew_before_expiry = None
-            if o["renew_before_expiry"]:
+            if renew_before_expiry in o:
                 renew_before_expiry = o["renew_before_expiry"]
             for domain in o["domains"]:
                 dns_zone_resource_id = domain["dns_zone_resource_id"]
@@ -265,19 +294,19 @@ class CertbotManager:
             certificates.append(
                 RotationCertificate(
                     key_vault_cert_name=cert_name,
+                    certbot_cert_name=cert_name.replace("-", "."),
                     domains=domains,
                     renew_before_expiry=renew_before_expiry,
                 )
             )
         return certificates
 
-    def _get_expiry_setting_for_cert_from_config(self, cert_name):
-        return self._config["certificates"][cert_name]["renew_before_expiry"]
-
-    def _renew_certificate(self, domain) -> CertbotResult:
+    def _create_or_renew_certificate(
+        self, cert_name: str, domains: [str]
+    ) -> CertbotResult:
         try:
             result: subprocess.CompletedProcess = subprocess.run(
-                args=self._generate_certonly_command(domain),
+                args=self._generate_certonly_command(cert_name, domains),
                 capture_output=True,
                 encoding="utf-8",
                 check=True,
@@ -290,62 +319,86 @@ class CertbotManager:
         for info in result.stdout.splitlines():
             logger.info(info)
             if "Certificate not yet due for renewal" in info:
-                logger.info(
-                    "Cert for domain %s skipped. Not yet due for renewal.", domain
-                )
+                logger.info("Cert %s skipped. Not yet due for renewal.", cert_name)
                 return CertbotResult.STILL_VALID
-        return CertbotResult.SUCCEEDED
+            if "Requesting a certificate for" in info:
+                logger.info("Creating new cert %s.", cert_name)
+                return CertbotResult.CREATED
+            if "Renewing an existing certificate" in info:
+                logger.info("Renewing %s.", cert_name)
+        return CertbotResult.RENEWED
 
     def _create_certificate_files(
         self,
-        domain: str,
+        certbot_cert_name: str,
         certificate: str,
         chain: str,
         fullchain: str,
         privkey: str,
         renew_before_expiry: int = None,
     ):
-        domain_file_path = self._work_dir + "config/renewal/" + domain + ".conf"
-        self._os_manager.create_dir(self._work_dir + "config/live/" + domain)
-        self._os_manager.create_dir(self._work_dir + "config/archive/" + domain)
+        domain_file_path = (
+            self._work_dir + "config/renewal/" + certbot_cert_name + ".conf"
+        )
+        self._os_manager.create_dir(self._work_dir + "config/live/" + certbot_cert_name)
+        self._os_manager.create_dir(
+            self._work_dir + "config/archive/" + certbot_cert_name
+        )
         self._os_manager.create_file(
             file_path=domain_file_path,
-            lines=self._create_domain_conf(domain, renew_before_expiry),
+            lines=self._create_domain_conf(certbot_cert_name, renew_before_expiry),
         )
         self._os_manager.create_file(
-            self._work_dir + "config/archive/" + domain + "/cert1.pem", [certificate]
+            self._work_dir + "config/archive/" + certbot_cert_name + "/cert1.pem",
+            [certificate],
         )
         self._os_manager.create_file(
-            self._work_dir + "config/archive/" + domain + "/privkey1.pem", [privkey]
+            self._work_dir + "config/archive/" + certbot_cert_name + "/privkey1.pem",
+            [privkey],
         )
         self._os_manager.create_file(
-            self._work_dir + "config/archive/" + domain + "/chain1.pem", [chain]
+            self._work_dir + "config/archive/" + certbot_cert_name + "/chain1.pem",
+            [chain],
         )
         self._os_manager.create_file(
-            self._work_dir + "config/archive/" + domain + "/fullchain1.pem", [fullchain]
+            self._work_dir + "config/archive/" + certbot_cert_name + "/fullchain1.pem",
+            [fullchain],
         )
         files = ["cert", "privkey", "chain", "fullchain"]
         for cert in files:
             self._os_manager.create_symlink(
-                src="../../archive/" + domain + "/" + cert + "1.pem",
-                dest=self._work_dir + "config/live/" + domain + "/" + cert + ".pem",
+                src="../../archive/" + certbot_cert_name + "/" + cert + "1.pem",
+                dest=self._work_dir
+                + "config/live/"
+                + certbot_cert_name
+                + "/"
+                + cert
+                + ".pem",
             )
 
-    def _create_domain_conf(self, domain, renew_before_expiry: int = None) -> [str]:
+    def _create_domain_conf(
+        self, certbot_cert_name, renew_before_expiry: int = None
+    ) -> [str]:
         lines = []
-        lines.append("archive_dir = %s" % (self._work_dir + "config/archive/" + domain))
         lines.append(
-            "cert = %s" % (self._work_dir + "config/live/" + domain + "/cert.pem")
+            "archive_dir = %s"
+            % (self._work_dir + "config/archive/" + certbot_cert_name)
         )
         lines.append(
-            "privkey = %s" % (self._work_dir + "config/live/" + domain + "/privkey.pem")
+            "cert = %s"
+            % (self._work_dir + "config/live/" + certbot_cert_name + "/cert.pem")
         )
         lines.append(
-            "chain = %s" % (self._work_dir + "config/live/" + domain + "/chain.pem")
+            "privkey = %s"
+            % (self._work_dir + "config/live/" + certbot_cert_name + "/privkey.pem")
+        )
+        lines.append(
+            "chain = %s"
+            % (self._work_dir + "config/live/" + certbot_cert_name + "/chain.pem")
         )
         lines.append(
             "fullchain = %s"
-            % (self._work_dir + "config/live/" + domain + "/fullchain.pem")
+            % (self._work_dir + "config/live/" + certbot_cert_name + "/fullchain.pem")
         )
 
         if renew_before_expiry:
@@ -355,18 +408,21 @@ class CertbotManager:
 
         return lines
 
-    def _generate_certonly_command(self, domain) -> [str]:
+    def _generate_certonly_command(self, cert_name: str, domains: [str]) -> [str]:
         command = [
             "certbot",
             "certonly",
+            "--cert-name",
+            cert_name,
             "-c",
             self._work_dir + "certbot.ini",
-            "-d",
-            domain,
             "--dns-azure-credentials",
             self._work_dir + "certbot_dns_azure.ini",
             "--non-interactive",
             "-v",
         ]
+        for domain in domains:
+            command.append("-d")
+            command.append(domain)
 
         return command
