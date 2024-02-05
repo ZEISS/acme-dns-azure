@@ -188,7 +188,7 @@ class CertbotManager:
                         self._config["update_cert_domains"] is False
                     ):
                         logger.warning(
-                            "Skipping renewal of cert %s due to multi-domain conflict in cert and config. Cert: %s\n Config: %s",
+                            "Skipping renewal of cert %s due to multi-domain conflict in cert and config.\n Cert: %s\n Config: %s",
                             cert_def.key_vault_cert_name,
                             certificate_domains,
                             config_domains,
