@@ -1,12 +1,9 @@
-import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from acme_dns_azure.client import AcmeDnsAzureClient
 from acme_dns_azure.certbot_manager import (
     RotationResult,
     CertbotResult,
-    RotationCertificate,
 )
-
 from tests.integration.helper_framework.azure_dns_zone_manager import (
     DnsZoneDomainReference,
 )
