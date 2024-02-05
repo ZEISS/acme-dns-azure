@@ -218,76 +218,55 @@ def test_automatic_renewal_for_existing_cert_multiple_domains(
     results: [RotationResult] = client.issue_certificates()
 
     ## Validate
+    for result in results:
+        assert result.result == CertbotResult.RENEWED
     cn, san = azure_key_vault_manager.get_cn_and_san_from_certificate(
         key_vault_cert_name
     )
     assert cn == f"CN={cname1.name}"
     assert san == [cname1.name, cname2.name]
+
+
+def test_create_new_cert_when_not_present_in_vault(
+    acme_config_manager,
+    azure_key_vault_manager,
+    azure_dns_zone_manager,
+    config_file_path,
+    resource_name,
+):
+    # Config
+    key_vault_cert_name = dns_zone_record_name = resource_name
+    acme_config_manager.base_config_from_file(file_path=config_file_path)
+
+    cname: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
+        name=dns_zone_record_name,
+    )
+
+    acme_config_manager.add_certificate_to_config(
+        cert_name=key_vault_cert_name,
+        domain_references=[cname],
+    )
+
+    # Test
+    client = AcmeDnsAzureClient(acme_config_manager.config)
+    results: [RotationResult] = client.issue_certificates()
+
+    # Validate
+    cert_versions = list(
+        azure_key_vault_manager.list_properties_of_certificate_versions(
+            name=key_vault_cert_name
+        )
+    )
+    assert len(cert_versions) is 1
+    cert = get_latest_properties_of_certificate_versions(cert_versions)
+    assert cert.enabled
+    assert (
+        cert.expires_on
+        >= datetime.now(timezone.utc) + timedelta(days=89)
+        <= datetime.now(timezone.utc) + timedelta(days=91)
+    )
     for result in results:
-        assert result.result == CertbotResult.RENEWED
+        assert result.result == CertbotResult.CREATED
 
 
-# def test_automatic_renewal_for_existing_cert_multiple_domains_conflict_renewal_skipped():
-#     pass
-
-
-# def test_automatic_renewal_for_existing_cert_multiple_domains_conflict_renewal_overwrite():
-#     pass
-
-
-# def test_create_new_cert_when_not_present_in_vault(
-#     acme_config_manager,
-#     azure_key_vault_manager,
-#     azure_dns_zone_manager,
-#     config_file_path,
-#     resource_name,
-# ):
-#     # Config
-#     key_vault_cert_name = dns_zone_record_name = resource_name
-#     acme_config_manager.base_config_from_file(file_path=config_file_path)
-
-#     certbot_ini = """
-#         key-type = rsa
-#         rsa-key-size = 4096
-#         break-my-certs  = false
-# #     """
-#     acme_config_manager.certbot_ini(certbot_ini)
-
-#     # Init
-
-#     cname: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-#         name=dns_zone_record_name,
-#     )
-
-#     acme_config_manager.add_certificate_to_config(
-#         cert_name=key_vault_cert_name,
-#         domain_references=[cname],
-#     )
-
-#     # Test
-#     client = AcmeDnsAzureClient(acme_config_manager.config)
-#     results: [RotationResult] = client.issue_certificates()
-
-#     # Validate
-#     cert_versions = list(
-#         azure_key_vault_manager.list_properties_of_certificate_versions(
-#             name=key_vault_cert_name
-#         )
-#     )
-#     assert len(cert_versions) is 1
-#     cert = get_latest_properties_of_certificate_versions(cert_versions)
-#     assert cert.enabled
-#     assert (
-#         cert.expires_on
-#         >= datetime.now(timezone.utc) + timedelta(days=89)
-#         <= datetime.now(timezone.utc) + timedelta(days=91)
-#     )
-#     for result in results:
-#         assert result.result == CertbotResult.CREATED
-
-
-##CREATE
-# implement/use TODO --renew-with-new-domains
-
-
-##Skip
+# TODO wildcard cert
