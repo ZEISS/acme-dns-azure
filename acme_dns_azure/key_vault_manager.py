@@ -111,7 +111,7 @@ class KeyVaultManager:
             ext = p12.get_certificate().get_extension(i)
             if "subjectAltName" in str(ext.get_short_name()):
                 san = ext.__str__()
-                logger.info(san)
+                logger.info("Extracted subjectAltName info from certificate: %s", san)
                 if "DNS:" in san:
                     domain_ref = san.replace("DNS:", "")
                     for domain in [x.strip() for x in domain_ref.split(",")]:

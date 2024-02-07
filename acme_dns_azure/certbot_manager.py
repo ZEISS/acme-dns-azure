@@ -109,6 +109,7 @@ class CertbotManager:
 
     def _create_certbot_ini(self) -> [str]:
         lines = str(self._config["certbot.ini"]).splitlines()
+        lines = [s.strip() for s in lines]
         lines.append("config-dir = %s" % self._work_dir + "config")
         lines.append("work-dir = %s" % self._work_dir + "work")
         lines.append("logs-dir = %s" % self._work_dir + "logs")
@@ -156,10 +157,14 @@ class CertbotManager:
         idx = 0
         for certificate in self._config["certificates"]:
             for domain in certificate["domains"]:
+                name = domain["name"]
+                if name.startswith("*."):
+                    logger.info("Handling wildard request %s.", name)
+                    name = name.replace("*.", "")
                 idx += 1
                 lines.append(
                     "dns_azure_zone%i = %s:%s"
-                    % (idx, domain["name"], domain["dns_zone_resource_id"])
+                    % (idx, name, domain["dns_zone_resource_id"])
                 )
         return lines
 
@@ -294,7 +299,7 @@ class CertbotManager:
             certificates.append(
                 RotationCertificate(
                     key_vault_cert_name=cert_name,
-                    certbot_cert_name=cert_name.replace("-", "."),
+                    certbot_cert_name=cert_name,
                     domains=domains,
                     renew_before_expiry=renew_before_expiry,
                 )
@@ -318,6 +323,7 @@ class CertbotManager:
             return CertbotResult.FAILED
         for info in result.stdout.splitlines():
             logger.info(info)
+        for info in result.stdout.splitlines():
             if "Certificate not yet due for renewal" in info:
                 logger.info("Cert %s skipped. Not yet due for renewal.", cert_name)
                 return CertbotResult.STILL_VALID
