@@ -197,6 +197,17 @@ python acme_dns_azure/client.py --config-env-var $ENV_VAR_NAME_CONTAINING_CONFIG
 
 ## Permission Handling
 
-TODO define best practices
+Best follow [security recommendations from Azure](https://docs.certbot-dns-azure.co.uk/en/latest/#:~:text=Example%3A%20Delegation%20%2B%20more,%C2%B6).
 
-TODO
+When working with shared DNS Zones, one can work with DNS delegation with limited permissions:
+
+Example:
+
+| Record | Name                         | Value                     | Permission           |
+| ------ | ---------------------------- | ------------------------- | -------------------- |
+| TXT    | \_acme-dedicated             | -                         | DNS Zone Contributor |
+| CNAME  | \_acme-challenge.mysubdomain | \_acme-dedicated.mydomain | None                 |
+
+The CNAME and TXT record must be created upfront to enable users to use certbot. The permissions are required on the identity triggering certbot.
+
+With this setup, a DNS Zone owner can limit permissions and enable Users to Create/Renew certificates for their subdomain and ensuring that users cannot aquire certificates for other domains or interfer with existsing records.
