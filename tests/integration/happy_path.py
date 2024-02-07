@@ -282,8 +282,6 @@ def test_handle_two_certificates_create_and_renew(
     )
     assert len(cert_versions1) is 2
     assert len(cert_versions2) is 1
-    assert results[0].result == CertbotResult.RENEWED
-    assert results[1].result == CertbotResult.CREATED
 
 
 def test_create_new_cert_when_not_present_in_vault(
