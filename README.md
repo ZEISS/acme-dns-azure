@@ -109,7 +109,7 @@ Generic placeholders are defined as follows:
 
 The other placeholders are specified separately.
 
-See [example](example/config.yaml) for configuration examples.
+See [example](example/README.md) for configuration examples.
 
 ```yml
 [managed_identity_id: <string>]
@@ -119,7 +119,7 @@ See [example](example/config.yaml) for configuration examples.
 
 [azure_environment: <regex> | default = "AzurePublicCloud"]
 
-# Flag if certificates containing multiple domains should be renewed and updated based on the definition of the config file. If not set, mismatching certificates will be skipped.
+# Flag if existing certificates containing multiple domains should be renewed and updated based on the definition of the config file. If not set, mismatching certificates will be skipped.
 [update_cert_domains: <boolean> | default = False]
 
 # key vault uri for renewal of certifcate
@@ -167,7 +167,7 @@ certificates:
 ### `<certificate>`
 
 ```yml
-# Certbot certficate name of the  with '-' seperators instead of '.', e.g. for 'example.domain.com' this should be 'example-domain-com'. The name will be used as is for Azure keyvault certificate name.
+# Certbot certficate name. The name will also be used for Azure keyvault certificate name.
 name: <regex>
 # renewal in days before expiry for certificate to be renewed
 [renew_before_expiry: <int>]
