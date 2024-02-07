@@ -36,8 +36,8 @@ pytest --help
 
 ```bash
 params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
-pytest happy_path.py $params  --resource-prefix pdfb01
-pytest unhappy_path.py $params  --resource-prefix pdfb01
+pytest happy_path.py $params  --resource-prefix pd-fb01
+pytest unhappy_path.py $params  --resource-prefix pd-fb01
 
 
 # increase log level

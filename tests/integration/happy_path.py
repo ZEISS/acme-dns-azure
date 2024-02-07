@@ -225,6 +225,67 @@ def test_automatic_renewal_for_existing_cert_multiple_domains(
     assert san == [cname1.name, cname2.name]
 
 
+def test_handle_two_certificates_create_and_renew(
+    acme_config_manager,
+    azure_key_vault_manager,
+    azure_dns_zone_manager,
+    config_file_path,
+    resource_name,
+):
+    ## Config
+    key_vault_cert_name = dns_zone_record_name = resource_name
+    cert_validity_in_month = 1
+    acme_config_renew_before_expiry_in_days = 31
+
+    ## Init
+    acme_config_manager.base_config_from_file(file_path=config_file_path)
+    cname1: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
+        name=dns_zone_record_name,
+    )
+
+    azure_key_vault_manager.create_certificate(
+        name=key_vault_cert_name,
+        subject=f"CN={cname1.name}",
+        validity_in_months=cert_validity_in_month,
+        san_dns_names=[cname1.name],
+    )
+
+    acme_config_manager.add_certificate_to_config(
+        cert_name=key_vault_cert_name,
+        domain_references=[cname1],
+        renew_before_expiry=acme_config_renew_before_expiry_in_days,
+    )
+
+    cname2: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
+        name=dns_zone_record_name + "2",
+    )
+
+    acme_config_manager.add_certificate_to_config(
+        cert_name=key_vault_cert_name + "2",
+        domain_references=[cname2],
+    )
+
+    ## Test
+    client = AcmeDnsAzureClient(acme_config_manager.config)
+    results: [RotationResult] = client.issue_certificates()
+
+    ## Validate
+    cert_versions1 = list(
+        azure_key_vault_manager.list_properties_of_certificate_versions(
+            name=key_vault_cert_name
+        )
+    )
+    cert_versions2 = list(
+        azure_key_vault_manager.list_properties_of_certificate_versions(
+            name=key_vault_cert_name + "2"
+        )
+    )
+    assert len(cert_versions1) is 2
+    assert len(cert_versions2) is 1
+    assert results[0] == CertbotResult.RENEWED
+    assert results[1] == CertbotResult.CREATED
+
+
 def test_create_new_cert_when_not_present_in_vault(
     acme_config_manager,
     azure_key_vault_manager,
