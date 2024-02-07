@@ -7,6 +7,9 @@ from tests.integration.helper_framework.azure_key_vault_manager import (
 from tests.integration.helper_framework.azure_dns_zone_manager import (
     AzureDnsZoneManager,
 )
+from tests.integration.helper_framework.azure_ad_manager import (
+    AzureADManager,
+)
 
 path_to_current_file = os.path.realpath(__file__)
 current_directory = os.path.split(path_to_current_file)[0]
@@ -58,6 +61,12 @@ def pytest_addoption(parser):
         default="testautohappypath",
         help="Name used for every resource created within the test: Keyvault Certificates and DNS zone record entries.",
     )
+    parser.addoption(
+        "--principal-id",
+        action="store",
+        required=False,
+        help="Principal ID for assigning role assignments for temporarly created DNS records.",
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -72,6 +81,11 @@ def resource_name(request):
 @pytest.fixture(autouse=True)
 def config_file_path(request):
     return request.config.getoption("--config-file-path")
+
+
+@pytest.fixture(autouse=True)
+def principal_id(request):
+    return request.config.getoption("--principal-id")
 
 
 @pytest.fixture(autouse=False)
@@ -104,3 +118,12 @@ def azure_key_vault_manager(request):
     yield azure_key_vault_manager
     print("\nTeardown KeyVault resources...\n")
     azure_key_vault_manager.clean_up_all_resources()
+
+
+@pytest.fixture(autouse=False)
+def azure_ad_manager(request):
+    subscription_id = request.config.getoption("--subscription-id")
+    azure_ad_manager = AzureADManager(subscription_id=subscription_id)
+    yield azure_ad_manager
+    print("\nTeardown Role assignments...\n")
+    azure_ad_manager.clean_up_all_resources()
