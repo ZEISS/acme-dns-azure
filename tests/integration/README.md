@@ -21,7 +21,7 @@ Required permissions:
 
 1. Init base infrastructure
 
-`````bash
+```bash
 terraform -chdir="infra" init
 # define variable file or overwrite with according information, e.g. -var azuread_application_display_name="my-name"
 terraform -chdir="infra" apply -var-file=./default.tfvars
@@ -48,7 +48,6 @@ pytest unhappy_path.py $params  -k test_automatic_renewal_for_existing_cert_mult
 
 3. Teardown base infrastructure
 
-````bash
+```bash
 terraform -chdir="infra" destroy
 ```
-`````
