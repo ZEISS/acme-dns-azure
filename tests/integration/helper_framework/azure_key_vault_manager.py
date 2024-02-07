@@ -7,6 +7,7 @@ from azure.keyvault.certificates import (
     CertificateClient,
     KeyVaultCertificate,
 )
+from azure.keyvault.secrets import SecretClient
 
 
 class AzureKeyVaultManager:
@@ -14,7 +15,13 @@ class AzureKeyVaultManager:
         self._cert_client = CertificateClient(
             vault_url=keyvault_uri, credential=DefaultAzureCredential()
         )
+        self._secret_client = SecretClient(
+            vault_url=keyvault_uri, credential=DefaultAzureCredential()
+        )
         self._created_certs: [KeyVaultCertificate] = []
+        self._wrapper_created_staging_secret_name = (
+            "acme-account-acme-staging-v02-api-letsencrypt-org"
+        )
 
     def create_certificate(
         self,
@@ -51,8 +58,8 @@ class AzureKeyVaultManager:
         try:
             logging.info("Deleting certificate %s...", name)
             certificate_poller = self._cert_client.begin_delete_certificate(name)
-            certificate_poller.result()
             certificate_poller.wait(timeout=60)
+            certificate_poller.result()
             self._cert_client.purge_deleted_certificate(name)
 
             for _ in range(60):
@@ -69,6 +76,28 @@ class AzureKeyVaultManager:
                 "Failed to delete certificate %s. Manual deletion required", name
             )
 
+    def _delete_secret(self, name):
+        try:
+            secret_poller = self._secret_client.begin_delete_secret(name)
+            secret_poller.wait(timeout=60)
+            secret_poller.result()
+            self._secret_client.purge_deleted_secret(name)
+            for _ in range(60):
+                time.sleep(1)
+                try:
+                    self._secret_client.get_deleted_secret(name)
+                except ResourceNotFoundError:
+                    # Cert shortly being in ObjectIsBeingDeleted mode although not found
+                    time.sleep(1)
+                    break
+        except ResourceNotFoundError:
+            pass
+        except Exception:
+            logging.exception(
+                "Failed to delete secret %s. Manual deletion required",
+                self._wrapper_created_staging_secret_name,
+            )
+
     def clean_up_all_resources(self):
         for cert in self._created_certs:
             self._delete_certificate(cert.name)
@@ -77,3 +106,4 @@ class AzureKeyVaultManager:
             cert_props = self._cert_client.list_properties_of_certificates()
             for prop in cert_props:
                 self._delete_certificate(prop.name)
+        self._delete_secret(self._wrapper_created_staging_secret_name)
