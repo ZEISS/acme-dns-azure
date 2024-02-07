@@ -299,7 +299,7 @@ class CertbotManager:
             certificates.append(
                 RotationCertificate(
                     key_vault_cert_name=cert_name,
-                    certbot_cert_name=cert_name.replace("-", "."),
+                    certbot_cert_name=cert_name,
                     domains=domains,
                     renew_before_expiry=renew_before_expiry,
                 )
