@@ -8,13 +8,13 @@ locals {
     eab = {
       enabled = false
     }
-    "certbot.ini" = <<-EOT
-      key-type = rsa    
-      rsa-key-size = ${var.key_size}
-      break-my-certs = ${true}
-      email = ${var.email}
-      # Let's Encrypt uses cached DNS (60s) during validation
-      dns-azure-propagation-seconds = 60
+    "certbot.ini" = <<EOT
+key-type = rsa
+rsa-key-size = ${var.key_size}
+break-my-certs = ${true}
+email = ${var.email}
+# Let's Encrypt uses cached DNS (60s) during validation
+dns-azure-propagation-seconds = 60
     EOT
   }
   no_permission_config = {
@@ -26,12 +26,12 @@ locals {
     eab = {
       enabled = false
     }
-    "certbot.ini" = <<-EOT
-      key-type = rsa    
-      rsa-key-size = ${var.key_size}
-      email = ${var.email}
-      # Let's Encrypt uses cached DNS (60s) during validation
-      dns-azure-propagation-seconds = 60
+    "certbot.ini" = <<EOT
+key-type = rsa
+rsa-key-size = ${var.key_size}
+email = ${var.email}
+# Let's Encrypt uses cached DNS (60s) during validation
+dns-azure-propagation-seconds = 60
     EOT
   }
 }

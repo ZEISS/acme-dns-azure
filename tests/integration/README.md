@@ -26,7 +26,7 @@ cd "tests/integration"
 terraform -chdir="infra" init
 
 # Create and define terraform variables
-cp "./terraform.tfvars.example" "./terraform.tfvars"
+cp "./infra/terraform.tfvars.example" "./infra/terraform.tfvars"
 
 terraform -chdir="infra" apply
 ```
