@@ -13,6 +13,9 @@ class AcmeConfigManager:
         with open(file_path, "r") as file:
             self._config = load(file.read()).data
 
+    def set_config_param(self, key: str, value):
+        self._config[key] = value
+
     def add_certificate_to_config(
         self,
         cert_name,

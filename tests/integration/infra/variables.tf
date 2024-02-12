@@ -15,6 +15,10 @@ variable "dns_zone" {
   })
 }
 
+variable "email" {
+  type = string
+}
+
 variable "key_vault_name" {
   type = string
 }

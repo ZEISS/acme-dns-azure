@@ -28,8 +28,8 @@ Based on the provided configuration and trigger, the wrapper library supports fo
 
 The library handles following use cases:
 
-- (Planned): Create new certificates
-- (Planned): Update domain references in existing certificates
+- Create new certificates
+- Update domain references in existing certificates
 - Renew existing certificates
 
 Auth is possible by using:
@@ -70,8 +70,8 @@ Configure the virtual environment with full targets support and activate it:
 ## Install dependencies
 
 ```bash
-source .venv/bin/activate
 poetry install --all-extras
+source .venv/bin/activate
 ```
 
 ## Lint
@@ -109,7 +109,7 @@ Generic placeholders are defined as follows:
 
 The other placeholders are specified separately.
 
-See [example](example/config.yaml) for configuration examples.
+See [example](example/README.md) for configuration examples.
 
 ```yml
 [managed_identity_id: <string>]
@@ -118,6 +118,9 @@ See [example](example/config.yaml) for configuration examples.
 [sp_client_secret: <secret>]
 
 [azure_environment: <regex> | default = "AzurePublicCloud"]
+
+# Flag if existing certificates containing multiple domains should be renewed and updated based on the definition of the config file. If not set, mismatching certificates will be skipped.
+[update_cert_domains: <boolean> | default = False]
 
 # key vault uri for renewal of certifcate
 key_vault_id : <regex>
@@ -164,7 +167,7 @@ certificates:
 ### `<certificate>`
 
 ```yml
-# name of key vault certificate
+# Certbot certficate name. The name will also be used for Azure keyvault certificate name.
 name: <regex>
 # renewal in days before expiry for certificate to be renewed
 [renew_before_expiry: <int>]
@@ -194,7 +197,17 @@ python acme_dns_azure/client.py --config-env-var $ENV_VAR_NAME_CONTAINING_CONFIG
 
 ## Permission Handling
 
-TODO define best practices
+Best follow [security recommendations from Azure](https://docs.certbot-dns-azure.co.uk/en/latest/#:~:text=Example%3A%20Delegation%20%2B%20more,%C2%B6).
 
+When working with shared DNS Zones, one can work with DNS delegation with limited permissions:
 
-TODO
+Example:
+
+| Record | Name                         | Value                     | Permission           |
+| ------ | ---------------------------- | ------------------------- | -------------------- |
+| TXT    | \_acme-dedicated             | -                         | DNS Zone Contributor |
+| CNAME  | \_acme-challenge.mysubdomain | \_acme-dedicated.mydomain | None                 |
+
+The CNAME and TXT record must be created upfront to enable users to use certbot. The permissions are required on the identity triggering certbot.
+
+With this setup, a DNS Zone owner can limit permissions and enable Users to Create/Renew certificates for their subdomain and ensuring that users cannot aquire certificates for other domains or interfer with existsing records.

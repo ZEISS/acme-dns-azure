@@ -1,0 +1,10 @@
+location                         = "westeurope"
+resource_group_name              = "pd-XX01-acme"
+email                            = "user@example.com"
+key_vault_name                   = "pdXX01acmetestvault"
+azuread_application_display_name = "ACME integration test"
+key_size                         = 4096
+dns_zone = {
+  name                = "acme.example.com"
+  resource_group_name = "acme-test-dns"
+}

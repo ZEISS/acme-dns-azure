@@ -10,19 +10,28 @@ The actual test run will:
 
 - create&delete DNS record set entries within this DNS zone
 - create&delete Certificates and secrets within the Key Vault
+- create&delete role assignments on temporarly created DNS Zone entries
+
+Required permissions:
+
+- Contributor
+- Role Based Access Control Administrator (only fur running unhappy_path test cases)
 
 ## Run integration test
 
 1. Init base infrastructure
 
-`````bash
+```bash
+cd "tests/integration"
 terraform -chdir="infra" init
-# define variable file or overwrite with according information, e.g. -var azuread_application_display_name="my-name"
-terraform -chdir="infra" apply -var-file=./default.tfvars
+
+# Create and define terraform variables
+cp "./infra/terraform.tfvars.example" "./infra/terraform.tfvars"
+
+terraform -chdir="infra" apply
 ```
 
 2. Run integration test
-
 
 ```bash
 pytest --help
@@ -31,18 +40,18 @@ pytest --help
 
 ```bash
 params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
-pytest happy_path.py $params  --resource-prefix pdfb01
+pytest happy_path.py $params  --resource-prefix pd-XX01
+pytest unhappy_path.py $params  --resource-prefix pd-XX01
 
 
 # increase log level
 pytest happy_path.py $params  -s -v --log-cli-level=INFO
 # only run specific test
-pytest happy_path.py $params  -s -v --log-cli-level=INFO -k test_automatic_renewal_for_existing_cert_only_once_then_skipped
+pytest unhappy_path.py $params  -k test_automatic_renewal_for_existing_cert_multiple_domains_overwritten
 ```
 
 3. Teardown base infrastructure
 
-````bash
+```bash
 terraform -chdir="infra" destroy
 ```
-`````

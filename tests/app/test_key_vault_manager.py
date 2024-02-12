@@ -92,7 +92,7 @@ def test_key_and_certs_extraced_from_pfx(working_dir):
     assert isinstance(load_pem_x509_certificate(cert), Certificate)
     assert chain == b""
     assert isinstance(load_pem_x509_certificate(fullchain), Certificate)
-    assert domain == gen_domain
+    assert domain == [gen_domain]
 
 
 @patch.object(KeyVaultManager, "__init__", keyvault_manager_init)

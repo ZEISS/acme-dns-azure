@@ -73,6 +73,7 @@ types-requests = "*"
 types-six = "*"
 types-toml = "*"
 types-simplejson = "*"
+azure-mgmt-authorization = "*"
 
 [tool.poetry.scripts]
 acme-dns-azure = "acme_dns_azure.cli:main"

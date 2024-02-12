@@ -38,6 +38,13 @@ class KeyVaultManager:
         except ResourceNotFoundError:
             return False
 
+    def certificate_exists(self, name: str):
+        try:
+            self._certificate_client.get_certificate(name)
+            return True
+        except ResourceNotFoundError:
+            return False
+
     def set_secret(self, secret_name: str, data: str) -> KeyVaultSecret:
         try:
             logger.info("Setting keyvault secret %s...", secret_name)
@@ -98,15 +105,17 @@ class KeyVaultManager:
             addtional_ca.append(crypto.X509.from_cryptography(cert))
         p12.set_ca_certificates(addtional_ca)
 
-        domain = ""
+        domains = []
         ext_count = p12.get_certificate().get_extension_count()
         for i in range(0, ext_count):
             ext = p12.get_certificate().get_extension(i)
             if "subjectAltName" in str(ext.get_short_name()):
                 san = ext.__str__()
-                logger.info(san)
+                logger.info("Extracted subjectAltName info from certificate: %s", san)
                 if "DNS:" in san:
-                    domain = san.replace("DNS:", "")
+                    domain_ref = san.replace("DNS:", "")
+                    for domain in [x.strip() for x in domain_ref.split(",")]:
+                        domains.append(domain)
 
         private_key = crypto.dump_privatekey(crypto.FILETYPE_PEM, p12.get_privatekey())
         cert = crypto.dump_certificate(crypto.FILETYPE_PEM, p12.get_certificate())
@@ -118,7 +127,7 @@ class KeyVaultManager:
             chain = chain + crypto.dump_certificate(crypto.FILETYPE_PEM, ca)
         fullchain: bytes = cert + chain
 
-        return private_key, cert, chain, fullchain, domain
+        return private_key, cert, chain, fullchain, domains
 
     def generate_pfx(
         self, private_key_path: str, certificate_path: str, chain_file_path: str = None
