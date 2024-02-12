@@ -280,7 +280,7 @@ def test_create_cert_for_dns_delegation_shared_txt_shared_cert_with_minimum_perm
     assert san == [delegation_config1.name, delegation_config2.name]
 
 
-def test_create_cert_for_dns_delegation_shared_txt_single_cert_with_minimum_permission_fails_for_second(
+def test_create_cert_for_dns_delegation_shared_txt_single_cert_with_minimum_permission_success(
     acme_config_manager,
     azure_key_vault_manager,
     azure_dns_zone_manager,
@@ -299,7 +299,7 @@ def test_create_cert_for_dns_delegation_shared_txt_single_cert_with_minimum_perm
     ## Init
 
     txt_record: DnsZoneDomainReference = azure_dns_zone_manager.create_txt_record(
-        name="_acme-shared", value="-"
+        name="_acme-shared", value="-", ttl="120"
     )
     cname1: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
         name="_acme-challenge." + dns_zone_record_name + "1",
@@ -339,18 +339,19 @@ def test_create_cert_for_dns_delegation_shared_txt_single_cert_with_minimum_perm
 
     ## Validate
     assert results[0].result == CertbotResult.CREATED
-
-    # TODO doublecheck if this behaviour is correct. Certbot throwing following error for shared TXT of 2 cname records:
-    #     Certbot failed to authenticate some domains (authenticator: dns-azure). The Certificate Authority reported these problems:
-    #   Domain: testautohappypath2.hdp-cicd.zeiss.com
-    #   Type:   unauthorized
-    #   Detail: During secondary validation: Incorrect TXT record "{TXT_VALUE}" found at _acme-challenge.testautohappypath2.hdp-cicd.zeiss.com
-
-    # Hint: The Certificate Authority failed to verify the DNS TXT records created by --dns-azure. Ensure the above domains are hosted by this DNS provider, or try increasing --dns-azure-propagation-seconds (currently 15 seconds).
-
-    assert results[1].result == CertbotResult.FAILED
+    assert results[1].result == CertbotResult.CREATED
     cn1, san1 = azure_key_vault_manager.get_cn_and_san_from_certificate(
         key_vault_cert_name + "1"
     )
+    cn2, san2 = azure_key_vault_manager.get_cn_and_san_from_certificate(
+        key_vault_cert_name + "2"
+    )
     assert cn1 == f"CN={delegation_config1.name}"
     assert san1 == [delegation_config1.name]
+    assert cn2 == f"CN={delegation_config2.name}"
+    assert san2 == [delegation_config2.name]
+
+# TODO:
+# Create PR for upstream source to only remove TXT record entry that was validated and
+# only set TXT record to '-' if that entry was the last one of this record
+# https://github.com/terrycain/certbot-dns-azure/blob/5a4f7e310e01715a5762875b5bf126cff734d248/certbot_dns_azure/_internal/dns_azure.py#L298

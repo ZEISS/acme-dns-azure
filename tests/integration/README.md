@@ -22,9 +22,13 @@ Required permissions:
 1. Init base infrastructure
 
 ```bash
+cd "tests/integration"
 terraform -chdir="infra" init
-# define variable file or overwrite with according information, e.g. -var azuread_application_display_name="my-name"
-terraform -chdir="infra" apply -var-file=./default.tfvars
+
+# Create and define terraform variables
+cp "./terraform.tfvars.example" "./terraform.tfvars"
+
+terraform -chdir="infra" apply
 ```
 
 2. Run integration test
@@ -36,8 +40,8 @@ pytest --help
 
 ```bash
 params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
-pytest happy_path.py $params  --resource-prefix pd-fb01
-pytest unhappy_path.py $params  --resource-prefix pd-fb01
+pytest happy_path.py $params  --resource-prefix pd-XX01
+pytest unhappy_path.py $params  --resource-prefix pd-XX01
 
 
 # increase log level

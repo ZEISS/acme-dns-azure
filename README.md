@@ -70,8 +70,8 @@ Configure the virtual environment with full targets support and activate it:
 ## Install dependencies
 
 ```bash
-source .venv/bin/activate
 poetry install --all-extras
+source .venv/bin/activate
 ```
 
 ## Lint
