@@ -275,7 +275,6 @@ def test_create_cert_for_dns_delegation_shared_txt_shared_cert_with_minimum_perm
     cn, san = azure_key_vault_manager.get_cn_and_san_from_certificate(
         key_vault_cert_name
     )
-    # TODO double check: what is the expected CN here? Is this correct: CN=testautohappypath1.{domain}
     assert cn == f"CN={delegation_config1.name}"
     assert san == [delegation_config1.name, delegation_config2.name]
 
@@ -350,6 +349,7 @@ def test_create_cert_for_dns_delegation_shared_txt_single_cert_with_minimum_perm
     assert san1 == [delegation_config1.name]
     assert cn2 == f"CN={delegation_config2.name}"
     assert san2 == [delegation_config2.name]
+
 
 # TODO:
 # Create PR for upstream source to only remove TXT record entry that was validated and
