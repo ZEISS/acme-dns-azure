@@ -1,5 +1,5 @@
 locals {
-  base_config = {
+  happy_path_config = {
     sp_client_id     = azuread_service_principal.this.client_id
     sp_client_secret = azuread_application_password.this.value
     server           = "https://acme-staging-v02.api.letsencrypt.org/directory"
@@ -13,11 +13,10 @@ key-type = rsa
 rsa-key-size = ${var.key_size}
 break-my-certs = ${true}
 email = ${var.email}
-# Let's Encrypt uses cached DNS (60s) during validation
-dns-azure-propagation-seconds = 60
+dns-azure-propagation-seconds = 10
     EOT
   }
-  no_permission_config = {
+  unhappy_path_config = {
     sp_client_id     = azuread_service_principal.no_permission.client_id
     sp_client_secret = azuread_application_password.no_permission.value
     server           = "https://acme-staging-v02.api.letsencrypt.org/directory"
@@ -30,7 +29,7 @@ dns-azure-propagation-seconds = 60
 key-type = rsa
 rsa-key-size = ${var.key_size}
 email = ${var.email}
-# Let's Encrypt uses cached DNS (60s) during validation
+# Let's Encrypt uses cached DNS (60s) during validation. Relevant for DNS delegation testing
 dns-azure-propagation-seconds = 60
     EOT
   }
@@ -42,11 +41,11 @@ output "integration_test_params" {
 }
 
 resource "local_file" "base_config" {
-  content  = yamlencode(local.base_config)
+  content  = yamlencode(local.happy_path_config)
   filename = "config.yaml"
 }
 
 resource "local_file" "no_permission_config" {
-  content  = yamlencode(local.no_permission_config)
+  content  = yamlencode(local.unhappy_path_config)
   filename = "no_permission_config.yaml"
 }
