@@ -351,7 +351,5 @@ def test_create_cert_for_dns_delegation_shared_txt_single_cert_with_minimum_perm
     assert san2 == [delegation_config2.name]
 
 
-# TODO:
-# Create PR for upstream source to only remove TXT record entry that was validated and
-# only set TXT record to '-' if that entry was the last one of this record
-# https://github.com/terrycain/certbot-dns-azure/blob/5a4f7e310e01715a5762875b5bf126cff734d248/certbot_dns_azure/_internal/dns_azure.py#L298
+# TODO: Test should succeed with DNS propagation time = 10s when issue is fixed:
+# https://github.com/terrycain/certbot-dns-azure/issues/42
