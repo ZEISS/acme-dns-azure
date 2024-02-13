@@ -351,5 +351,5 @@ def test_create_cert_for_dns_delegation_shared_txt_single_cert_with_minimum_perm
     assert san2 == [delegation_config2.name]
 
 
-# TODO: Test should succeed with DNS propagation time = 10s when issue is fixed:
+# TODO add test for shared TXT 'parallel renewal' after issue is fixed:
 # https://github.com/terrycain/certbot-dns-azure/issues/42
