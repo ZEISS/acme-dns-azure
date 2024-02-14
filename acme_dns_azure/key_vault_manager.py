@@ -1,9 +1,14 @@
 import base64
 
-from OpenSSL import crypto
-from cryptography.hazmat.primitives.serialization import pkcs12
+from cryptography.hazmat.primitives.serialization import (
+    pkcs12,
+    Encoding,
+    PrivateFormat,
+    NoEncryption,
+)
 from cryptography.hazmat.primitives import serialization
 from cryptography import x509
+
 from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 from azure.keyvault.secrets import SecretClient, KeyVaultSecret
 from azure.keyvault.certificates import CertificateClient, KeyVaultCertificate
@@ -90,44 +95,47 @@ class KeyVaultManager:
         return self.get_secret(name)
 
     def extract_pfx_data(self, pfx_data: str):
-        (
-            private_key,
-            certificate,
-            additional_certificates,
-        ) = pkcs12.load_key_and_certificates(base64.b64decode(pfx_data), password=None)
 
-        p12 = crypto.PKCS12()
-        p12.set_privatekey(crypto.PKey.from_cryptography_key(private_key))
-        p12.set_certificate(crypto.X509.from_cryptography(certificate))
+        key_and_certs: pkcs12.PKCS12KeyAndCertificates = pkcs12.load_pkcs12(
+            base64.b64decode(pfx_data), password=None
+        )
 
-        addtional_ca = []
-        for cert in additional_certificates:
-            addtional_ca.append(crypto.X509.from_cryptography(cert))
-        p12.set_ca_certificates(addtional_ca)
+        private_key = key_and_certs.key.private_bytes(
+            encoding=Encoding.PEM,
+            format=PrivateFormat.PKCS8,
+            encryption_algorithm=NoEncryption(),
+        )
+        cert: pkcs12.PKCS12Certificate = key_and_certs.cert
+        additional_certs: [pkcs12.PKCS12Certificate] = key_and_certs.additional_certs
 
         domains = []
-        ext_count = p12.get_certificate().get_extension_count()
-        for i in range(0, ext_count):
-            ext = p12.get_certificate().get_extension(i)
-            if "subjectAltName" in str(ext.get_short_name()):
-                san = ext.__str__()
-                logger.info("Extracted subjectAltName info from certificate: %s", san)
-                if "DNS:" in san:
-                    domain_ref = san.replace("DNS:", "")
-                    for domain in [x.strip() for x in domain_ref.split(",")]:
-                        domains.append(domain)
+        try:
+            san_information: x509.SubjectAlternativeName = (
+                cert.certificate.extensions.get_extension_for_oid(
+                    x509.ObjectIdentifier("2.5.29.17")
+                )
+            )
+            for general_name in san_information.value:
+                domains.append(general_name.value)
+        except x509.extensions.ExtensionNotFound:
+            logger.info("No 'subjectAltName' extension present for certificate.")
 
-        private_key = crypto.dump_privatekey(crypto.FILETYPE_PEM, p12.get_privatekey())
-        cert = crypto.dump_certificate(crypto.FILETYPE_PEM, p12.get_certificate())
-
-        ca_certificates = p12.get_ca_certificates()
         chain: bytes = b""
+        for ca in additional_certs:
+            chain = chain + ca.certificate.public_bytes(
+                encoding=serialization.Encoding.PEM
+            )
+        fullchain: bytes = (
+            cert.certificate.public_bytes(encoding=serialization.Encoding.PEM) + chain
+        )
 
-        for ca in ca_certificates:
-            chain = chain + crypto.dump_certificate(crypto.FILETYPE_PEM, ca)
-        fullchain: bytes = cert + chain
-
-        return private_key, cert, chain, fullchain, domains
+        return (
+            private_key,
+            cert.certificate.public_bytes(encoding=serialization.Encoding.PEM),
+            chain,
+            fullchain,
+            domains,
+        )
 
     def generate_pfx(
         self, private_key_path: str, certificate_path: str, chain_file_path: str = None

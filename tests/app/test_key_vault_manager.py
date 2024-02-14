@@ -38,7 +38,7 @@ def create_pkc_s12(private_key_bytes, certificate_bytes, name="test"):
     )
 
 
-def create_x509_certificate(domain: str):
+def create_x509_certificate(domain: [str]):
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     private_bytes = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
@@ -54,6 +54,9 @@ def create_x509_certificate(domain: str):
             x509.NameAttribute(NameOID.COMMON_NAME, "company"),
         ]
     )
+    domains_refs: [x509.DNSName] = []
+    for d in domain:
+        domains_refs.append(x509.DNSName(d))
     cert = (
         x509.CertificateBuilder()
         .subject_name(subject)
@@ -63,7 +66,7 @@ def create_x509_certificate(domain: str):
         .not_valid_before(datetime.now(timezone.utc))
         .not_valid_after(datetime.now(timezone.utc) + timedelta(30))
         .add_extension(
-            x509.SubjectAlternativeName([x509.DNSName(domain)]),
+            x509.SubjectAlternativeName(domains_refs),
             critical=False,
         )
         .sign(private_key, hashes.SHA256())
@@ -73,8 +76,8 @@ def create_x509_certificate(domain: str):
 
 
 @patch.object(KeyVaultManager, "__init__", keyvault_manager_init)
-def test_key_and_certs_extraced_from_pfx(working_dir):
-    gen_domain = "test.net"
+def test_key_and_certs_extracted_from_pfx(working_dir):
+    gen_domain = ["test.net"]
     gen_private_bytes, gen_certificate_bytes = create_x509_certificate(
         domain=gen_domain
     )
@@ -92,7 +95,30 @@ def test_key_and_certs_extraced_from_pfx(working_dir):
     assert isinstance(load_pem_x509_certificate(cert), Certificate)
     assert chain == b""
     assert isinstance(load_pem_x509_certificate(fullchain), Certificate)
-    assert domain == [gen_domain]
+    assert domain == gen_domain
+
+
+@patch.object(KeyVaultManager, "__init__", keyvault_manager_init)
+def test_key_and_certs_extracted_from_pfx_multiple_domains(working_dir):
+    gen_domain = ["test.net", "test2.net"]
+    gen_private_bytes, gen_certificate_bytes = create_x509_certificate(
+        domain=gen_domain
+    )
+    pfx = create_pkc_s12(gen_private_bytes, gen_certificate_bytes, "test")
+
+    key_vault_manager = KeyVaultManager(working_dir)
+    private_key, cert, chain, fullchain, domains = key_vault_manager.extract_pfx_data(
+        (base64.b64encode(pfx)).decode("ascii")
+    )
+
+    assert isinstance(
+        serialization.load_pem_private_key(private_key, password=None),
+        rsa.RSAPrivateKey,
+    )
+    assert isinstance(load_pem_x509_certificate(cert), Certificate)
+    assert chain == b""
+    assert isinstance(load_pem_x509_certificate(fullchain), Certificate)
+    assert domains == gen_domain
 
 
 @patch.object(KeyVaultManager, "__init__", keyvault_manager_init)
@@ -101,7 +127,7 @@ def test_pfx_without_chain_created(
 ):
     gen_domain = "test.net"
     gen_private_bytes, gen_certificate_bytes = create_x509_certificate(
-        domain=gen_domain
+        domain=[gen_domain]
     )
     gen_priv_dir = tmp_priv_key_path
     gen_cert_dir = tmp_cert_path
@@ -134,7 +160,7 @@ def test_pfx_with_empty_chain_created_and_extracted_correctly(
     gen_cert_dir = tmp_cert_path
     gen_chain_dir = tmp_chain_path
     gen_private_bytes, gen_certificate_bytes = create_x509_certificate(
-        domain=gen_domain
+        domain=[gen_domain]
     )
     pfx = create_pkc_s12(gen_private_bytes, gen_certificate_bytes, "test")
 
