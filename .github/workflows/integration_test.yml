@@ -50,4 +50,4 @@ jobs:
         run: pytest unhappy_path.py $params --resource-prefix ci-${{ github.run_number }}
       - name: Terraform Destroy
         if: always()
-        run: terraform -chdir="infra" destroy -auto-approve
+        run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ github.run_id }}" -var="key_vault_name=ci${{ github.run_id }}" -var-file=tfvars.json
