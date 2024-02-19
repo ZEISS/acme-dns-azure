@@ -15,8 +15,6 @@ jobs:
   integration_test:
     needs: [unit_test]
     uses: ./.github/workflows/integration_test.yml
-    with:
-      env: cicd
     secrets: inherit
   build:
     runs-on: ubuntu-latest
