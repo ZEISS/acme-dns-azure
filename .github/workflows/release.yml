@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: unit-test
-        uses: ./.github/workflows/unit_test
+        uses: ./.github/workflows/unit_test.yml
       - name: integration-test
         uses: ./.github/workflows/integration_test
   build:
