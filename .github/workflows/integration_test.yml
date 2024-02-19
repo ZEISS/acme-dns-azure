@@ -27,6 +27,7 @@ jobs:
         working-directory: ./
         run: |
           poetry install --all-extras
+          source .venv/bin/activate
         continue-on-error: true
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
@@ -42,9 +43,9 @@ jobs:
           terraform -chdir="infra" apply -auto-approve -var="resource_group_name=ci-${{ github.run_id }}" -var="key_vault_name=ci${{ github.run_id }}" -var-file=tfvars.json
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
       - name: Happy path
-        run: python -m pytest happy_path.py $params --resource-prefix ci-${{ github.run_number }}
+        run: pytest happy_path.py $params --resource-prefix ci-${{ github.run_number }}
       - name: Unhappy path
-        run: python -m pytest unhappy_path.py $params --resource-prefix ci-${{ github.run_number }}
+        run: pytest unhappy_path.py $params --resource-prefix ci-${{ github.run_number }}
       - name: Terraform Destroy
         if: always()
         run: terraform -chdir="infra" destroy -auto-approve
