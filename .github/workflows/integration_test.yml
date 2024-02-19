@@ -37,7 +37,7 @@ jobs:
         run: terraform -chdir="infra" init
       - name: Terraform Apply
         run: |
-          echo " ${{ vars.TFVARS }}" > "infra/terraform.tfvars"
+          echo "${{ vars.TFVARS }}" > "infra/terraform.tfvars"
           terraform -chdir="infra" apply -auto-approve -var="resource_group_name=ci-${{ github.run_id }}" -var="key_vault_name=ci${{ github.run_id }}"
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
       - name: Happy path
