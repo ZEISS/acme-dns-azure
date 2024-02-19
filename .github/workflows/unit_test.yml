@@ -1,5 +1,5 @@
 name: Python unittest
-on: [push, pull_request]
+on: [push, pull_request, workflow_call]
 jobs:
   unittest:
     runs-on: ubuntu-latest
