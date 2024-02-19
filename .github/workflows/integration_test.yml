@@ -31,6 +31,8 @@ jobs:
         continue-on-error: true
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
       - name: Azure login
         uses: azure/login@v1
         with:
