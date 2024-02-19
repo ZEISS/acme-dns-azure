@@ -30,3 +30,9 @@ variable "azuread_application_display_name" {
 variable "key_size" {
   type = number
 }
+
+variable "azure_ad_owner" {
+  type        = list(string)
+  default     = []
+  description = "List of ObjectIDs to become owner of created App registrations."
+}

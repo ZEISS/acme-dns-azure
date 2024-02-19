@@ -1,6 +1,9 @@
+locals {
+  owner = concat(var.azure_ad_owner, [data.azuread_client_config.current.object_id])
+}
 resource "azuread_application" "this" {
   display_name = var.azuread_application_display_name
-  owners       = [data.azuread_client_config.current.object_id]
+  owners       = local.owner
 }
 
 resource "azuread_application_password" "this" {
@@ -9,12 +12,12 @@ resource "azuread_application_password" "this" {
 
 resource "azuread_service_principal" "this" {
   client_id = azuread_application.this.client_id
-  owners    = [data.azuread_client_config.current.object_id]
+  owners    = local.owner
 }
 
 resource "azuread_application" "no_permission" {
   display_name = var.azuread_application_display_name
-  owners       = [data.azuread_client_config.current.object_id]
+  owners       = local.owner
 }
 
 resource "azuread_application_password" "no_permission" {
@@ -23,5 +26,5 @@ resource "azuread_application_password" "no_permission" {
 
 resource "azuread_service_principal" "no_permission" {
   client_id = azuread_application.no_permission.client_id
-  owners    = [data.azuread_client_config.current.object_id]
+  owners    = local.owner
 }
