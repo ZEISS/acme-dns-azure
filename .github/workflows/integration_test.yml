@@ -4,6 +4,11 @@ on:
     branches:
       - "main"
   workflow_call:
+    inputs:
+      env:
+        required: false
+        type: string
+        default: "cicd"
 
 defaults:
   run:
@@ -13,7 +18,7 @@ jobs:
   integration_test:
     runs-on: ubuntu-latest
     environment:
-      name: cicd
+      name: ${{ inputs.env }}
     steps:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
