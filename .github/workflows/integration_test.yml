@@ -45,12 +45,12 @@ jobs:
       - name: Happy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
-          source .venv/bin/activate
+          source ./../../.venv/bin/activate
           pytest happy_path.py $params --resource-prefix ci-${{ github.run_number }}
       - name: Unhappy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value) 
-          source .venv/bin/activate 
+          source ./../../.venv/bin/activate 
           pytest unhappy_path.py $params --resource-prefix ci-${{ github.run_number }}
       - name: Terraform Destroy
         if: always()
