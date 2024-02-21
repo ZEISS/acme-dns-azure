@@ -9,7 +9,7 @@ def setup_custom_logger(name):
 
     ACME_DNS_AZURE_LOG_LEVEL -- Log level for all classes.
 
-    One of:
+    Allowed values:
 
         "DEBUG"
         "INFO"

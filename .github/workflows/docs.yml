@@ -31,7 +31,6 @@ jobs:
           poetry install --all-extras
       - run: |
           source .venv/bin/activate
-          pip install pdoc3
           pdoc --output-dir=docs/api  acme_dns_azure/___init___.py --html
       - name: Setup Pages
         uses: actions/configure-pages@v4
