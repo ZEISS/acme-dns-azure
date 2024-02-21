@@ -104,3 +104,6 @@ show_missing = true
 
 [tool.coverage.xml]
 output = "coverage.xml"
+
+[tool.poetry.urls]
+"PyPI" = "https://pypi.org/project/acme-dns-azure/"
