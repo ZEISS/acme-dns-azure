@@ -24,7 +24,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
 ]
 description = "ACME client setup based on Certbot for dns-01 challenges via Azure Cloud services"
-documentation = "https://zeiss.github.io/acme-dns-azure/___init___.html"
+documentation = "https://zeiss.github.io/acme-dns-azure/"
 keywords = [
   "acme",
   "dns",
