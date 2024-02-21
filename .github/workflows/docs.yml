@@ -10,10 +10,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          poetry install --all-extras
       - run: pip install pdoc3
       - run: pdoc --output-dir=docs/api  acme_dns_azure/___init___.py --html
 
