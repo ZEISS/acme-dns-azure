@@ -1,5 +1,7 @@
 import os
+
 import pytest
+
 import acme_dns_azure.config as config_handler
 from acme_dns_azure.exceptions import ConfigurationError
 
