@@ -1,13 +1,14 @@
 import os
 import zipfile
 import shutil
+from typing import List
 from acme_dns_azure.log import setup_custom_logger
 
 logger = setup_custom_logger(__name__)
 
 
 class FileManager:
-    def create_file(self, file_path: str, lines: [str], chmod: int = None):
+    def create_file(self, file_path: str, lines: List[str], chmod: int = None):
         with open(file_path, "w", encoding="utf8") as file:
             file.writelines(s + "\n" for s in lines)
             file.close()

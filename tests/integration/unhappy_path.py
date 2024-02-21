@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from acme_dns_azure.client import AcmeDnsAzureClient
-from acme_dns_azure.certbot_manager import (
+from acme_dns_azure.data import (
     RotationResult,
     CertbotResult,
 )

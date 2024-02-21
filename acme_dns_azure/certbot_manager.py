@@ -1,42 +1,18 @@
 import subprocess
 import base64
 import traceback
-from dataclasses import dataclass
-from enum import Enum
+from typing import List
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
 from acme_dns_azure.os_manager import FileManager
+from acme_dns_azure.data import (
+    RotationResult,
+    DomainReference,
+    RotationCertificate,
+    CertbotResult,
+)
 
 logger = setup_custom_logger(__name__)
-
-
-@dataclass
-class DomainReference:
-    dns_zone_resource_id: str
-    domain_name: str
-
-
-@dataclass
-class RotationCertificate:
-    key_vault_cert_name: str
-    certbot_cert_name: str
-    domains: [DomainReference]
-    renew_before_expiry: str = None
-
-
-class CertbotResult(Enum):
-    CREATED = 1
-    RENEWED = 2
-    STILL_VALID = 3
-    FAILED = 4
-    SKIPPED = 5
-
-
-@dataclass
-class RotationResult:
-    certificate: RotationCertificate
-    result: CertbotResult
-    message: str = None
 
 
 class CertbotManager:
@@ -107,7 +83,7 @@ class CertbotManager:
                 "Unknown error in restoring ACME account info from keyvault."
             )
 
-    def _create_certbot_ini(self) -> [str]:
+    def _create_certbot_ini(self) -> List[str]:
         lines = str(self._config["certbot.ini"]).splitlines()
         lines = [s.strip() for s in lines]
         lines.append("config-dir = %s" % self._work_dir + "config")
@@ -134,7 +110,7 @@ class CertbotManager:
 
         return lines
 
-    def _create_certbot_dns_azure_ini(self) -> [str]:
+    def _create_certbot_dns_azure_ini(self) -> List[str]:
         lines = []
         if "sp_client_id" in self._config:
             logger.info(
@@ -168,9 +144,9 @@ class CertbotManager:
                 )
         return lines
 
-    def renew_certificates(self) -> [RotationResult]:
-        certs: [RotationCertificate] = self._get_certificate_from_config()
-        results: [RotationResult] = []
+    def renew_certificates(self) -> List[RotationResult]:
+        certs: List[RotationCertificate] = self._get_certificate_from_config()
+        results: List[RotationResult] = []
         for cert_def in certs:
             config_domains = []
             for domain_ref in cert_def.domains:
@@ -280,14 +256,14 @@ class CertbotManager:
             )
         return results
 
-    def _get_certificate_from_config(self) -> [RotationCertificate]:
+    def _get_certificate_from_config(self) -> List[RotationCertificate]:
         certificates = []
         for o in self._config["certificates"]:
             cert_name = o["name"]
             domains = []
             renew_before_expiry = None
             if renew_before_expiry in o:
-                renew_before_expiry = o["renew_before_expiry"]
+                renew_before_expiry = int(o["renew_before_expiry"])
             for domain in o["domains"]:
                 dns_zone_resource_id = domain["dns_zone_resource_id"]
                 name = domain["name"]
@@ -307,7 +283,7 @@ class CertbotManager:
         return certificates
 
     def _create_or_renew_certificate(
-        self, cert_name: str, domains: [str]
+        self, cert_name: str, domains: List[str]
     ) -> CertbotResult:
         try:
             result: subprocess.CompletedProcess = subprocess.run(
@@ -384,7 +360,7 @@ class CertbotManager:
 
     def _create_domain_conf(
         self, certbot_cert_name, renew_before_expiry: int = None
-    ) -> [str]:
+    ) -> List[str]:
         lines = []
         lines.append(
             "archive_dir = %s"
@@ -414,7 +390,9 @@ class CertbotManager:
 
         return lines
 
-    def _generate_certonly_command(self, cert_name: str, domains: [str]) -> [str]:
+    def _generate_certonly_command(
+        self, cert_name: str, domains: List[str]
+    ) -> List[str]:
         command = [
             "certbot",
             "certonly",

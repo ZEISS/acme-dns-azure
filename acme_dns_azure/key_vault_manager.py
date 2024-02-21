@@ -1,5 +1,5 @@
 import base64
-
+from typing import List
 from cryptography.hazmat.primitives.serialization import (
     pkcs12,
     Encoding,
@@ -106,7 +106,9 @@ class KeyVaultManager:
             encryption_algorithm=NoEncryption(),
         )
         cert: pkcs12.PKCS12Certificate = key_and_certs.cert
-        additional_certs: [pkcs12.PKCS12Certificate] = key_and_certs.additional_certs
+        additional_certs: List[pkcs12.PKCS12Certificate] = (
+            key_and_certs.additional_certs
+        )
 
         domains = []
         try:
