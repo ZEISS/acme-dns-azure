@@ -20,8 +20,10 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install --all-extras
-      - run: pip install pdoc3
-      - run: pdoc --output-dir=docs/api  acme_dns_azure/___init___.py --html
+      - run: |
+          source .venv/bin/activate
+          pip install pdoc3
+          pdoc --output-dir=docs/api  acme_dns_azure/___init___.py --html
 
       - uses: actions/upload-pages-artifact@v3
         with:
