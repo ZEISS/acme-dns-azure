@@ -4,8 +4,8 @@ from typing import List
 
 from azure.identity import DefaultAzureCredential
 
-from acme_dns_azure.certbot_manager import CertbotManager
 import acme_dns_azure.config as config
+from acme_dns_azure.certbot_manager import CertbotManager
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
 from acme_dns_azure.exceptions import ConfigurationError, KeyVaultError
