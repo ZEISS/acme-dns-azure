@@ -1,5 +1,7 @@
 name: Python unittest
 on: [push, pull_request, workflow_call]
+permissions:
+  pull-requests: write # required for dependabot to publish test results
 jobs:
   unittest:
     runs-on: ubuntu-latest
