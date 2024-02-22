@@ -1,4 +1,4 @@
-name: website
+name: github page
 
 on:
   workflow_call:
