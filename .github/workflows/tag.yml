@@ -36,3 +36,4 @@ jobs:
   trigger_release:
     needs: [create_tag]
     uses: ./.github/workflows/release.yml
+    secrets: inherit
