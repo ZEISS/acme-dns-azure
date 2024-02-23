@@ -48,7 +48,7 @@ azure-keyvault-secrets = ">=4.7.0"
 certbot = ">=2"
 certbot-dns-azure = ">=2"
 cryptography = ">=42.0.0"
-python = "^3.7"
+python = "^3.8"
 pyyaml = ">=3"
 requests = ">=2"
 strictyaml = ">=1.7.3"
@@ -83,6 +83,9 @@ vcrpy = "*"
 
 [tool.poetry.scripts]
 acme-dns-azure = "acme_dns_azure.cli:main"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.2.0"
 
 [tool.mypy]
 show_error_codes = true
