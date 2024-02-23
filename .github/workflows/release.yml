@@ -1,4 +1,4 @@
-name: Release Flow
+name: Release Package
 
 on:
   push:
@@ -11,23 +11,47 @@ jobs:
   unit_test:
     needs: [version_check]
     uses: ./.github/workflows/unit_test.yml
-  integration_test:
+  # integration_test:
+  #   needs: [unit_test]
+  #   uses: ./.github/workflows/integration_test.yml
+  #   secrets: inherit
+  # docs:
+  #   needs: [integration_test]
+  #   uses: ./.github/workflows/docs.yml
+  function_package:
+    # needs: [docs]
     needs: [unit_test]
-    uses: ./.github/workflows/integration_test.yml
-    secrets: inherit
-  docs:
-    needs: [integration_test]
-    uses: ./.github/workflows/docs.yml
-  publish_pypi:
+    uses: ./.github/workflows/azure_function.yml
+  # publish_pypi:
+  #   runs-on: ubuntu-latest
+  #   needs: [docs]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Build and publish to pypi
+  #       uses: JRubics/poetry-publish@v2.0
+  #       with:
+  #         pypi_token: ${{ secrets.PYPI_TOKEN }}
+  # docker_build:
+  #   needs: [publish_pypi]
+  #   uses: ./.github/workflows/docker.yml
+  #   secrets: inherit
+  git_release:
     runs-on: ubuntu-latest
-    needs: [docs]
+    # needs: [docker_build, function_package]
+    needs: [function_package]
     steps:
-      - uses: actions/checkout@v4
-      - name: Build and publish to pypi
-        uses: JRubics/poetry-publish@v2.0
+      - name: Create changelog text
+        id: changelog
+        uses: loopwerk/tag-changelog@v1
         with:
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
-  docker_build:
-    needs: [publish_pypi]
-    uses: ./.github/workflows/docker.yml
-    secrets: inherit
+          token: ${{ secrets.GITHUB_TOKEN }}
+          exclude_types: doc
+      - name: download artifact
+        uses: actions/download-artifact@v4
+        with:
+          path: "/tmp/${{  github.ref_name }}"
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          body: ${{ steps.changelog.outputs.changes }}
+          artifacts: "/tmp/${{  github.ref_name }}/*"

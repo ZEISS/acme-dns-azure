@@ -1,9 +1,9 @@
-name: Bump version
+name: Bump version & requirements
 
 on:
   pull_request:
     branches:
-      - "main"
+      - "tmp"
     types:
       - closed
 
@@ -29,6 +29,17 @@ jobs:
           if [ $length != 1 ]; then echo "More then one label has been defined. Exiting." && exit 1;fi
           version_bump=$(echo $relevant_labels | jq -r '.[] | .name')
           poetry version $version_bump
+          cd targets/function
+          poetry version $version_bump
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          poetry install --all-extras
+      - name: Update function requirements
+        run: poetry export --without-hashes --format=requirements.txt > targets/function/requirements.txt
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:

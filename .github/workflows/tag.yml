@@ -3,7 +3,7 @@ name: Tag
 on:
   pull_request:
     branches:
-      - "main"
+      - "tmp"
     types:
       - closed
     paths:
@@ -26,9 +26,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: ${{ github.event.head_commit.message }}
           tag_prefix: v
-      - name: Create a GitHub release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
-          body: ${{ steps.tag_version.outputs.changelog }}
