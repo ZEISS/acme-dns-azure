@@ -22,9 +22,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Bump version
         run: |
-          label_names=${{ github.event.pull_request.labels }}
+          label_names='${{ toJSON(github.event.pull_request.labels) }}'
           echo $label_names
-          relevant_labels=$(echo $label_names |  jq '[.[] | select((.name == "patch") or (.name == "minor") or (.name == "major") or (.name == "prepatch") or (.name == "preminor") or (.name == "premajor") or (.name == "prerelease"))]')
+          relevant_labels=$(echo ${{ toJSON(github.event.pull_request.labels) }} |  jq '[.[] | select((.name == "patch") or (.name == "minor") or (.name == "major") or (.name == "prepatch") or (.name == "preminor") or (.name == "premajor") or (.name == "prerelease"))]')
           echo $relevant_labels
           length=$(echo $relevant_labels | jq 'length')
           echo $length
