@@ -19,10 +19,16 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'automatic_bump') }}
     runs-on: ubuntu-latest
     steps:
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+      - name: Receive version
+        run: |
+          new_version=$(poetry version -s)
+          echo "new_version=${new_version}" >> $GITHUB_ENV
       - name: create git tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          custom_tag: ${{ github.event.head_commit.message }}
+          custom_tag: ${{ env.new_version }}
           tag_prefix: v
