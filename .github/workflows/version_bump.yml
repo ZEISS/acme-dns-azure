@@ -1,0 +1,48 @@
+name: Bump version & requirements
+
+on:
+  pull_request:
+    branches:
+      - "tmp"
+    types:
+      - closed
+
+permissions:
+  contents: write
+
+jobs:
+  bump_version:
+    if: |
+      ${{ (github.event.pull_request.merged == true) &&
+      (contains(fromJson('["patch", "minor", "major", "prepatch", "preminor", "premajor", "prerelease"]'), github.event.pull_request.labels.*.name)) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+      - uses: actions/checkout@v2
+      - name: Bump version
+        run: |
+          label_names=${{ toJson(github.event.pull_request.labels) }}
+          echo $label_names
+          relevant_labels=$(echo $label_names |  jq '[.[] | select((.name == "patch") or (.name == "minor") or (.name == "major") or (.name == "prepatch") or (.name == "preminor") or (.name == "premajor") or (.name == "prerelease"))]')
+          length=$(echo $relevant_labels | jq 'length')
+          if [ $length != 1 ]; then echo "More then one label has been defined. Exiting." && exit 1;fi
+          version_bump=$(echo $relevant_labels | jq -r '.[] | .name')
+          poetry version $version_bump
+          cd targets/function
+          poetry version $version_bump
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          poetry install --all-extras
+      - name: Update function requirements
+        run: poetry export --without-hashes --format=requirements.txt > targets/function/requirements.txt
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: $version_bump
+          title: Bump $version_bump
+          labels: automatic_bump

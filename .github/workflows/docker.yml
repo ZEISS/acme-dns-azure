@@ -1,4 +1,4 @@
-name: main
+name: docker build
 
 on:
   schedule:
@@ -6,11 +6,10 @@ on:
   push:
     branches:
       - "main"
-    tags:
-      - "v?[0-9]+.[0-9]+.[0-9]+*"
   pull_request:
     branches:
       - "main"
+  workflow_call:
 
 jobs:
   container_build:

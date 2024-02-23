@@ -7,15 +7,9 @@ class AcmeDnsAzureClientError(Exception):
     """
 
 
-class AuthenticationError(AcmeDnsAzureClientError):
-    """
-    Authentication to ... failed, likely ... mismatch
-    """
-
-
 class KeyVaultError(AcmeDnsAzureClientError):
     """
-    Authentication to ... failed, likely ... mismatch
+    Keyvault interaction failed
     """
 
 

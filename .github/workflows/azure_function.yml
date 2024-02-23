@@ -1,0 +1,27 @@
+name: Azure function
+
+on: workflow_call
+defaults:
+  run:
+    working-directory: ./targets/function
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          poetry run build
+      - name: upload_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: acme_dns_azure_function
+          path: dist
+          if-no-files-found: error

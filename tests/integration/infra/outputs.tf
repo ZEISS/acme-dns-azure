@@ -13,7 +13,8 @@ key-type = rsa
 rsa-key-size = ${var.key_size}
 break-my-certs = ${true}
 email = ${var.email}
-dns-azure-propagation-seconds = 10
+# Let's Encrypt uses cached DNS (60s) during validation. Relevant for DNS delegation testing
+dns-azure-propagation-seconds = 60
     EOT
   }
   unhappy_path_config = {

@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta, timezone
 from acme_dns_azure.client import AcmeDnsAzureClient
-from acme_dns_azure.certbot_manager import (
+from acme_dns_azure.data import (
     RotationResult,
     CertbotResult,
 )
-
 from tests.integration.helper_framework.azure_dns_zone_manager import (
     DnsZoneDomainReference,
 )

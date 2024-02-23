@@ -1,18 +1,23 @@
-import azure.functions as func
-
-import sys
 import os
 import logging
 import datetime
-import tempfile
-import subprocess
+from typing import List
+
+import azure.functions as func
+
+from acme_dns_azure import (
+    AcmeDnsAzureClient,
+    RotationResult,
+)
 
 app = func.FunctionApp()
 
 
 @app.function_name(name="acmeDnsAzure")
 @app.schedule(
-    schedule="%ScheduleAcmeDnsAzure%", arg_name="acmeDnsAzureTimer", run_on_startup=True
+    schedule="%ScheduleAcmeDnsAzure%",
+    arg_name="acmeDnsAzureTimer",
+    run_on_startup=False,
 )
 def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
     utc_timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -22,27 +27,13 @@ def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
 
     logging.info("Python timer trigger function ran at %s", utc_timestamp)
 
-    tempFilePath = tempfile.gettempdir()
-    fp = tempfile.NamedTemporaryFile()
-    fp.write(b"Hello world!")
-    filesDirListInTemp = os.listdir(tempFilePath)
-    logging.info("Temp files are %s", filesDirListInTemp)
-    logging.info(context.function_directory)
+    try:
+        client = AcmeDnsAzureClient(
+            config_env_var=os.getenv("ACME_DNS_CONFIG_ENV_VAR_NAME")
+        )
+        results: List[RotationResult] = client.issue_certificates()
+        for result in results:
+            logging.info(result.result)
 
-    python_path = str(sys.executable)
-    certbot_path = os.path.abspath("/".join([python_path, "../certbot"]))
-
-    logging.info("Python path: %s", python_path)
-
-    proc = subprocess.Popen(
-        [python_path, certbot_path, "--version"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    out, err = proc.communicate()
-
-    logging.info("certbot subprocess result code: %s", proc.returncode)
-    logging.info("certbot subprocess stdout:\n%s", out)
-    if proc.returncode:
-        logging.info("certbot subprocess stdout:\n%s", out)
-        logging.info("certbot subprocess stderr:\n%s", err)
+    except Exception:
+        logging.exception("Failed to rotate certificates")
