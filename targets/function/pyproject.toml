@@ -25,6 +25,8 @@ version = "0.1.1"
 [tool.poetry_bumpversion.file."version.py"]
 
 [tool.poetry.dependencies]
+acme-dns-azure = "*"
+azure-functions = {version = ">=1"}
 python = "^3.8"
 
 [tool.poetry.scripts]

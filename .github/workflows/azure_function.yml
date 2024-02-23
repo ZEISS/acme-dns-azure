@@ -18,6 +18,7 @@ jobs:
           python-version: "3.x"
       - name: Install dependencies
         run: |
+          poetry install --all-extras
           poetry run build
       - name: upload_artifact
         uses: actions/upload-artifact@v4
