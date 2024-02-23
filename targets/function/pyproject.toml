@@ -24,6 +24,10 @@ version = "0.1.1"
 
 [tool.poetry_bumpversion.file."version.py"]
 
+[tool.poetry.dependencies]
+python = "^3.7"
+acme-dns-azure = "^0.1.1"
+
 [tool.poetry.scripts]
 add-plugins = "poetry:add_plugins"
 build = "poetry:build"
