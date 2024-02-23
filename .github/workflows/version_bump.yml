@@ -25,15 +25,13 @@ jobs:
         run: |
           label_names='${{ toJSON(github.event.pull_request.labels) }}'
           relevant_labels=$(echo $label_names |  jq '[.[] | select((.name == "patch") or (.name == "minor") or (.name == "major") or (.name == "prepatch") or (.name == "preminor") or (.name == "premajor") or (.name == "prerelease"))]')
-          echo $relevant_labels
           length=$(echo $relevant_labels | jq 'length')
-          echo $length
           if [ $length != 1 ]; then echo "More then one or none label has been defined. Exiting." && exit 1;fi
           version_bump=$(echo $relevant_labels | jq -r '.[] | .name')
-          echo $version_bump
           poetry version $version_bump
           cd targets/function
           poetry version $version_bump
+          echo "version_bump=${version_bump}" >> $GITHUB_ENV
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -46,6 +44,6 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: $version_bump
-          title: Bump $version_bump
+          commit-message: ${{ env.version_bump }}
+          title: Bump ${{ env.version_bump }}
           labels: automatic_bump
