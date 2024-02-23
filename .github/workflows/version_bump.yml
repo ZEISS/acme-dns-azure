@@ -25,9 +25,12 @@ jobs:
           label_names=${{ toJson(github.event.pull_request.labels.*.name) }}
           echo $label_names
           relevant_labels=$(echo $label_names |  jq '[.[] | select((.name == "patch") or (.name == "minor") or (.name == "major") or (.name == "prepatch") or (.name == "preminor") or (.name == "premajor") or (.name == "prerelease"))]')
+          echo $relevant_labels
           length=$(echo $relevant_labels | jq 'length')
+          echo $length
           if [ $length != 1 ]; then echo "More then one label has been defined. Exiting." && exit 1;fi
           version_bump=$(echo $relevant_labels | jq -r '.[] | .name')
+          echo $version_bump
           poetry version $version_bump
           cd targets/function
           poetry version $version_bump
