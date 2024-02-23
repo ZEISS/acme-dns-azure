@@ -33,3 +33,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: ${{ env.new_version }}
           tag_prefix: v
+  trigger_release:
+    needs: [create_tag]
+    uses: ./.github/workflows/release.yml
