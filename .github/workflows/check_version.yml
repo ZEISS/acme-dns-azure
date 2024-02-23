@@ -3,7 +3,7 @@ name: Check release version
 on: workflow_call
 
 jobs:
-  unittest:
+  version_check:
     runs-on: ubuntu-latest
     steps:
       - name: Install and configure Poetry

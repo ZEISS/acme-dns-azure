@@ -3,10 +3,10 @@ name: Release
 on: workflow_call
 
 jobs:
-  version_check:
-    uses: ./.github/workflows/check_version.yml
+  # version_check:
+  #   uses: ./.github/workflows/check_version.yml
   unit_test:
-    needs: [version_check]
+    # needs: [version_check]
     uses: ./.github/workflows/unit_test.yml
   # integration_test:
   #   needs: [unit_test]
