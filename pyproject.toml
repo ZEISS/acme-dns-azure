@@ -52,13 +52,6 @@ python = "^3.8"
 pyyaml = ">=3"
 requests = ">=2"
 strictyaml = ">=1.7.3"
-# Optional dependencies required by some targets
-azure-functions = {version = ">=1", optional = true}# functions
-
-[tool.poetry.extras]
-functions = ["azure-functions"]
-# Extra "full" list must contain all other extras
-full = ["azure-functions"]
 
 [tool.poetry.dev-dependencies]
 azure-mgmt-authorization = "*"
@@ -99,6 +92,7 @@ branch = true
 command_line = "-m pytest --junitxml=test-results/unittests.xml"
 omit = [
   "tests/*",
+  "targets/function/*",
 ]
 source = ["acme_dns_azure"]
 
