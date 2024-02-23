@@ -1,9 +1,6 @@
 name: Release
 
-on:
-  push:
-    tags:
-      - "*"
+on: workflow_call
 
 jobs:
   version_check:
