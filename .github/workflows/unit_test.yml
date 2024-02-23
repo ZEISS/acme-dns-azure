@@ -26,10 +26,10 @@ jobs:
         with:
           minimum_coverage: 40
           fail_below_threshold: true
-        if: always()
+        if: ${{ github.event_name != 'worfkow_dispatch' }}
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
+        if: ${{ github.event_name != 'worfkow_dispatch' }}
         with:
           files: |
             test-results/**/*.xml
