@@ -6,7 +6,7 @@ defaults:
     working-directory: ./targets/function
 
 jobs:
-  unittest:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Install and configure Poetry
