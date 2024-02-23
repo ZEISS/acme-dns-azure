@@ -28,7 +28,7 @@ jobs:
           echo $relevant_labels
           length=$(echo $relevant_labels | jq 'length')
           echo $length
-          if [ $length != 1 ]; then echo "More then one label has been defined. Exiting." && exit 1;fi
+          if [ $length != 1 ]; then echo "More then one or none label has been defined. Exiting." && exit 1;fi
           version_bump=$(echo $relevant_labels | jq -r '.[] | .name')
           echo $version_bump
           poetry version $version_bump
