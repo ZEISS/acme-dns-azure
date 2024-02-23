@@ -39,7 +39,7 @@ packages = [
 ]
 readme = "README.md"
 repository = "https://github.com/ZEISS/acme-dns-azure"
-version = "0.1.1"
+version = "0.1.2a0"
 
 [tool.poetry.dependencies]
 azure-identity = ">=1.14.0"
