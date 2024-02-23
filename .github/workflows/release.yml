@@ -1,10 +1,15 @@
 name: Release
 
-on: workflow_call
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_call:
 
 jobs:
-  # version_check:
-  #   uses: ./.github/workflows/check_version.yml
+  version_check:
+    if: github.ref_type == 'tag'
+    uses: ./.github/workflows/check_version.yml
   unit_test:
     # needs: [version_check]
     uses: ./.github/workflows/unit_test.yml
