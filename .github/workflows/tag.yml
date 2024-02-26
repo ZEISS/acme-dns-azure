@@ -18,8 +18,8 @@ permissions:
 jobs:
   create_tag:
     if: |
-      ${{ (github.event.pull_request.merged == true) &&
-      contains(github.event.pull_request.labels.*.name, 'automatic_bump') }}
+      (github.event.pull_request.merged == true) &&
+      contains(github.event.pull_request.labels.*.name, 'automatic_bump')
     runs-on: ubuntu-latest
     outputs:
       new_tag: ${{ steps.tag_version.outputs.new_tag }}
