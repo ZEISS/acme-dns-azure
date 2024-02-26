@@ -27,7 +27,6 @@ jobs:
         working-directory: ./
         run: |
           poetry install --all-extras
-        continue-on-error: true
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:

@@ -101,6 +101,18 @@ poetry run coverage report
 
 See [tests/integration](tests/integration/README.md)
 
+## Release
+
+For releasing a new version, create a PR with one of following labels:
+
+- minor
+- major
+- patch
+- prepatch
+- preminor
+- premajor
+- prerelease
+
 # Usage
 
 ## Config
