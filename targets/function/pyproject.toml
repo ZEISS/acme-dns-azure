@@ -20,7 +20,7 @@ packages = [
   {include = "function_app.py"},
 ]
 readme = "README.md"
-version = "0.1.2a10"
+version = "0.1.2a11"
 
 [tool.poetry_bumpversion.file."version.py"]
 
