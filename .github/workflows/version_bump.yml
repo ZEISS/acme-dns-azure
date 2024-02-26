@@ -35,7 +35,7 @@ jobs:
           if [ $length != 1 ]; then echo "More then one or none label has been defined. Exiting." && exit 1;fi
           version_bump=$(echo $relevant_labels | jq -r '.[] | .name')
           poetry version $version_bump
-          cd targets/function
+          cd example/function
           poetry version $version_bump
           echo "version_bump=${version_bump}" >> $GITHUB_ENV
           new_version=$(poetry version -s)

@@ -17,9 +17,9 @@ jobs:
         run: |
           poetry install --all-extras
       - name: Update function requirements
-        run: poetry export --without-hashes --format=requirements.txt > targets/function/requirements.txt
+        run: poetry export --without-hashes --format=requirements.txt > example/function/requirements.txt
       - name: Install dependencies
-        working-directory: ./targets/function
+        working-directory: ./example/function
         run: |
           poetry install --all-extras
           poetry run build
@@ -27,5 +27,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: acme_dns_azure_function
-          path: ./targets/function/dist
+          path: ./example/function/dist
           if-no-files-found: error
