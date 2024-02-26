@@ -29,6 +29,7 @@ jobs:
         run: |
           new_version=$(poetry version -s)
           echo "new_version=${new_version}" >> $GITHUB_ENV
+          echo "new_version=${new_version}" >> $GITHUB_OUTPUT
       - name: create git tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
@@ -40,3 +41,5 @@ jobs:
     needs: [create_tag]
     uses: ./.github/workflows/release.yml
     secrets: inherit
+    with:
+      tag: ${{ needs.create_tag.outputs.new_version }}
