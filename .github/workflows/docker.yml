@@ -95,6 +95,7 @@ jobs:
             org.opencontainers.image.licenses=${{ github.event.repository.license.name }}
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
+        if: ${{ github.event_name != 'pull_request' }}
         with:
           image-ref: ${{ steps.env.outputs.tags }}
           format: "table"
