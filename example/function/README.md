@@ -1,7 +1,7 @@
 ## Build
 
 ```bash
-poetry export --without-hashes --format=requirements.txt > targets/function/requirements.txt
+poetry export --without-hashes --format=requirements.txt > example/function/requirements.txt
 ```
 
 ## Local dev (WiP)

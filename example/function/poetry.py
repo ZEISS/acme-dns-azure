@@ -97,15 +97,6 @@ def build():
             "requirements.txt",
         ]
     )
-    cmds.append(
-        [
-            "pip",
-            "install",
-            "-q",
-            "--target=./.python_packages/lib/site-packages",
-            "acme-dns-azure",
-        ]
-    )
     cmds.append(["poetry", "build", "-f", "sdist"])
     for cmd in cmds:
         subprocess.run(cmd, text=True, check=True, stderr=subprocess.STDOUT)

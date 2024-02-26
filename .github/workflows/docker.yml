@@ -80,8 +80,8 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v5
         with:
-          context: ./targets/container
-          file: ./targets/container/Dockerfile
+          context: ./example/container
+          file: ./example/container/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/386,linux/arm/v7
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.env.outputs.tags }}

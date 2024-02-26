@@ -92,7 +92,7 @@ branch = true
 command_line = "-m pytest --junitxml=test-results/unittests.xml"
 omit = [
   "tests/*",
-  "targets/function/*",
+  "example/function/*",
 ]
 source = ["acme_dns_azure"]
 

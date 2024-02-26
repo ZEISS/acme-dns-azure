@@ -13,28 +13,28 @@ RUN set -eux; \
     chmod +x /entrypoint.sh; \
     # Install permanent system packages
     apk --update add --no-cache \
-        coreutils \
-        curl \
-        bash \
-        zip \
-        git \
-        jq \
+    coreutils \
+    curl \
+    bash \
+    zip \
+    git \
+    jq \
     ; \
     # Install build-dependent system packages
     apk add --no-cache --virtual .build-deps \
-        tzdata \
+    tzdata \
     ; \
     \
     # Set timezone
     if [ -n "${TIMEZONE}" ]; then \
-      cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime; \
-      echo "${TIMEZONE}" > /etc/timezone; \
+    cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime; \
+    echo "${TIMEZONE}" > /etc/timezone; \
     fi; \
     \
     # Install ACME client
     python -m pip install --upgrade pip; \
     pip install --no-cache-dir pip-tools; \
-    # pip install --no-cache-dir acme-dns-azure; \
+    pip install --no-cache-dir acme-dns-azure; \
     \
     # Remove build-dependent system packages and files
     apk del .build-deps; \
