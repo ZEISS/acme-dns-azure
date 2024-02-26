@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Bump version
         run: |
           label_names='${{ toJSON(github.event.pull_request.labels) }}'

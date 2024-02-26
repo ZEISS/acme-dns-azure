@@ -2,6 +2,11 @@ name: Python unittest
 
 on: [push, pull_request, workflow_call]
 
+permissions:
+  issues: write
+  checks: write
+  pull-requests: write
+
 jobs:
   unittest:
     runs-on: ubuntu-latest
@@ -26,10 +31,8 @@ jobs:
         with:
           minimum_coverage: 40
           fail_below_threshold: true
-        if: github.event_name == 'pull_request'
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: github.event_name == 'pull_request'
         with:
           files: |
             test-results/**/*.xml
