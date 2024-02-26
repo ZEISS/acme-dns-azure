@@ -43,5 +43,5 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          title: Bump ${{ env.version_bump }} ${{ env.new_version }}
+          title: "Create release: ${{ env.version_bump }} ${{ env.new_version }}"
           labels: automatic_bump
