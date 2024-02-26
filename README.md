@@ -19,7 +19,7 @@ acme-dns-azure is available on PyPi:
 python -m pip install acme-dns-azure
 ```
 
-For usage examples please refer to [targets](targets)
+For usage examples please refer to [example](example)
 
 ## Scope
 
@@ -54,7 +54,7 @@ The library can be used by:
 - running as script
 - (Planned): Python package within your app
 
-Within [targets](targets) you can find example implementations for running the python package:
+Within [example](example) you can find example implementations for running the python package:
 
 - (Planned): Azure function
 - (Planned): container
@@ -75,7 +75,7 @@ Install Poetry if you not have it already:
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
-Configure the virtual environment with full targets support and activate it:
+Configure the virtual environment with full example support and activate it:
 
 ## Install dependencies
 
