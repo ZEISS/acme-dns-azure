@@ -1,4 +1,4 @@
-name: Bump version & requirements
+name: Bump version
 
 on:
   pull_request:
@@ -40,15 +40,6 @@ jobs:
           echo "version_bump=${version_bump}" >> $GITHUB_ENV
           new_version=$(poetry version -s)
           echo "new_version=${new_version}" >> $GITHUB_ENV
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-      - name: Install dependencies
-        run: |
-          poetry install --all-extras
-      - name: Update function requirements
-        run: poetry export --without-hashes --format=requirements.txt > targets/function/requirements.txt
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:

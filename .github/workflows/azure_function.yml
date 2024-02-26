@@ -1,9 +1,6 @@
 name: Azure function
 
 on: workflow_call
-defaults:
-  run:
-    working-directory: ./targets/function
 
 jobs:
   build:
@@ -19,10 +16,16 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install --all-extras
+      - name: Update function requirements
+        run: poetry export --without-hashes --format=requirements.txt > targets/function/requirements.txt
+      - name: Install dependencies
+        working-directory: ./targets/function
+        run: |
+          poetry install --all-extras
           poetry run build
       - name: upload_artifact
         uses: actions/upload-artifact@v4
         with:
           name: acme_dns_azure_function
-          path: dist
+          path: ./targets/function/dist
           if-no-files-found: error
