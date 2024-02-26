@@ -13,6 +13,8 @@ RUN set -eux; \
     chmod +x /entrypoint.sh; \
     # Install permanent system packages
     apk --update add --no-cache \
+    libcrypto3 \
+    libssl3\
     coreutils \
     curl \
     bash \
