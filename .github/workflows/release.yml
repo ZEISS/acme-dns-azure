@@ -13,11 +13,7 @@ permissions:
   contents: write
 
 jobs:
-  version_check:
-    if: github.ref_type == 'tag'
-    uses: ./.github/workflows/check_version.yml
   unit_test:
-    needs: [version_check]
     permissions:
       issues: write
       checks: write
