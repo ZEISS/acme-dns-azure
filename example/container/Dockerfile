@@ -1,4 +1,4 @@
-FROM python:3.11-alpine
+FROM python:3.12-alpine
 
 ENV TIMEZONE=${TIMEZONE:-} \
     LANG=${LANGUAGE:-en_US}.${ENCODING:-UTF-8} \
@@ -13,8 +13,7 @@ RUN set -eux; \
     chmod +x /entrypoint.sh; \
     # Install permanent system packages
     apk --update add --no-cache \
-    libcrypto3 \
-    libssl3\
+    libexpat=2.6.0-r0 \
     coreutils \
     curl \
     bash \
