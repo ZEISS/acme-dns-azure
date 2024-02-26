@@ -1,4 +1,4 @@
-FROM python:3.11-alpine
+FROM alpine:3.19
 
 ENV TIMEZONE=${TIMEZONE:-} \
     LANG=${LANGUAGE:-en_US}.${ENCODING:-UTF-8} \
@@ -13,6 +13,7 @@ RUN set -eux; \
     chmod +x /entrypoint.sh; \
     # Install permanent system packages
     apk --update add --no-cache \
+    python3 py3-pip \
     coreutils \
     curl \
     bash \
