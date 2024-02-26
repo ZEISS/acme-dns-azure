@@ -9,6 +9,10 @@ on:
       tag:
         type: string
         required: true
+      prerelease:
+        type: boolean
+        required: false
+        default: true
 
 permissions:
   issues: write
@@ -69,4 +73,5 @@ jobs:
         with:
           body: ${{ steps.changelog.outputs.changes }}
           artifacts: "/${{  github.ref_name }}/**/*.zip"
+          prerelease: ${{ inputs.prerelease }}
           tag: ${{ inputs.tag }}
