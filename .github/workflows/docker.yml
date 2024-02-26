@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - "main"
-      - "task/label-workflow31"
   pull_request:
     branches:
       - "main"

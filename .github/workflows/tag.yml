@@ -3,7 +3,7 @@ name: Tag
 on:
   pull_request:
     branches:
-      - "tmp"
+      - "main"
     types:
       - closed
     paths:
