@@ -1,4 +1,4 @@
-FROM alpine:3.19
+FROM python:3.11-alpine
 
 ENV TIMEZONE=${TIMEZONE:-} \
     LANG=${LANGUAGE:-en_US}.${ENCODING:-UTF-8} \
@@ -13,7 +13,6 @@ RUN set -eux; \
     chmod +x /entrypoint.sh; \
     # Install permanent system packages
     apk --update add --no-cache \
-    python3 py3-pip \
     coreutils \
     curl \
     bash \
@@ -35,7 +34,7 @@ RUN set -eux; \
     # Install ACME client
     python -m pip install --upgrade pip; \
     pip install --no-cache-dir pip-tools; \
-    pip install --no-cache-dir acme-dns-azure; \
+    # pip install --no-cache-dir acme-dns-azure; \
     \
     # Remove build-dependent system packages and files
     apk del .build-deps; \
