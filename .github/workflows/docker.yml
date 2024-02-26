@@ -97,7 +97,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/zeiss${{ github.repository }}:${{ steps.env.outputs.tags }}"
+          image-ref: ${{ steps.env.outputs.tags }}"
           format: "table"
           exit-code: "1"
           ignore-unfixed: true
