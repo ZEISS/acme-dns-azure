@@ -3,7 +3,7 @@ name: Tag
 on:
   pull_request:
     branches:
-      - "tmp"
+      - "main"
     types:
       - closed
     paths:
@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       new_tag: ${{ steps.tag_version.outputs.new_tag }}
+      prerelease: ${{ steps.tag_version.outputs.is_prerelease }}
     steps:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
@@ -31,6 +32,9 @@ jobs:
         run: |
           new_version=$(poetry version -s)
           echo "new_version=${new_version}" >> $GITHUB_ENV
+          is_prerelease=true
+          if [[ $new_version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?(\+([0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*))?$ ]]; then is_prerelease=false;fi
+          echo "is_prerelease=${is_prerelease}" >> $GITHUB_OUTPUT
       - name: create git tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
@@ -44,3 +48,4 @@ jobs:
     secrets: inherit
     with:
       tag: ${{ needs.create_tag.outputs.new_tag }}
+      prerelease: ${{ needs.create_tag.outputs.prerelease }}

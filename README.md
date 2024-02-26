@@ -45,18 +45,18 @@ The library handles following use cases:
 Auth is possible by using:
 
 - Service Principal
-- (Planned) User Assigned Identity
+- Planned User Assigned Identity
 
 ### Integration
 
 The library can be used by:
 
 - running as script
-- (Planned): Python package within your app
+- Planned: Python package within your app
 
 Within [example](example) you can find example implementations for running the python package:
 
-- (Planned): Azure function
+- Planned: Azure function
 - (Planned): container
 
 ![usage](https://github.com/ZEISS/acme-dns-azure/blob/main/docs/wrapper_usage.png?raw=true)

@@ -41,6 +41,8 @@ readme = "README.md"
 repository = "https://github.com/ZEISS/acme-dns-azure"
 version = "0.1.2a17"
 
+[tool.poetry_bumpversion.file."acme_dns_azure/___init___.py"]
+
 [tool.poetry.dependencies]
 azure-identity = ">=1.14.0"
 azure-keyvault-certificates = ">=4.7.0"

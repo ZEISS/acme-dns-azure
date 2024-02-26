@@ -3,7 +3,7 @@ name: Bump version
 on:
   pull_request:
     branches:
-      - "tmp"
+      - "main"
     types:
       - closed
 

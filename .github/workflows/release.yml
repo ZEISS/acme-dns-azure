@@ -1,14 +1,15 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
   workflow_call:
     inputs:
       tag:
         type: string
         required: true
+      prerelease:
+        type: boolean
+        required: false
+        default: true
 
 permissions:
   issues: write
@@ -23,34 +24,31 @@ jobs:
       checks: write
       pull-requests: write
     uses: ./.github/workflows/unit_test.yml
-  # integration_test:
-  #   needs: [unit_test]
-  #   uses: ./.github/workflows/integration_test.yml
-  #   secrets: inherit
-  # docs:
-  #   needs: [integration_test]
-  #   uses: ./.github/workflows/docs.yml
-  function_package:
-    # needs: [docs]
+  integration_test:
     needs: [unit_test]
+    uses: ./.github/workflows/integration_test.yml
+    secrets: inherit
+  docs:
+    needs: [integration_test]
+    uses: ./.github/workflows/docs.yml
+  publish_pypi:
+    runs-on: ubuntu-latest
+    needs: [docs]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and publish to pypi
+        uses: JRubics/poetry-publish@v2.0
+        with:
+          pypi_token: ${{ secrets.PYPI_TOKEN }}
+  function_package:
+    needs: [publish_pypi]
     uses: ./.github/workflows/azure_function.yml
-  # publish_pypi:
-  #   runs-on: ubuntu-latest
-  #   needs: [docs]
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Build and publish to pypi
-  #       uses: JRubics/poetry-publish@v2.0
-  #       with:
-  #         pypi_token: ${{ secrets.PYPI_TOKEN }}
-  # docker_build:
-  #   needs: [publish_pypi]
-  #   uses: ./.github/workflows/docker.yml
-  #   secrets: inherit
+  docker_build:
+    needs: [publish_pypi]
+    uses: ./.github/workflows/docker.yml
   git_release:
     runs-on: ubuntu-latest
-    # needs: [docker_build, function_package]
-    needs: [function_package]
+    needs: [docker_build, function_package]
     permissions:
       contents: write
     steps:
@@ -69,4 +67,5 @@ jobs:
         with:
           body: ${{ steps.changelog.outputs.changes }}
           artifacts: "/${{  github.ref_name }}/**/*.zip"
+          prerelease: ${{ inputs.prerelease }}
           tag: ${{ inputs.tag }}
