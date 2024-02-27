@@ -25,12 +25,13 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       new_tag: ${{ steps.tag_version.outputs.new_tag }}
-      prerelease: ${{ steps.tag_version.outputs.is_prerelease }}
+      prerelease: ${{ steps.version_type.outputs.is_prerelease }}
     steps:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
       - uses: actions/checkout@v4
       - name: Receive version
+        id: version_type
         run: |
           new_version=$(poetry version -s)
           echo "new_version=${new_version}" >> $GITHUB_ENV
