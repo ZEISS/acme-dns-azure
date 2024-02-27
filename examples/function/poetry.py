@@ -14,7 +14,7 @@ def add_plugins():
 
 
 def start_function():
-    add_plugins
+    add_plugins()
     cmds = []
     cmds.append(
         [
@@ -84,7 +84,7 @@ def start_function():
 
 
 def build():
-    add_plugins
+    add_plugins()
     cmds = []
     cmds.append(["pip", "install", "-q", "--upgrade", "pip"])
     cmds.append(
