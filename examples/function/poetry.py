@@ -140,20 +140,3 @@ def build():
         )
         print("  - Built \033[0;32m" + pkg + ".zip\033[0m")
         shutil.rmtree("./dist/" + pkg)
-
-
-def test():
-    cmds = []
-    cmds.append(["poetry", "-q", "install", "--with", "test", "--sync"])
-    cmds.append(
-        [
-            "pytest",
-            "-v",
-            "--doctest-modules",
-            "--junitxml=junit/test-results.xml",
-            "--cov=.",
-            "--cov-report=xml",
-        ]
-    )
-    for cmd in cmds:
-        subprocess.run(cmd, text=True, check=True, stderr=subprocess.STDOUT)

@@ -3,8 +3,6 @@
 
 # Poetry
 poetry.lock
-poetry.py
-poetry.toml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -44,10 +42,6 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
-
-# Tests
-tests/
-conftest.py
 
 # Unit test / coverage reports
 htmlcov/
@@ -141,7 +135,7 @@ bin
 obj
 appsettings.json
 local.settings.json
-local.settings.json.example
+requirements.txt
 
 # Azurite artifacts
 __blobstorage__

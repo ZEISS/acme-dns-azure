@@ -14,15 +14,9 @@ jobs:
         with:
           python-version: "3.x"
       - name: Install dependencies
-        run: |
-          poetry install --all-extras
-      - name: Update function requirements
-        run: poetry export --without-hashes --format=requirements.txt > examples/function/requirements.txt
-      - name: Install dependencies
         working-directory: ./examples/function
         run: |
-          poetry install --all-extras
-          poetry run add-plugins
+          poetry install
           poetry run build
       - name: upload_artifact
         uses: actions/upload-artifact@v4

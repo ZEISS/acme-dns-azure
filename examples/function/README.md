@@ -1,6 +1,6 @@
 ## Build
 
 ```bash
-poetry install --all-extras
+poetry install
 poetry run build
 ```

@@ -4,15 +4,13 @@ requires = ["poetry-core"]
 
 [tool.poetry]
 authors = [
-  "Felix Bechter <felix.bechter@zeiss.com>",
-  "Christoph Hoth <christoph.hoth@zeiss.com>",
-  "Brian Rimek <brian.rimek@zeiss.com>",
+  "ZEISS Digital Innovation Partners",
 ]
 description = "ACME DNS Azure Function example"
 include = [
   {path = ".python_packages/**/*"},
 ]
-license = "Proprietary"
+license = "MIT"
 name = "acme-dns-azure-function"
 packages = [
   {include = "host.json"},
