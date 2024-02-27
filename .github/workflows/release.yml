@@ -16,6 +16,8 @@ permissions:
   checks: write
   pull-requests: write
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   unit_test:
