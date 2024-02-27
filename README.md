@@ -45,14 +45,14 @@ The library handles following use cases:
 Auth is possible by using:
 
 - Service Principal
-- Planned User Assigned Identity
+- User Assigned Identity
 
 ### Integration
 
 The library can be used by:
 
 - running as script
-- Planned: Python package within your app
+- Python package within your app
 
 Within [examples](examples) you can find example implementations for running the python package:
 
