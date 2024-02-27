@@ -11,11 +11,21 @@ The library supports the usage of best practices for securely handling certifica
 - Azure Key Vault for central and only storage of secrets and certificates
 - enabling easy and flexible automation
 
+# Installing acme-dns-azure
+
+acme-dns-azure is available on PyPi:
+
+```bash
+python -m pip install acme-dns-azure
+```
+
+For usage exampless please refer to [examples](examples)
+
 ## Scope
 
 Based on the provided configuration and trigger, the wrapper library supports following flow.
 
-![architecture](docs/architecture_concept.png)
+![architecture](https://github.com/ZEISS/acme-dns-azure/blob/main/docs/architecture_concept.png?raw=true)
 
 1. Receive certificates, receive EAB & ACME credentials (if configured), receive ACME account information (if already present)
 2. Certbot: Init Renewal process to certificate Authority
@@ -35,21 +45,21 @@ The library handles following use cases:
 Auth is possible by using:
 
 - Service Principal
-- (Planned) User Assigned Identity
+- Planned User Assigned Identity
 
 ### Integration
 
 The library can be used by:
 
 - running as script
-- (Planned): Python package within your app
+- Planned: Python package within your app
 
-Within [targets](targets) you can find example implementations for running the python package:
+Within [examples](examples) you can find example implementations for running the python package:
 
-- (Planned): Azure function
+- Planned: Azure function
 - (Planned): container
 
-![usage](docs/wrapper_usage.png)
+![usage](https://github.com/ZEISS/acme-dns-azure/blob/main/docs/wrapper_usage.png?raw=true)
 
 # Contribute
 
@@ -65,7 +75,7 @@ Install Poetry if you not have it already:
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
-Configure the virtual environment with full targets support and activate it:
+Configure the virtual environment with full example support and activate it:
 
 ## Install dependencies
 
@@ -91,6 +101,18 @@ poetry run coverage report
 
 See [tests/integration](tests/integration/README.md)
 
+## Release
+
+For releasing a new version, create a PR with one of following labels:
+
+- minor
+- major
+- patch
+- prepatch
+- preminor
+- premajor
+- prerelease
+
 # Usage
 
 ## Config
@@ -109,7 +131,7 @@ Generic placeholders are defined as follows:
 
 The other placeholders are specified separately.
 
-See [example](example/README.md) for configuration examples.
+See [examples](examples/README.md) for configuration examples.
 
 ```yml
 [managed_identity_id: <string>]
@@ -186,7 +208,7 @@ dns_zone_resource_id: <string>
 
 ## Manual running the library
 
-For local testing 'sp_client_id' and 'sp_client_secret' are required. 'managed_identity_id' is not supported.
+For running the module as script 'sp_client_id' and 'sp_client_secret' are required. 'managed_identity_id' is not supported.
 
 ```bash
 # from config file

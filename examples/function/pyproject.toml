@@ -1,0 +1,33 @@
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
+
+[tool.poetry]
+authors = [
+  "ZEISS Digital Innovation Partners",
+]
+description = "ACME DNS Azure Function example"
+include = [
+  {path = ".python_packages/**/*"},
+]
+license = "MIT"
+name = "acme-dns-azure-function"
+packages = [
+  {include = "host.json"},
+  {include = "version.py"},
+  {include = "function_app.py"},
+]
+readme = "README.md"
+version = "0.1.2a17"
+
+[tool.poetry_bumpversion.file."version.py"]
+
+[tool.poetry.dependencies]
+acme-dns-azure = "*"
+azure-functions = {version = ">=1"}
+python = "^3.8"
+
+[tool.poetry.scripts]
+add-plugins = "poetry:add_plugins"
+build = "poetry:build"
+start = "poetry:start_function"

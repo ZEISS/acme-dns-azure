@@ -1,27 +1,44 @@
 import sys
 import tempfile
+from typing import List
 
 from azure.identity import DefaultAzureCredential
 
-import acme_dns_azure.config as config
+from acme_dns_azure import config
+from acme_dns_azure.certbot_manager import CertbotManager
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
 from acme_dns_azure.exceptions import ConfigurationError, KeyVaultError
-from acme_dns_azure.certbot_manager import CertbotManager, RotationResult
 from acme_dns_azure.key_vault_manager import KeyVaultManager
+from acme_dns_azure.data import RotationResult
 
 logger = setup_custom_logger(__name__)
 
 
 class AcmeDnsAzureClient:
+    """Client for auto renewal of certificates. One of possible config params must be set.
+
+
+    Keyword arguments:
+
+    config_yaml -- Config based on schema as yaml string
+
+    config_env_var -- Env var name containing base64 encoded config based on schema as yaml
+
+    config_file -- Config path reference based on schema to yaml file
+
+    file_path_prefix -- Path prefix for creating working dir witin /tmp dir. (default acme_dns_azure)
+    """
+
     def __init__(
         self,
         config_yaml: str = None,
         config_env_var: str = None,
         config_file: str = None,
+        file_path_prefix: str = "acme_dns_azure",
     ) -> None:
         self.ctx = Context()
-        self._work_dir = tempfile.TemporaryDirectory(prefix="acme_dns_azure")
+        self._work_dir = tempfile.TemporaryDirectory(prefix=file_path_prefix)
         logger.info(
             "Setting working directory for certicate renewal: %s", self._work_dir
         )
@@ -43,8 +60,9 @@ class AcmeDnsAzureClient:
     def __del__(self):
         logger.info("Cleaning up directory %s", self.ctx.work_dir)
 
-    def issue_certificates(self) -> [RotationResult]:
-        logger.info("Issuing certificates")
+    def issue_certificates(self) -> List[RotationResult]:
+        """Create/rotate all certificates based on initial client configuration."""
+        logger.info("Issuing certificates...")
         return self.certbot.renew_certificates()
 
 

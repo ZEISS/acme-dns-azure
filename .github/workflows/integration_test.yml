@@ -1,0 +1,56 @@
+name: Azure integration test
+
+on:
+  push:
+    branches:
+      - "main"
+  workflow_call:
+
+defaults:
+  run:
+    working-directory: ./tests/integration
+
+jobs:
+  integration_test:
+    runs-on: ubuntu-latest
+    environment:
+      name: cicd
+    steps:
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        working-directory: ./
+        run: |
+          poetry install --all-extras
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: "${{ secrets.AZURE_CREDENTIALS }}"
+      - name: Terraform Init
+        run: terraform -chdir="infra" init
+      - name: Terraform Apply
+        run: |
+          echo "${{ vars.TFVARS }}" | base64 --decode | jq  > "infra/tfvars.json"
+          terraform -chdir="infra" apply -auto-approve -var="resource_group_name=ci-${{ github.run_id }}" -var="key_vault_name=ci${{ github.run_id }}" -var-file=tfvars.json
+      - name: Happy path
+        run: |
+          params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
+          source ./../../.venv/bin/activate
+          pytest happy_path.py $params --resource-prefix ci-${{ github.run_number }}
+      - name: Unhappy path
+        run: |
+          params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value) 
+          source ./../../.venv/bin/activate 
+          pytest unhappy_path.py $params --resource-prefix ci-${{ github.run_number }}
+      - name: Terraform Destroy
+        if: always()
+        run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ github.run_id }}" -var="key_vault_name=ci${{ github.run_id }}" -var-file=tfvars.json

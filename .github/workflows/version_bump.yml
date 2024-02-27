@@ -1,0 +1,47 @@
+name: Bump version
+
+on:
+  pull_request:
+    branches:
+      - "main"
+    types:
+      - closed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump_version:
+    if: |
+      (github.event.pull_request.merged == true) &&
+      (contains(github.event.pull_request.labels.*.name, 'patch') ||
+      contains(github.event.pull_request.labels.*.name, 'minor') ||
+      contains(github.event.pull_request.labels.*.name, 'major') ||
+      contains(github.event.pull_request.labels.*.name, 'prepatch') ||
+      contains(github.event.pull_request.labels.*.name, 'preminor') ||
+      contains(github.event.pull_request.labels.*.name, 'preminor') ||
+      contains(github.event.pull_request.labels.*.name, 'prerelease'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+      - uses: actions/checkout@v4
+      - name: Bump version
+        run: |
+          label_names='${{ toJSON(github.event.pull_request.labels) }}'
+          relevant_labels=$(echo $label_names |  jq '[.[] | select((.name == "patch") or (.name == "minor") or (.name == "major") or (.name == "prepatch") or (.name == "preminor") or (.name == "premajor") or (.name == "prerelease"))]')
+          length=$(echo $relevant_labels | jq 'length')
+          if [ $length != 1 ]; then echo "More then one or none label has been defined. Exiting." && exit 1;fi
+          version_bump=$(echo $relevant_labels | jq -r '.[] | .name')
+          poetry version $version_bump
+          cd examples/function
+          poetry version $version_bump
+          echo "version_bump=${version_bump}" >> $GITHUB_ENV
+          new_version=$(poetry version -s)
+          echo "new_version=${new_version}" >> $GITHUB_ENV
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "Create release: ${{ env.version_bump }} ${{ env.new_version }}"
+          labels: automatic_bump

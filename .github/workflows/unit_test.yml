@@ -1,5 +1,12 @@
 name: Python unittest
-on: [push, pull_request]
+
+on: [push, pull_request, workflow_call]
+
+permissions:
+  issues: write
+  checks: write
+  pull-requests: write
+
 jobs:
   unittest:
     runs-on: ubuntu-latest
@@ -8,13 +15,12 @@ jobs:
         uses: snok/install-poetry@v1
       - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - name: Install dependencies
         run: |
           poetry install --all-extras
-        continue-on-error: true
       - name: Test with pytest
         run: |
           poetry run coverage run
@@ -24,10 +30,8 @@ jobs:
         with:
           minimum_coverage: 40
           fail_below_threshold: true
-        if: always()
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
         with:
           files: |
             test-results/**/*.xml
