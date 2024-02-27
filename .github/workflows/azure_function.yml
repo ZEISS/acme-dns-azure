@@ -22,10 +22,11 @@ jobs:
         working-directory: ./examples/function
         run: |
           poetry install --all-extras
+          poetry run add-plugins
           poetry run build
       - name: upload_artifact
         uses: actions/upload-artifact@v4
         with:
           name: acme_dns_azure_function
-          path: ./examples/function/dist
+          path: ./examples/function/dist/*.zip
           if-no-files-found: error
