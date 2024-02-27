@@ -14,6 +14,8 @@ permissions:
   issues: write
   checks: write
   pull-requests: write
+  pages: write
+  id-token: write
 
 jobs:
   create_tag:
