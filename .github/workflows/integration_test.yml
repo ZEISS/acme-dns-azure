@@ -8,6 +8,7 @@ on:
       - "main"
     paths:
       - "acme_dns_azure/**"
+      - "tests/integration/**"
   workflow_call:
 
 concurrency:
