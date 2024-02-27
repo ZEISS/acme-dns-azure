@@ -19,7 +19,7 @@ acme-dns-azure is available on PyPi:
 python -m pip install acme-dns-azure
 ```
 
-For usage examples please refer to [example](example)
+For usage exampless please refer to [examples](examples)
 
 ## Scope
 
@@ -54,7 +54,7 @@ The library can be used by:
 - running as script
 - Planned: Python package within your app
 
-Within [example](example) you can find example implementations for running the python package:
+Within [examples](examples) you can find example implementations for running the python package:
 
 - Planned: Azure function
 - (Planned): container
@@ -131,7 +131,7 @@ Generic placeholders are defined as follows:
 
 The other placeholders are specified separately.
 
-See [example](example/README.md) for configuration examples.
+See [examples](examples/README.md) for configuration examples.
 
 ```yml
 [managed_identity_id: <string>]
