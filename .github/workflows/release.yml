@@ -7,9 +7,9 @@ on:
         type: string
         required: true
       prerelease:
-        type: boolean
+        type: string
         required: false
-        default: true
+        default: "true"
 
 permissions:
   issues: write
