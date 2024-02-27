@@ -9,6 +9,7 @@ on:
     paths:
       - "acme_dns_azure/**"
       - "tests/integration/**"
+      - ".github/workflows/integration_test.yml"
   workflow_call:
 
 concurrency:
