@@ -89,6 +89,18 @@ def build():
     cmds.append(["pip", "install", "-q", "--upgrade", "pip"])
     cmds.append(
         [
+            "poetry",
+            "-q",
+            "export",
+            "-f",
+            "requirements.txt",
+            "--without-hashes",
+            "-o",
+            "requirements.txt",
+        ]
+    )
+    cmds.append(
+        [
             "pip",
             "install",
             "-q",
