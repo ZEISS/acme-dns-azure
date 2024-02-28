@@ -63,11 +63,11 @@ jobs:
       - name: download artifact
         uses: actions/download-artifact@v4
         with:
-          path: "/${{  github.ref_name }}"
+          path: "/tmp/${{  github.ref_name }}"
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
           body: ${{ steps.changelog.outputs.changes }}
-          artifacts: "/${{  github.ref_name }}/**/*.zip"
+          artifacts: "/tmp/${{  github.ref_name }}/**/*.zip"
           prerelease: ${{ inputs.prerelease }}
           tag: ${{ inputs.tag }}
