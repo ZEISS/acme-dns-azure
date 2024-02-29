@@ -1,15 +1,20 @@
-import logging
-import datetime
-from typing import List
+try:
+    import logging
+    import datetime
+    from typing import List
 
-import azure.functions as func
+    import azure.functions as func
 
-from acme_dns_azure.data import (
-    RotationResult,
-    CertbotResult,
-)
-from acme_dns_azure.client import AcmeDnsAzureClient
+    from acme_dns_azure.data import (
+        RotationResult,
+        CertbotResult,
+    )
+    from acme_dns_azure.client import AcmeDnsAzureClient
+except ImportError as ex:
+    import logging
 
+    logging.exception("Failed to import")
+    raise ImportError from ex
 app = func.FunctionApp()
 
 
