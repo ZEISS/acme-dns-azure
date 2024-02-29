@@ -4,7 +4,11 @@ from typing import List
 
 import azure.functions as func
 
-from acme_dns_azure import AcmeDnsAzureClient, RotationResult, CertbotResult
+from acme_dns_azure.data import (
+    RotationResult,
+    CertbotResult,
+)
+from acme_dns_azure.client import AcmeDnsAzureClient
 
 app = func.FunctionApp()
 
