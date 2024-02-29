@@ -7,7 +7,7 @@ from data import (
 from client import AcmeDnsAzureClient
 from .log import setup_custom_logger
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 __author__ = "ZEISS Digital Innovation Partners"
 __all__ = (
