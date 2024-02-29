@@ -17,16 +17,22 @@ current_directory = os.path.split(path_to_current_file)[0]
 
 def pytest_addoption(parser):
     parser.addoption(
+        "--dns-zone-id",
+        action="store",
+        required=True,
+        help="Please set DNS Zone resource ID. Test will create RecordSets here.",
+    )
+    parser.addoption(
         "--dns-zone-name",
         action="store",
         required=True,
-        help="Please set DNS Zone reference. Test will create RecordSets here.",
+        help="Please set DNS Zone name. Test will create RecordSets here.",
     )
     parser.addoption(
         "--dns-zone-resource-group-name",
         action="store",
         required=True,
-        help="Please set DNS Zone reference. Test will create RecordSets here.",
+        help="Please set DNS Zone resource group name. Test will create RecordSets here.",
     )
     parser.addoption(
         "--subscription-id",
@@ -77,6 +83,9 @@ def resource_name(request):
         default_name = prefix + default_name
     return default_name
 
+@pytest.fixture(autouse=False)
+def dns_zone_name(request):
+    return request.config.getoption("--dns-zone-name")
 
 @pytest.fixture(autouse=True)
 def config_file_path(request):
@@ -89,8 +98,11 @@ def principal_id(request):
 
 
 @pytest.fixture(autouse=False)
-def acme_config_manager():
-    acme_config_manager = AcmeConfigManager()
+def acme_config_manager(request):
+    dns_zone_resource_id = request.config.getoption("--dns-zone-id")
+    acme_config_manager = AcmeConfigManager(
+        dns_zone_resource_id=dns_zone_resource_id,
+    )
     yield acme_config_manager
 
 

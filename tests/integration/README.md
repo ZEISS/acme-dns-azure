@@ -50,6 +50,15 @@ pytest happy_path.py $params  -s -v --log-cli-level=INFO
 pytest unhappy_path.py $params  -k test_automatic_renewal_for_existing_cert_multiple_domains_overwritten
 ```
 
+# Troubleshoot
+```bash
+pytest happy_path.py $params \
+  --cache-clear \
+  --resource-prefix "pd-XX01" \
+  -k "test_automatic_renewal_for_existing_cert_single_domain"
+```
+
+
 3. Teardown base infrastructure
 
 ```bash

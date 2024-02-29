@@ -149,7 +149,7 @@ def test_create_cert_for_dns_delegation_dedicated_txt_with_minimum_permission_su
 
     delegation_config = DnsZoneDomainReference(
         dns_zone_resource_id=txt_record.dns_zone_resource_id,
-        name=cname.name.replace("_acme-challenge.", ""),
+        name=cname.name.removeprefix("_acme-challenge."),
     )
 
     acme_config_manager.add_certificate_to_config(
@@ -199,7 +199,7 @@ def test_create_cert_for_dns_delegation_dedicated_txt_without_minimum_permission
 
     delegation_config = DnsZoneDomainReference(
         dns_zone_resource_id=txt_record.dns_zone_resource_id,
-        name=cname.name.replace("_acme-challenge.", ""),
+        name=cname.name.removeprefix("_acme-challenge."),
     )
 
     acme_config_manager.add_certificate_to_config(

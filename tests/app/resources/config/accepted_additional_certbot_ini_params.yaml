@@ -17,13 +17,13 @@ certbot.ini: |
 
 certificates:
   - name: tls-xyz-example-org
+    dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/example.org
     domains: # min 1 entry
       - name: xyz.example.org
-        dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/example.org
       - name: zyx.example.org
         dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com
 
   - name: tls-wildcard-abc-example-org
+    dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com
     domains:
       - name: "*.abc.example.org"
-        dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com

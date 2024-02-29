@@ -1,6 +1,7 @@
 import subprocess
 import base64
 import traceback
+import dns.resolver
 from typing import List
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
@@ -135,14 +136,122 @@ class CertbotManager:
             for domain in certificate["domains"]:
                 name = domain["name"]
                 if name.startswith("*."):
-                    logger.info("Handling wildard request %s.", name)
-                    name = name.replace("*.", "")
+                    logger.info("Handling wildard request %s", name)
+                    name = name.removeprefix("*.")
                 idx += 1
+                dns_zone_name, _, cname = self._get_dns_cname(self, "_acme-challenge." + name)
+                azure_resource_id = certificate["dns_zone_resource_id"]
+                if domain["dns_zone_resource_id"]:
+                    azure_resource_id = domain["dns_zone_resource_id"]
+                logger.error("%s %s %s", azure_resource_id, dns_zone_name, cname)
+                if dns_zone_name != azure_resource_id.split("/")[-1]:
+                    logger.error(
+                        "Required dns zone %s doesn't match configured dns zone %s",
+                        dns_zone_name,
+                        azure_resource_id,
+                    )
+                    raise AssertionError
+                if cname:
+                    azure_resource_id = (
+                        azure_resource_id
+                        + "/TXT/"
+                        + cname.removesuffix("." + dns_zone_name)
+                    )
                 lines.append(
-                    "dns_azure_zone%i = %s:%s"
-                    % (idx, name, domain["dns_zone_resource_id"])
+                    "dns_azure_zone%i = %s:%s" % (idx, name, azure_resource_id)
                 )
+                print(lines)
         return lines
+
+    @staticmethod
+    def _dns_lookup(name, rdtype, nameservers=None):
+        """
+        Looks on specified or default system domain nameservers to resolve record type
+        & name and returns record set. The record set is empty if no propagated
+        record found.
+        """
+        print("_dns_lookup:", name)
+        rrset = dns.rrset.from_text(name, 0, 1, rdtype)
+        try:
+            resolver = dns.resolver.Resolver()
+            resolver.lifetime = 1
+            if nameservers:
+                resolver.nameservers = nameservers
+            rrset = resolver.query(name, rdtype)
+            for rdata in rrset:
+                logger.debug(
+                    "DNS lookup: %s %s %s %s",
+                    rrset.name.to_text(),
+                    dns.rdataclass.to_text(rrset.rdclass),
+                    dns.rdatatype.to_text(rrset.rdtype),
+                    rdata.to_text(),
+                )
+        except dns.exception.DNSException as error:
+            logger.debug("DNS lookup: %s", error)
+        return rrset
+
+    @staticmethod
+    def _get_nameservers(self, domain):
+        """
+        Looks for domain nameservers and returns the IPs of the nameservers as a list.
+        The list is empty, if no nameservers were found. Needed associated domain zone
+        name for lookup.
+        """
+        print("_get_nameservers:", domain)
+        nameservers = []
+        rdtypes_ns = ["SOA", "NS"]
+        rdtypes_ip = ["A", "AAAA"]
+        for rdtype_ns in rdtypes_ns:
+            for rdata_ns in self._dns_lookup(domain, rdtype_ns):
+                for rdtype_ip in rdtypes_ip:
+                    for rdata_ip in self._dns_lookup(
+                        rdata_ns.to_text().split(" ")[0], rdtype_ip
+                    ):
+                        if rdata_ip.to_text() not in nameservers:
+                            nameservers.append(rdata_ip.to_text())
+        logger.debug("DNS Lookup: %s IN NS %s", domain, " ".join(nameservers))
+        return nameservers
+
+    @staticmethod
+    def _get_dns_cname(self, name, link=True):
+        """
+        Looks for associated domain zone, nameservers and linked record name until no
+        more linked record name was found for the given fully qualified record name or
+        the CNAME lookup was disabled, and then returns the parameters as a tuple.
+        """
+        print("_get_dns_cname:", name)
+        resolver = dns.resolver.Resolver()
+        resolver.lifetime = 1
+        domain = dns.resolver.zone_for_name(name, resolver=resolver).to_text(True)
+        print("zone_for_name:", domain) #ERROR
+        nameservers = self._get_nameservers(self, domain)
+        cname = None
+        links, max_links = 0, 3
+        while link:
+            if links >= max_links:
+                logger.error(
+                    "Record %s has more than %d linked CNAME "
+                    "records. Reduce the amount of CNAME links!",
+                    name,
+                    max_links,
+                )
+                raise AssertionError
+            qname = cname if cname else name
+            rrset = self._dns_lookup(qname, "CNAME", nameservers)
+            if rrset:
+                links += 1
+                cname = rrset[0].to_text()
+                qdomain = dns.resolver.zone_for_name(cname, resolver=resolver).to_text(
+                    True
+                )
+                if domain != qdomain:
+                    domain = qdomain
+                    nameservers = self._get_nameservers(self, qdomain)
+            else:
+                link = False
+        if cname:
+            logger.info("Record %s has CNAME %s", name, cname)
+        return domain, nameservers, cname
 
     def renew_certificates(self) -> List[RotationResult]:
         certs: List[RotationCertificate] = self._get_certificate_from_config()

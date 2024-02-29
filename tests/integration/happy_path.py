@@ -8,7 +8,6 @@ from tests.integration.helper_framework.azure_dns_zone_manager import (
     DnsZoneDomainReference,
 )
 
-
 def get_latest_properties_of_certificate_versions(key_vault_certificates):
     now = datetime.now(timezone.utc)
     dates = []
@@ -18,34 +17,44 @@ def get_latest_properties_of_certificate_versions(key_vault_certificates):
     return key_vault_certificates[dates.index(latest)]
 
 
-def test_automatic_renewal_for_existing_cert(
+def test_automatic_renewal_for_existing_cert_single_domain(
     acme_config_manager,
     azure_key_vault_manager,
     azure_dns_zone_manager,
     config_file_path,
     resource_name,
+    dns_zone_name,
 ):
     ## Config
-    key_vault_cert_name = dns_zone_record_name = resource_name
+    key_vault_cert_name = resource_name
     cert_validity_in_month = 1
     acme_config_renew_before_expiry_in_days = 31
+    domain_name = resource_name + "." + dns_zone_name
 
     ## Init
     acme_config_manager.base_config_from_file(file_path=config_file_path)
-    cname: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-        name=dns_zone_record_name,
+    azure_dns_zone_manager.create_cname_record(
+        name="_acme-challenge." + resource_name,
+        value="_acme." + resource_name
     )
+    azure_dns_zone_manager.create_txt_record(
+        name="_acme." + resource_name,
+        value="-"
+    )
+    domains = [
+        DnsZoneDomainReference(name=domain_name)
+    ]
 
     azure_key_vault_manager.create_certificate(
         name=key_vault_cert_name,
-        subject=f"CN={cname.name}",
+        subject=f"CN={domain_name}",
         validity_in_months=cert_validity_in_month,
-        san_dns_names=[cname.name],
+        san_dns_names=[domain_name],
     )
 
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
-        domain_references=[cname],
+        domain_references=domains,
         renew_before_expiry=acme_config_renew_before_expiry_in_days,
     )
 

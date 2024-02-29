@@ -37,6 +37,7 @@ schema = Map(
             Map(
                 {
                     "name": Regex("^[-a-zA-Z0-9]{1,127}$"),
+                    "dns_zone_resource_id": Str(),
                     Optional("renew_before_expiry"): Int(),
                     "domains": Seq(
                         Map(
@@ -44,7 +45,7 @@ schema = Map(
                                 "name": Regex(
                                     r"(?=^.{4,253}$)(^((?!-)[*a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)"
                                 ),
-                                "dns_zone_resource_id": Str(),
+                                Optional("dns_zone_resource_id", default=""): Str(),
                             }
                         )
                     ),

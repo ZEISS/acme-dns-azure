@@ -127,7 +127,6 @@ Generic placeholders are defined as follows:
 - `<int>`: a regular integer
 - `<string>`: a regular string
 - `<secret>`: a regular string that is a secret, such as a password
-- `<regex>`: a regular expression
 
 The other placeholders are specified separately.
 
@@ -139,16 +138,16 @@ See [examples](examples/README.md) for configuration examples.
 [sp_client_id: <string>]
 [sp_client_secret: <secret>]
 
-[azure_environment: <regex> | default = "AzurePublicCloud"]
+[azure_environment: <string> | default = "AzurePublicCloud"]
 
 # Flag if existing certificates containing multiple domains should be renewed and updated based on the definition of the config file. If not set, mismatching certificates will be skipped.
 [update_cert_domains: <boolean> | default = False]
 
 # key vault uri for renewal of certifcate
-key_vault_id : <regex>
+key_vault_id : <string>
 
 # ACME Certificate Authority
-server : <regex>
+server : <string>
 
 # Secret name within key vault for storing ACME Certificate authority account information
 [keyvault_account_secret_name: <regex> | default "acme-account-$(network location of server)"]
@@ -177,7 +176,7 @@ agree-tos: true
 
   # External account binding configuration for ACME, with key ID and base64encoded HMAC key
   [enabled: <boolean> |  default = false]
-  [kid_secret_name : <regex> | default="acme-eab-kid"]
+  [kid_secret_name : <string> | default="acme-eab-kid"]
   [hmac_key_secret_name : <secret> default="acme-eab-hmac-key"]
 ```
 
@@ -190,7 +189,9 @@ certificates:
 
 ```yml
 # Certbot certficate name. The name will also be used for Azure keyvault certificate name.
-name: <regex>
+name: <string>
+# Azure dns zone resource ID used for ACME DNS01 challenge
+dns_zone_resource_id: <string>
 # renewal in days before expiry for certificate to be renewed
 [renew_before_expiry: <int>]
 domains:
@@ -201,9 +202,9 @@ domains:
 
 ```yml
 # domain name this certificate is valid for. Wildcard supported.
-name: <regex>
-# Azure resource ID to according record set within DNS Zone
-dns_zone_resource_id: <string>
+name: <string>
+# Azure dns zone resource ID used for ACME DNS01 challenge
+[dns_zone_resource_id: <string>]
 ```
 
 ## Manual running the library
