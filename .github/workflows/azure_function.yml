@@ -1,9 +1,6 @@
 name: Azure function
 
 on:
-  push:
-    branches:
-      - "fix/func-build"
   workflow_call:
 
 jobs:
