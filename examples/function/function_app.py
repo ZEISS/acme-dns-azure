@@ -17,7 +17,7 @@ app = func.FunctionApp()
 @app.schedule(
     schedule="%ScheduleAcmeDnsAzure%",
     arg_name="acmeDnsAzureTimer",
-    run_on_startup=True,
+    run_on_startup=False,
 )
 def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
     utc_timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
