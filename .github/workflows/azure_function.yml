@@ -2,6 +2,9 @@ name: Azure function
 
 on:
   workflow_call:
+  push:
+    branches:
+      - "test/app-build"
 
 jobs:
   build:
@@ -13,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.x"
       - name: Install dependencies
         working-directory: ./examples/function
         run: |
