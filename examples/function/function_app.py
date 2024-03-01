@@ -47,6 +47,6 @@ def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
 
 @app.function_name(name="HttpTrigger1")
 @app.route(route="req")
-def main(req: func.HttpRequest) -> str:
+def main2(req: func.HttpRequest) -> str:
     user = req.params.get("user")
     return f"Hello, {user}!"
