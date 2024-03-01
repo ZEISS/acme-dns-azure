@@ -3,8 +3,6 @@ name: Azure function
 on:
   workflow_call:
   push:
-    branches:
-      - "test/app-build"
 
 jobs:
   build:
