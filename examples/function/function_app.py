@@ -4,11 +4,6 @@ from typing import List
 
 import azure.functions as func
 
-from acme_dns_azure.data import (
-    RotationResult,
-    CertbotResult,
-)
-from acme_dns_azure.client import AcmeDnsAzureClient
 
 app = func.FunctionApp()
 
@@ -30,6 +25,12 @@ def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
     acme_dns_config_env_name = "ACME_DNS_CONFIG"
 
     try:
+        from acme_dns_azure.data import (
+            RotationResult,
+            CertbotResult,
+        )
+        from acme_dns_azure.client import AcmeDnsAzureClient
+
         client = AcmeDnsAzureClient(config_env_var=acme_dns_config_env_name)
         results: List[RotationResult] = client.issue_certificates()
         for rotation in results:
@@ -42,3 +43,10 @@ def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
 
     except Exception:
         logging.exception("Failed to rotate certificates")
+
+
+@app.function_name(name="HttpTrigger1")
+@app.route(route="req")
+def main(req: func.HttpRequest) -> str:
+    user = req.params.get("user")
+    return f"Hello, {user}!"
