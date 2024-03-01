@@ -43,10 +43,3 @@ def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
 
     except Exception:
         logging.exception("Failed to rotate certificates")
-
-
-@app.function_name(name="HttpTrigger1")
-@app.route(route="req")
-def main2(req: func.HttpRequest) -> str:
-    user = req.params.get("user")
-    return f"Hello, {user}!"
