@@ -1,11 +1,11 @@
-from data import (
+from acme_dns_azure.data import (
     RotationResult,
     DomainReference,
     RotationCertificate,
     CertbotResult,
 )
-from client import AcmeDnsAzureClient
-from .log import setup_custom_logger
+from acme_dns_azure.client import AcmeDnsAzureClient
+from acme_dns_azure.log import setup_custom_logger
 
 __version__ = "0.1.4"
 
