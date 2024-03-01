@@ -262,7 +262,7 @@ class CertbotManager:
             cert_name = o["name"]
             domains = []
             renew_before_expiry = None
-            if renew_before_expiry in o:
+            if "renew_before_expiry" in o:
                 renew_before_expiry = int(o["renew_before_expiry"])
             for domain in o["domains"]:
                 dns_zone_resource_id = domain["dns_zone_resource_id"]
@@ -382,7 +382,6 @@ class CertbotManager:
             "fullchain = %s"
             % (self._work_dir + "config/live/" + certbot_cert_name + "/fullchain.pem")
         )
-
         if renew_before_expiry:
             lines.append(f"renew_before_expiry = {renew_before_expiry} days")
 
