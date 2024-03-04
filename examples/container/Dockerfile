@@ -7,19 +7,18 @@ ENV TIMEZONE=${TIMEZONE:-} \
 
 WORKDIR /usr/src/app
 
-
-COPY entrypoint.sh /entrypoint.sh
+COPY main.py /main.py
 RUN set -eux; \
-    chmod +x /entrypoint.sh; \
     # Install permanent system packages
     apk --update add --no-cache \
-    libexpat=2.6.0-r0 \
+    # libexpat=2.6.0-r0 \
     coreutils \
     curl \
     bash \
     zip \
     git \
     jq \
+    certbot \
     ; \
     # Install build-dependent system packages
     apk add --no-cache --virtual .build-deps \
@@ -35,11 +34,11 @@ RUN set -eux; \
     # Install ACME client
     python -m pip install --upgrade pip; \
     pip install --no-cache-dir pip-tools; \
-    # pip install --no-cache-dir acme-dns-azure; \
+    pip install --no-cache-dir acme-dns-azure; \
     \
     # Remove build-dependent system packages and files
     apk del .build-deps; \
     pip cache purge; \
     rm -rf ~/.cache /tmp/*
 
-CMD [ "/bin/sh","-c","/entrypoint.sh" ]
+CMD ["python", "/main.py"]
