@@ -15,6 +15,7 @@ RUN set -eux; \
     zip \
     git \
     jq \
+    gcc \
     certbot 
 
 RUN set -eux; \
