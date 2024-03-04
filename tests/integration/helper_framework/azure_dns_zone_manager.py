@@ -62,9 +62,7 @@ class AzureDnsZoneManager:
     def delete_addtional_txt_record_when_cleanup(self, name):
         self._additonal_records.append(name)
 
-    def create_cname_record(
-        self, name, value, ttl: int = 120
-    ) -> None:
+    def create_cname_record(self, name, value, ttl: int = 120) -> None:
         logging.info("Creating record %s", name)
         record_set: RecordSet = self._client.record_sets.create_or_update(
             resource_group_name=self._resource_group_name,
@@ -76,9 +74,7 @@ class AzureDnsZoneManager:
         self._created_record_sets.append(record_set)
         logging.info("Created record %s", record_set)
 
-    def create_txt_record(
-        self, name, value: str = None, ttl: int = 120
-    ) -> str:
+    def create_txt_record(self, name, value: str = None, ttl: int = 120) -> str:
         logging.info("Creating record %s", name)
         record_set: RecordSet = self._client.record_sets.create_or_update(
             resource_group_name=self._resource_group_name,

@@ -129,12 +129,10 @@ def test_create_cert_for_dns_delegation_dedicated_txt_with_minimum_permission_su
     )
     acme_config_manager.base_config_from_file(file_path=config_file_path)
     azure_dns_zone_manager.create_cname_record(
-        name="_acme-challenge." + resource_name,
-        value="_dedicated." + domain_name + "."
+        name="_acme-challenge." + resource_name, value="_dedicated." + domain_name + "."
     )
     txt_rrset_id = azure_dns_zone_manager.create_txt_record(
-        name="_dedicated." + resource_name,
-        value="-"
+        name="_dedicated." + resource_name, value="-"
     )
     azure_ad_manager.create_role_assignment(
         scope=txt_rrset_id,
@@ -142,9 +140,7 @@ def test_create_cert_for_dns_delegation_dedicated_txt_with_minimum_permission_su
     )
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
-        domain_references=[
-            DnsZoneDomainReference(name=domain_name)
-        ],
+        domain_references=[DnsZoneDomainReference(name=domain_name)],
     )
 
     ## Test
@@ -171,25 +167,21 @@ def test_create_cert_for_dns_delegation_dedicated_txt_without_minimum_permission
     ## Config
     domain_name = resource_name + "." + dns_zone_name
     key_vault_cert_name = domain_name.replace(".", "")
-    
+
     ## Init
     config_file_path = config_file_path.replace(
         "config.yaml", "no_permission_config.yaml"
     )
     acme_config_manager.base_config_from_file(file_path=config_file_path)
     azure_dns_zone_manager.create_cname_record(
-        name="_acme-challenge." + resource_name,
-        value="_dedicated." + domain_name + "."
+        name="_acme-challenge." + resource_name, value="_dedicated." + domain_name + "."
     )
     _ = azure_dns_zone_manager.create_txt_record(
-        name="_dedicated." + resource_name,
-        value="-"
+        name="_dedicated." + resource_name, value="-"
     )
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
-        domain_references=[
-            DnsZoneDomainReference(name=domain_name)
-        ],
+        domain_references=[DnsZoneDomainReference(name=domain_name)],
     )
 
     ## Test
@@ -223,15 +215,14 @@ def test_create_cert_for_dns_delegation_shared_txt_shared_cert_with_minimum_perm
     acme_config_manager.base_config_from_file(file_path=config_file_path)
     azure_dns_zone_manager.create_cname_record(
         name="_acme-challenge." + resource_name + "1",
-        value="_shared." + resource_name + "." + dns_zone_name + "."
+        value="_shared." + resource_name + "." + dns_zone_name + ".",
     )
     azure_dns_zone_manager.create_cname_record(
         name="_acme-challenge." + resource_name + "2",
-        value="_shared." + resource_name + "." + dns_zone_name + "."
+        value="_shared." + resource_name + "." + dns_zone_name + ".",
     )
     txt_rrset_id = azure_dns_zone_manager.create_txt_record(
-        name="_shared." + resource_name,
-        value="-"
+        name="_shared." + resource_name, value="-"
     )
     azure_ad_manager.create_role_assignment(
         scope=txt_rrset_id,
@@ -282,15 +273,14 @@ def test_create_cert_for_dns_delegation_shared_txt_single_cert_with_minimum_perm
     acme_config_manager.base_config_from_file(file_path=config_file_path)
     azure_dns_zone_manager.create_cname_record(
         name="_acme-challenge." + resource_name + "1",
-        value="_shared." + resource_name + "." + dns_zone_name + "."
+        value="_shared." + resource_name + "." + dns_zone_name + ".",
     )
     azure_dns_zone_manager.create_cname_record(
         name="_acme-challenge." + resource_name + "2",
-        value="_shared." + resource_name + "." + dns_zone_name + "."
+        value="_shared." + resource_name + "." + dns_zone_name + ".",
     )
     txt_rrset_id = azure_dns_zone_manager.create_txt_record(
-        name="_shared." + resource_name,
-        value="-"
+        name="_shared." + resource_name, value="-"
     )
     azure_ad_manager.create_role_assignment(
         scope=txt_rrset_id,

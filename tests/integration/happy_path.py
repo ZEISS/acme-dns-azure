@@ -8,6 +8,7 @@ from tests.integration.helper_framework.azure_dns_zone_manager import (
     DnsZoneDomainReference,
 )
 
+
 def get_latest_properties_of_certificate_versions(key_vault_certificates):
     now = datetime.now(timezone.utc)
     dates = []
@@ -40,9 +41,7 @@ def test_automatic_renewal_for_existing_cert_single_domain(
     )
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
-        domain_references=[
-            DnsZoneDomainReference(name=domain_name)
-        ],
+        domain_references=[DnsZoneDomainReference(name=domain_name)],
         renew_before_expiry=acme_config_renew_before_expiry_in_days,
     )
 
@@ -91,9 +90,7 @@ def test_skip_for_valid_existing_cert(
     )
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
-        domain_references=[
-            DnsZoneDomainReference(name=domain_name)
-        ],
+        domain_references=[DnsZoneDomainReference(name=domain_name)],
         renew_before_expiry=acme_config_renew_before_expiry_in_days,
     )
 
@@ -135,9 +132,7 @@ def test_automatic_renewal_for_existing_cert_only_once_then_skipped(
     )
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
-        domain_references=[
-            DnsZoneDomainReference(name=domain_name)
-        ],
+        domain_references=[DnsZoneDomainReference(name=domain_name)],
         renew_before_expiry=acme_config_renew_before_expiry_in_days,
     )
 

@@ -62,7 +62,7 @@ class AzureKeyVaultManager:
         except Exception:
             logging.exception(
                 "Failed to delete and purge certificate %s. Manual clean up required.",
-                certificate_poller.result().name
+                certificate_poller.result().name,
             )
 
     def _delete_secret(self, name):
@@ -73,7 +73,7 @@ class AzureKeyVaultManager:
         except Exception:
             logging.exception(
                 "Failed to delete and purge secret %s. Manual clean up required.",
-                secret_poller.result().name
+                secret_poller.result().name,
             )
 
     def clean_up_all_resources(self):

@@ -27,7 +27,6 @@ class AcmeConfigManager:
             raise Exception("Base config not loaded!")
         if "certificates" not in self._config:
             self._config["certificates"] = []
-        
 
         domains = []
         for domain in domain_references:
@@ -44,7 +43,11 @@ class AcmeConfigManager:
                         "name": domain.name,
                     }
                 )
-        config_cert = {"name": cert_name, "dns_zone_resource_id": self.dns_zone_resource_id, "domains": domains}
+        config_cert = {
+            "name": cert_name,
+            "dns_zone_resource_id": self.dns_zone_resource_id,
+            "domains": domains,
+        }
         if renew_before_expiry is not None:
             config_cert["renew_before_expiry"] = renew_before_expiry
 

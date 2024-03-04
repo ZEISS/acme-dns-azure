@@ -27,22 +27,30 @@ def certbot_manager_init(self, working_dir) -> None:
     self._create_certbot_init_files()
     self._create_certbot_init_directories()
 
-def _get_dns_cname_mock(self, name, link=True):
+
+def _dns_delegation_validate_mock(name: str):
     if name.endswith(".zyx.example.org"):
-        return "my-dev.domain.com", [], "_acme-challenge.zyx.my-dev.domain.com"
+        return "my-dev.domain.com", "_acme-challenge.zyx.my-dev.domain.com"
     elif name.endswith(".abc.example.org"):
-        return "my-dev.domain.com", [], "_acme.my-dev.domain.com"
+        return "my-dev.domain.com", "_acme.my-dev.domain.com"
     else:
-        return "example.org", [], None
+        return "example.org", None
+
 
 @pytest.fixture(autouse=True)
-def _get_dns_cname_fixture(request):
-    _ignore_mock = request.node.get_closest_marker('ignore_dns_cname_mock')
+def _dns_delegation_validate_fixture(request):
+    _ignore_mock = request.node.get_closest_marker(
+        "ignore_dns_delegation_validate_mock"
+    )
     if _ignore_mock:
         yield
     else:
-        with patch('acme_dns_azure.certbot_manager.CertbotManager._get_dns_cname', side_effect=_get_dns_cname_mock) as fixture:
+        with patch(
+            "acme_dns_azure.dns_delegation.DNSDelegation.validate",
+            side_effect=_dns_delegation_validate_mock,
+        ) as fixture:
             yield fixture
+
 
 @patch.object(CertbotManager, "__init__", certbot_manager_init)
 def test_certbot_ini_is_created(

@@ -83,9 +83,11 @@ def resource_name(request):
         default_name = prefix + default_name
     return default_name
 
+
 @pytest.fixture(autouse=False)
 def dns_zone_name(request):
     return request.config.getoption("--dns-zone-name")
+
 
 @pytest.fixture(autouse=True)
 def config_file_path(request):

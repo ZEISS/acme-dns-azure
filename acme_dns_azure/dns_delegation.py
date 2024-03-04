@@ -3,10 +3,10 @@ import dns.resolver
 
 logger = setup_custom_logger(__name__)
 
+
 class DNSDelegation:
     def __init__(self) -> None:
         pass
-
 
     def _zone_for_name(self, name: str):
         """
@@ -16,7 +16,7 @@ class DNSDelegation:
         try:
             resolver = dns.resolver.Resolver()
             resolver.lifetime = 1.0
-            zone = dns.resolver.zone_for_name(name, resolver = resolver).to_text(True)
+            zone = dns.resolver.zone_for_name(name, resolver=resolver).to_text(True)
             msg = "{0}._zone_for_name - Answer: {1}"
             logger.debug(msg.format(self.__class__.__name__, zone))
             return zone
@@ -24,7 +24,6 @@ class DNSDelegation:
             msg = "{0}._zone_for_name - An DNS exception of type {1} occurred. {2}"
             logger.debug(msg.format(self.__class__.__name__, type(ex).__name__, ex))
         return None
-
 
     def _nameservers(self, zone: str):
         """
@@ -47,7 +46,6 @@ class DNSDelegation:
             nameservers = None
         return nameservers
 
-
     def _resolve(self, name: str, rdtype: str, nameservers: list[str] = []):
         """
         Resolves DNS using specified or system default nameservers. It returns the DNS
@@ -60,7 +58,7 @@ class DNSDelegation:
                 resolver.nameservers = nameservers
             r = resolver.resolve(name, rdtype)
             msg = "{0}._resolve - Answer: {1}".format(
-                self.__class__.__name__, r.rrset.to_text().replace('\n', ' | ')
+                self.__class__.__name__, r.rrset.to_text().replace("\n", " | ")
             )
             logger.debug(msg)
             return r
@@ -68,7 +66,6 @@ class DNSDelegation:
             msg = "{0}._resolve - An DNS exception of type {1} occurred. {2}"
             logger.debug(msg.format(self.__class__.__name__, type(ex).__name__, ex))
         return None
-
 
     def validate(self, name: str):
         """
@@ -96,7 +93,9 @@ class DNSDelegation:
                 logger.info(msg.format(self.__class__.__name__, name, cname, zone))
                 return zone, cname
             if hop >= max_hops:
-                msg = ("{0}.validate - DNS record set {1} has a canonical name that points {2!s} "
-                       "or more times to another canonical name. Avoid canonical name loops!")
+                msg = (
+                    "{0}.validate - DNS record set {1} has a canonical name that points {2!s} "
+                    "or more times to another canonical name. Avoid canonical name loops!"
+                )
                 logger.error(msg.format(self.__class__.__name__, name, hop))
                 raise AssertionError

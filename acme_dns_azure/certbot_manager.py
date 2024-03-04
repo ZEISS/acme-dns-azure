@@ -139,7 +139,9 @@ class CertbotManager:
                     logger.info("Handling wildard request %s", name)
                     name = name.removeprefix("*.")
                 idx += 1
-                dns_zone_name, cname = DNSDelegation().validate("_acme-challenge." + name)
+                dns_zone_name, cname = DNSDelegation().validate(
+                    "_acme-challenge." + name
+                )
                 azure_resource_id = certificate["dns_zone_resource_id"]
                 if domain["dns_zone_resource_id"]:
                     azure_resource_id = domain["dns_zone_resource_id"]
