@@ -201,7 +201,7 @@ domains:
 
 ```yml
 # domain name this certificate is valid for. Wildcard supported.
-name: <regex>
+name: <string>
 # Azure resource ID to according record set within DNS Zone
 dns_zone_resource_id: <string>
 ```
