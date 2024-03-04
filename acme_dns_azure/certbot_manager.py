@@ -399,7 +399,6 @@ class CertbotManager:
             "fullchain = %s"
             % (self._work_dir + "config/live/" + certbot_cert_name + "/fullchain.pem")
         )
-
         if renew_before_expiry:
             lines.append(f"renew_before_expiry = {renew_before_expiry} days")
 

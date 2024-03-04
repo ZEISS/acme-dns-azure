@@ -7,8 +7,8 @@ on:
     branches:
       - "main"
     paths:
-      - "!acme_dns_azure/___init___.py"
       - "acme_dns_azure/**"
+      - "!acme_dns_azure/___init___.py"
       - "tests/integration/**"
       - ".github/workflows/integration_test.yml"
   workflow_call:

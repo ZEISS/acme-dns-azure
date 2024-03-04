@@ -18,13 +18,14 @@ packages = [
   {include = "function_app.py"},
 ]
 readme = "README.md"
-version = "0.1.4a1"
+version = "0.1.8"
 
 [tool.poetry_bumpversion.file."version.py"]
 
 [tool.poetry.dependencies]
 acme-dns-azure = "*"
 azure-functions = {version = ">=1"}
+cffi = "*"
 python = "^3.8"
 
 [tool.poetry.scripts]
