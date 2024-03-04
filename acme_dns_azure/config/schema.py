@@ -41,9 +41,7 @@ schema = Map(
                     "domains": Seq(
                         Map(
                             {
-                                "name": Regex(
-                                    r"(?=^.{4,253}$)(^((?!-)[*a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)"
-                                ),
+                                "name": Str(),
                                 "dns_zone_resource_id": Str(),
                             }
                         )
