@@ -22,17 +22,17 @@ certbot.ini: |
 
 certificates:
   - name: tls-xyz-example-org
+    dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/example.org
     domains:
       - name: xyz.example.org
-        dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/example.org/CNAME/myname
       - name: zyx.example.org
-        dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com/CNAME/abc
+        dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com
 
   - name: tls-wildcard-abc-example-org
     renew_before_expiry: 40
+    dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com
     domains:
       - name: "*.abc.example.org"
-        dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com/CNAME/*abc
 ```
 
 This configuration will create following certbot config files:
@@ -57,9 +57,9 @@ server = https://acme-staging-v02.api.letsencrypt.org/directory
 dns_azure_msi_client_id = 00000000-0000-0000-0000-000000000000
 dns_azure_tenant_id = 00000000-0000-0000-0000-000000000000
 dns_azure_environment = AzurePublicCloud
-dns_azure_zone1 = xyz.example.org:/subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com/CNAME/myname
-dns_azure_zone2 = zyx.example.org:/subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com/CNAME/abc
-dns_azure_zone3 = abc.example.org:/subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com/CNAME/*abc
+dns_azure_zone1 = xyz.example.org:/subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com
+dns_azure_zone2 = zyx.example.org:/subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com
+dns_azure_zone3 = abc.example.org:/subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com
 ```
 
 The library will:

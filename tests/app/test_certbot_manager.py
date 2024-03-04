@@ -2,6 +2,7 @@ import os
 import filecmp
 
 from mock import patch
+import pytest
 
 from acme_dns_azure.certbot_manager import CertbotManager
 from acme_dns_azure.context import Context
@@ -25,6 +26,30 @@ def certbot_manager_init(self, working_dir) -> None:
     self._os_manager = FileManager()
     self._create_certbot_init_files()
     self._create_certbot_init_directories()
+
+
+def _dns_delegation_validate_mock(name: str):
+    if name.endswith(".zyx.example.org"):
+        return "my-dev.domain.com", "_acme-challenge.zyx.my-dev.domain.com"
+    elif name.endswith(".abc.example.org"):
+        return "my-dev.domain.com", "_acme.my-dev.domain.com"
+    else:
+        return "example.org", None
+
+
+@pytest.fixture(autouse=True)
+def _dns_delegation_validate_fixture(request):
+    _ignore_mock = request.node.get_closest_marker(
+        "ignore_dns_delegation_validate_mock"
+    )
+    if _ignore_mock:
+        yield
+    else:
+        with patch(
+            "acme_dns_azure.dns_delegation.DNSDelegation.validate",
+            side_effect=_dns_delegation_validate_mock,
+        ) as fixture:
+            yield fixture
 
 
 @patch.object(CertbotManager, "__init__", certbot_manager_init)

@@ -17,16 +17,22 @@ current_directory = os.path.split(path_to_current_file)[0]
 
 def pytest_addoption(parser):
     parser.addoption(
+        "--dns-zone-id",
+        action="store",
+        required=True,
+        help="Please set DNS Zone resource ID. Test will create RecordSets here.",
+    )
+    parser.addoption(
         "--dns-zone-name",
         action="store",
         required=True,
-        help="Please set DNS Zone reference. Test will create RecordSets here.",
+        help="Please set DNS Zone name. Test will create RecordSets here.",
     )
     parser.addoption(
         "--dns-zone-resource-group-name",
         action="store",
         required=True,
-        help="Please set DNS Zone reference. Test will create RecordSets here.",
+        help="Please set DNS Zone resource group name. Test will create RecordSets here.",
     )
     parser.addoption(
         "--subscription-id",
@@ -78,6 +84,11 @@ def resource_name(request):
     return default_name
 
 
+@pytest.fixture(autouse=False)
+def dns_zone_name(request):
+    return request.config.getoption("--dns-zone-name")
+
+
 @pytest.fixture(autouse=True)
 def config_file_path(request):
     return request.config.getoption("--config-file-path")
@@ -89,8 +100,11 @@ def principal_id(request):
 
 
 @pytest.fixture(autouse=False)
-def acme_config_manager():
-    acme_config_manager = AcmeConfigManager()
+def acme_config_manager(request):
+    dns_zone_resource_id = request.config.getoption("--dns-zone-id")
+    acme_config_manager = AcmeConfigManager(
+        dns_zone_resource_id=dns_zone_resource_id,
+    )
     yield acme_config_manager
 
 
@@ -107,7 +121,7 @@ def azure_dns_zone_manager(request):
         zone_name=dns_zone_name,
     )
     yield azure_dns_zone_manager
-    print("\nTeardown DNS resources...\n")
+    print("\nTeardown DNS resources...")
     azure_dns_zone_manager.clean_up_all_resources()
 
 
@@ -116,7 +130,7 @@ def azure_key_vault_manager(request):
     keyvault_uri = request.config.getoption("--keyvault-uri")
     azure_key_vault_manager = AzureKeyVaultManager(keyvault_uri=keyvault_uri)
     yield azure_key_vault_manager
-    print("\nTeardown KeyVault resources...\n")
+    print("\nTeardown KeyVault resources...")
     azure_key_vault_manager.clean_up_all_resources()
 
 
@@ -125,5 +139,5 @@ def azure_ad_manager(request):
     subscription_id = request.config.getoption("--subscription-id")
     azure_ad_manager = AzureADManager(subscription_id=subscription_id)
     yield azure_ad_manager
-    print("\nTeardown Role assignments...\n")
+    print("\nTeardown Role assignments...")
     azure_ad_manager.clean_up_all_resources()

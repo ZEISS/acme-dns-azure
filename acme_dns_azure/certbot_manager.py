@@ -11,6 +11,7 @@ from acme_dns_azure.data import (
     RotationCertificate,
     CertbotResult,
 )
+from acme_dns_azure.dns_delegation import DNSDelegation
 
 logger = setup_custom_logger(__name__)
 
@@ -135,12 +136,30 @@ class CertbotManager:
             for domain in certificate["domains"]:
                 name = domain["name"]
                 if name.startswith("*."):
-                    logger.info("Handling wildard request %s.", name)
-                    name = name.replace("*.", "")
+                    logger.info("Handling wildard request %s", name)
+                    name = name.removeprefix("*.")
                 idx += 1
+                dns_zone_name, cname = DNSDelegation().validate(
+                    "_acme-challenge." + name
+                )
+                azure_resource_id = certificate["dns_zone_resource_id"]
+                if domain["dns_zone_resource_id"]:
+                    azure_resource_id = domain["dns_zone_resource_id"]
+                if dns_zone_name != azure_resource_id.split("/")[-1]:
+                    logger.error(
+                        "Required DNS zone %s doesn't match configured Azure DNS zone %s",
+                        dns_zone_name,
+                        azure_resource_id,
+                    )
+                    raise AssertionError
+                if cname:
+                    azure_resource_id = (
+                        azure_resource_id
+                        + "/TXT/"
+                        + cname.removesuffix("." + dns_zone_name)
+                    )
                 lines.append(
-                    "dns_azure_zone%i = %s:%s"
-                    % (idx, name, domain["dns_zone_resource_id"])
+                    "dns_azure_zone%i = %s:%s" % (idx, name, azure_resource_id)
                 )
         return lines
 

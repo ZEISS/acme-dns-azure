@@ -21,40 +21,37 @@ def get_latest_properties_of_certificate_versions(key_vault_certificates):
 def test_automatic_renewal_for_existing_cert_multiple_domains_skipped(
     acme_config_manager,
     azure_key_vault_manager,
-    azure_dns_zone_manager,
     config_file_path,
     resource_name,
+    dns_zone_name,
 ):
     ## Config
-    key_vault_cert_name = dns_zone_record_name = resource_name
+    domain_name1 = resource_name + "1." + dns_zone_name
+    domain_name2 = resource_name + "2." + dns_zone_name
+    key_vault_cert_name = domain_name1.replace(".", "")
     cert_validity_in_month = 1
     acme_config_renew_before_expiry_in_days = 31
 
     ## Init
     acme_config_manager.base_config_from_file(file_path=config_file_path)
-    cname1: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-        name=dns_zone_record_name + "1",
-    )
-    cname2: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-        name=dns_zone_record_name + "2",
-    )
-
     azure_key_vault_manager.create_certificate(
         name=key_vault_cert_name,
-        subject=f"CN={cname1.name}",
+        subject=f"CN={domain_name1}",
         validity_in_months=cert_validity_in_month,
-        san_dns_names=[cname1.name],
+        san_dns_names=[domain_name1],
     )
-
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
-        domain_references=[cname1, cname2],
+        domain_references=[
+            DnsZoneDomainReference(name=domain_name1),
+            DnsZoneDomainReference(name=domain_name2),
+        ],
         renew_before_expiry=acme_config_renew_before_expiry_in_days,
     )
 
     ## Test
     client = AcmeDnsAzureClient(acme_config_manager.config)
-    results: [RotationResult] = client.issue_certificates()
+    results: list[RotationResult] = client.issue_certificates()
 
     ## Validate
     for result in results:
@@ -62,49 +59,45 @@ def test_automatic_renewal_for_existing_cert_multiple_domains_skipped(
     cn, san = azure_key_vault_manager.get_cn_and_san_from_certificate(
         key_vault_cert_name
     )
-    assert cn == f"CN={cname1.name}"
-    assert san == [cname1.name]
+    assert cn == f"CN={domain_name1}"
+    assert san == [domain_name1]
 
 
 def test_automatic_renewal_for_existing_cert_multiple_domains_overwritten(
     acme_config_manager,
     azure_key_vault_manager,
-    azure_dns_zone_manager,
     config_file_path,
     resource_name,
+    dns_zone_name,
 ):
     ## Config
-    key_vault_cert_name = dns_zone_record_name = resource_name
+    domain_name1 = resource_name + "1." + dns_zone_name
+    domain_name2 = resource_name + "2." + dns_zone_name
+    key_vault_cert_name = domain_name1.replace(".", "")
     cert_validity_in_month = 1
     acme_config_renew_before_expiry_in_days = 31
-    acme_config_manager.base_config_from_file(file_path=config_file_path)
-    acme_config_manager.set_config_param("update_cert_domains", True)
 
     ## Init
-
-    cname1: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-        name=dns_zone_record_name + "1",
-    )
-    cname2: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-        name=dns_zone_record_name + "2",
-    )
-
+    acme_config_manager.base_config_from_file(file_path=config_file_path)
+    acme_config_manager.set_config_param("update_cert_domains", True)
     azure_key_vault_manager.create_certificate(
         name=key_vault_cert_name,
-        subject=f"CN={cname1.name}",
+        subject=f"CN={domain_name1}",
         validity_in_months=cert_validity_in_month,
-        san_dns_names=[cname1.name],
+        san_dns_names=[domain_name1],
     )
-
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
-        domain_references=[cname1, cname2],
+        domain_references=[
+            DnsZoneDomainReference(name=domain_name1),
+            DnsZoneDomainReference(name=domain_name2),
+        ],
         renew_before_expiry=acme_config_renew_before_expiry_in_days,
     )
 
     ## Test
     client = AcmeDnsAzureClient(acme_config_manager.config)
-    results: [RotationResult] = client.issue_certificates()
+    results: list[RotationResult] = client.issue_certificates()
 
     ## Validate
     for result in results:
@@ -112,8 +105,8 @@ def test_automatic_renewal_for_existing_cert_multiple_domains_overwritten(
     cn, san = azure_key_vault_manager.get_cn_and_san_from_certificate(
         key_vault_cert_name
     )
-    assert cn == f"CN={cname1.name}"
-    assert san == [cname1.name, cname2.name]
+    assert cn == f"CN={domain_name1}"
+    assert san == [domain_name1, domain_name2]
 
 
 def test_create_cert_for_dns_delegation_dedicated_txt_with_minimum_permission_success(
@@ -123,43 +116,36 @@ def test_create_cert_for_dns_delegation_dedicated_txt_with_minimum_permission_su
     azure_ad_manager,
     config_file_path,
     resource_name,
+    dns_zone_name,
     principal_id,
 ):
     ## Config
-    key_vault_cert_name = dns_zone_record_name = resource_name
+    domain_name = resource_name + "." + dns_zone_name
+    key_vault_cert_name = domain_name.replace(".", "")
+
+    ## Init
     config_file_path = config_file_path.replace(
         "config.yaml", "no_permission_config.yaml"
     )
     acme_config_manager.base_config_from_file(file_path=config_file_path)
-
-    ## Init
-
-    txt_record: DnsZoneDomainReference = azure_dns_zone_manager.create_txt_record(
-        name="_acme-dedicated", value="-"
+    azure_dns_zone_manager.create_cname_record(
+        name="_acme-challenge." + resource_name, value="_dedicated." + domain_name + "."
     )
-    cname: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-        name="_acme-challenge." + dns_zone_record_name,
-        value=txt_record.name,
+    txt_rrset_id = azure_dns_zone_manager.create_txt_record(
+        name="_dedicated." + resource_name, value="-"
     )
-
     azure_ad_manager.create_role_assignment(
-        scope=txt_record.dns_zone_resource_id,
+        scope=txt_rrset_id,
         principal_id=principal_id,
     )
-
-    delegation_config = DnsZoneDomainReference(
-        dns_zone_resource_id=txt_record.dns_zone_resource_id,
-        name=cname.name.replace("_acme-challenge.", ""),
-    )
-
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
-        domain_references=[delegation_config],
+        domain_references=[DnsZoneDomainReference(name=domain_name)],
     )
 
     ## Test
     client = AcmeDnsAzureClient(acme_config_manager.config)
-    results: [RotationResult] = client.issue_certificates()
+    results: list[RotationResult] = client.issue_certificates()
 
     ## Validate
     for result in results:
@@ -167,49 +153,40 @@ def test_create_cert_for_dns_delegation_dedicated_txt_with_minimum_permission_su
     cn, san = azure_key_vault_manager.get_cn_and_san_from_certificate(
         key_vault_cert_name
     )
-    assert cn == f"CN={delegation_config.name}"
-    assert san == [delegation_config.name]
+    assert cn == f"CN={domain_name}"
+    assert san == [domain_name]
 
 
 def test_create_cert_for_dns_delegation_dedicated_txt_without_minimum_permission_failure(
     acme_config_manager,
-    azure_key_vault_manager,
     azure_dns_zone_manager,
-    azure_ad_manager,
     config_file_path,
     resource_name,
-    principal_id,
+    dns_zone_name,
 ):
     ## Config
-    key_vault_cert_name = dns_zone_record_name = resource_name
+    domain_name = resource_name + "." + dns_zone_name
+    key_vault_cert_name = domain_name.replace(".", "")
+
+    ## Init
     config_file_path = config_file_path.replace(
         "config.yaml", "no_permission_config.yaml"
     )
     acme_config_manager.base_config_from_file(file_path=config_file_path)
-
-    ## Init
-
-    txt_record: DnsZoneDomainReference = azure_dns_zone_manager.create_txt_record(
-        name="_acme-dedicated", value="-"
+    azure_dns_zone_manager.create_cname_record(
+        name="_acme-challenge." + resource_name, value="_dedicated." + domain_name + "."
     )
-    cname: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-        name="_acme-challenge." + dns_zone_record_name,
-        value=txt_record.name,
+    _ = azure_dns_zone_manager.create_txt_record(
+        name="_dedicated." + resource_name, value="-"
     )
-
-    delegation_config = DnsZoneDomainReference(
-        dns_zone_resource_id=txt_record.dns_zone_resource_id,
-        name=cname.name.replace("_acme-challenge.", ""),
-    )
-
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
-        domain_references=[delegation_config],
+        domain_references=[DnsZoneDomainReference(name=domain_name)],
     )
 
     ## Test
     client = AcmeDnsAzureClient(acme_config_manager.config)
-    results: [RotationResult] = client.issue_certificates()
+    results: list[RotationResult] = client.issue_certificates()
 
     ## Validate
     for result in results:
@@ -223,51 +200,45 @@ def test_create_cert_for_dns_delegation_shared_txt_shared_cert_with_minimum_perm
     azure_ad_manager,
     config_file_path,
     resource_name,
+    dns_zone_name,
     principal_id,
 ):
     ## Config
-    key_vault_cert_name = dns_zone_record_name = resource_name
+    domain_name1 = resource_name + "1." + dns_zone_name
+    domain_name2 = resource_name + "2." + dns_zone_name
+    key_vault_cert_name = domain_name1.replace(".", "")
+
+    ## Init
     config_file_path = config_file_path.replace(
         "config.yaml", "no_permission_config.yaml"
     )
     acme_config_manager.base_config_from_file(file_path=config_file_path)
-
-    ## Init
-
-    txt_record: DnsZoneDomainReference = azure_dns_zone_manager.create_txt_record(
-        name="_acme-shared", value="-"
+    azure_dns_zone_manager.create_cname_record(
+        name="_acme-challenge." + resource_name + "1",
+        value="_shared." + resource_name + "." + dns_zone_name + ".",
     )
-    cname1: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-        name="_acme-challenge." + dns_zone_record_name + "1",
-        value=txt_record.name,
+    azure_dns_zone_manager.create_cname_record(
+        name="_acme-challenge." + resource_name + "2",
+        value="_shared." + resource_name + "." + dns_zone_name + ".",
     )
-    cname2: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-        name="_acme-challenge." + dns_zone_record_name + "2",
-        value=txt_record.name,
+    txt_rrset_id = azure_dns_zone_manager.create_txt_record(
+        name="_shared." + resource_name, value="-"
     )
-
     azure_ad_manager.create_role_assignment(
-        scope=txt_record.dns_zone_resource_id,
+        scope=txt_rrset_id,
         principal_id=principal_id,
     )
-
-    delegation_config1 = DnsZoneDomainReference(
-        dns_zone_resource_id=txt_record.dns_zone_resource_id,
-        name=cname1.name.replace("_acme-challenge.", ""),
-    )
-    delegation_config2 = DnsZoneDomainReference(
-        dns_zone_resource_id=txt_record.dns_zone_resource_id,
-        name=cname2.name.replace("_acme-challenge.", ""),
-    )
-
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
-        domain_references=[delegation_config1, delegation_config2],
+        domain_references=[
+            DnsZoneDomainReference(name=domain_name1),
+            DnsZoneDomainReference(name=domain_name2),
+        ],
     )
 
     ## Test
     client = AcmeDnsAzureClient(acme_config_manager.config)
-    results: [RotationResult] = client.issue_certificates()
+    results: list[RotationResult] = client.issue_certificates()
 
     ## Validate
     for result in results:
@@ -275,8 +246,8 @@ def test_create_cert_for_dns_delegation_shared_txt_shared_cert_with_minimum_perm
     cn, san = azure_key_vault_manager.get_cn_and_san_from_certificate(
         key_vault_cert_name
     )
-    assert cn == f"CN={delegation_config1.name}"
-    assert san == [delegation_config1.name, delegation_config2.name]
+    assert cn == f"CN={domain_name1}"
+    assert san == [domain_name1, domain_name2]
 
 
 def test_create_cert_for_dns_delegation_shared_txt_single_cert_with_minimum_permission_success(
@@ -286,69 +257,65 @@ def test_create_cert_for_dns_delegation_shared_txt_single_cert_with_minimum_perm
     azure_ad_manager,
     config_file_path,
     resource_name,
+    dns_zone_name,
     principal_id,
 ):
     ## Config
-    key_vault_cert_name = dns_zone_record_name = resource_name
+    domain_name1 = resource_name + "1." + dns_zone_name
+    domain_name2 = resource_name + "2." + dns_zone_name
+    key_vault_cert_name1 = domain_name1.replace(".", "")
+    key_vault_cert_name2 = domain_name2.replace(".", "")
+
+    ## Init
     config_file_path = config_file_path.replace(
         "config.yaml", "no_permission_config.yaml"
     )
     acme_config_manager.base_config_from_file(file_path=config_file_path)
-
-    ## Init
-
-    txt_record: DnsZoneDomainReference = azure_dns_zone_manager.create_txt_record(
-        name="_acme-shared", value="-", ttl="120"
+    azure_dns_zone_manager.create_cname_record(
+        name="_acme-challenge." + resource_name + "1",
+        value="_shared." + resource_name + "." + dns_zone_name + ".",
     )
-    cname1: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-        name="_acme-challenge." + dns_zone_record_name + "1",
-        value=txt_record.name,
+    azure_dns_zone_manager.create_cname_record(
+        name="_acme-challenge." + resource_name + "2",
+        value="_shared." + resource_name + "." + dns_zone_name + ".",
     )
-    cname2: DnsZoneDomainReference = azure_dns_zone_manager.create_cname_record(
-        name="_acme-challenge." + dns_zone_record_name + "2",
-        value=txt_record.name,
+    txt_rrset_id = azure_dns_zone_manager.create_txt_record(
+        name="_shared." + resource_name, value="-"
     )
-
     azure_ad_manager.create_role_assignment(
-        scope=txt_record.dns_zone_resource_id,
+        scope=txt_rrset_id,
         principal_id=principal_id,
     )
-
-    delegation_config1 = DnsZoneDomainReference(
-        dns_zone_resource_id=txt_record.dns_zone_resource_id,
-        name=cname1.name.replace("_acme-challenge.", ""),
-    )
-    delegation_config2 = DnsZoneDomainReference(
-        dns_zone_resource_id=txt_record.dns_zone_resource_id,
-        name=cname2.name.replace("_acme-challenge.", ""),
-    )
-
     acme_config_manager.add_certificate_to_config(
-        cert_name=key_vault_cert_name + "1",
-        domain_references=[delegation_config1],
+        cert_name=key_vault_cert_name1,
+        domain_references=[
+            DnsZoneDomainReference(name=domain_name1),
+        ],
     )
     acme_config_manager.add_certificate_to_config(
-        cert_name=key_vault_cert_name + "2",
-        domain_references=[delegation_config2],
+        cert_name=key_vault_cert_name2,
+        domain_references=[
+            DnsZoneDomainReference(name=domain_name2),
+        ],
     )
 
     ## Test
     client = AcmeDnsAzureClient(acme_config_manager.config)
-    results: [RotationResult] = client.issue_certificates()
+    results: list[RotationResult] = client.issue_certificates()
 
     ## Validate
     assert results[0].result == CertbotResult.CREATED
     assert results[1].result == CertbotResult.CREATED
     cn1, san1 = azure_key_vault_manager.get_cn_and_san_from_certificate(
-        key_vault_cert_name + "1"
+        key_vault_cert_name1
     )
     cn2, san2 = azure_key_vault_manager.get_cn_and_san_from_certificate(
-        key_vault_cert_name + "2"
+        key_vault_cert_name2
     )
-    assert cn1 == f"CN={delegation_config1.name}"
-    assert san1 == [delegation_config1.name]
-    assert cn2 == f"CN={delegation_config2.name}"
-    assert san2 == [delegation_config2.name]
+    assert cn1 == f"CN={domain_name1}"
+    assert san1 == [domain_name1]
+    assert cn2 == f"CN={domain_name2}"
+    assert san2 == [domain_name2]
 
 
 # TODO add test for shared TXT 'parallel renewal' after issue is fixed:

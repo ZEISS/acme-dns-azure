@@ -43,7 +43,6 @@ params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.
 pytest happy_path.py $params  --resource-prefix pd-XX01
 pytest unhappy_path.py $params  --resource-prefix pd-XX01
 
-
 # increase log level
 pytest happy_path.py $params  -s -v --log-cli-level=INFO
 # only run specific test

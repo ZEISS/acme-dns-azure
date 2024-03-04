@@ -6,8 +6,9 @@ from tests.integration.helper_framework.azure_dns_zone_manager import (
 
 
 class AcmeConfigManager:
-    def __init__(self):
+    def __init__(self, dns_zone_resource_id):
         self._config = ""
+        self.dns_zone_resource_id = dns_zone_resource_id
 
     def base_config_from_file(self, file_path):
         with open(file_path, "r") as file:
@@ -19,7 +20,7 @@ class AcmeConfigManager:
     def add_certificate_to_config(
         self,
         cert_name,
-        domain_references: [DnsZoneDomainReference],
+        domain_references: list[DnsZoneDomainReference],
         renew_before_expiry: int = None,
     ):
         if self._config == "":
@@ -29,13 +30,24 @@ class AcmeConfigManager:
 
         domains = []
         for domain in domain_references:
-            domains.append(
-                {
-                    "dns_zone_resource_id": domain.dns_zone_resource_id,
-                    "name": domain.name,
-                }
-            )
-        config_cert = {"name": cert_name, "domains": domains}
+            if domain.dns_zone_resource_id:
+                domains.append(
+                    {
+                        "dns_zone_resource_id": domain.dns_zone_resource_id,
+                        "name": domain.name,
+                    }
+                )
+            else:
+                domains.append(
+                    {
+                        "name": domain.name,
+                    }
+                )
+        config_cert = {
+            "name": cert_name,
+            "dns_zone_resource_id": self.dns_zone_resource_id,
+            "domains": domains,
+        }
         if renew_before_expiry is not None:
             config_cert["renew_before_expiry"] = renew_before_expiry
 

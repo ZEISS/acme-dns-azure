@@ -21,7 +21,7 @@ class AzureADManager:
         self._client = AuthorizationManagementClient(
             credential=DefaultAzureCredential(), subscription_id=subscription_id
         )
-        self._created_assignments: [Assignment] = []
+        self._created_assignments: list[Assignment] = []
 
     def create_role_assignment(
         self,
