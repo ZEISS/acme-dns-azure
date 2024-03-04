@@ -35,7 +35,7 @@ def test_automatic_renewal_for_existing_cert_single_domain(
     acme_config_manager.base_config_from_file(file_path=config_file_path)
     azure_dns_zone_manager.create_cname_record(
         name="_acme-challenge." + resource_name,
-        value="_acme." + resource_name
+        value="_acme." + resource_name + "." + dns_zone_name + "."
     )
     azure_dns_zone_manager.create_txt_record(
         name="_acme." + resource_name,
