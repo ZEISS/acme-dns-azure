@@ -8,24 +8,20 @@ class DNSDelegation:
         pass
 
 
-    def _resolve(self, name: str, rdtype: str, nameservers: list[str] = []):
+    def _zone_for_name(self, name: str):
         """
-        Resolves DNS using specified or system default nameservers. It returns the DNS
-        answer The answer is None when an DNS exception occurred.
+        Resolves the DNS zone and returns it as string.
+        Needs associated child DNS absolute name (FQDN).
         """
         try:
             resolver = dns.resolver.Resolver()
             resolver.lifetime = 1.0
-            if nameservers:
-                resolver.nameservers = nameservers
-            r = resolver.resolve(name, rdtype)
-            msg = "{0}._resolve - Answer: {1}".format(
-                self.__class__.__name__, r.rrset.to_text().replace('\n', ' | ')
-            )
-            logger.debug(msg)
-            return r
+            zone = dns.resolver.zone_for_name(name, resolver = resolver).to_text(True)
+            msg = "{0}._zone_for_name - Answer: {1}"
+            logger.debug(msg.format(self.__class__.__name__, zone))
+            return zone
         except dns.exception.DNSException as ex:
-            msg = "{0}._resolve - An DNS exception of type {1} occurred. {2}"
+            msg = "{0}._zone_for_name - An DNS exception of type {1} occurred. {2}"
             logger.debug(msg.format(self.__class__.__name__, type(ex).__name__, ex))
         return None
 
@@ -52,20 +48,24 @@ class DNSDelegation:
         return nameservers
 
 
-    def _zone_for_name(self, name: str):
+    def _resolve(self, name: str, rdtype: str, nameservers: list[str] = []):
         """
-        Resolves the DNS zone and returns it as string.
-        Needs associated child DNS absolute name (FQDN).
+        Resolves DNS using specified or system default nameservers. It returns the DNS
+        answer The answer is None when an DNS exception occurred.
         """
         try:
             resolver = dns.resolver.Resolver()
             resolver.lifetime = 1.0
-            zone = dns.resolver.zone_for_name(name, resolver = resolver).to_text(True)
-            msg = "{0}._zone_for_name - Answer: {1}"
-            logger.debug(msg.format(self.__class__.__name__, zone))
-            return zone
+            if nameservers:
+                resolver.nameservers = nameservers
+            r = resolver.resolve(name, rdtype)
+            msg = "{0}._resolve - Answer: {1}".format(
+                self.__class__.__name__, r.rrset.to_text().replace('\n', ' | ')
+            )
+            logger.debug(msg)
+            return r
         except dns.exception.DNSException as ex:
-            msg = "{0}._zone_for_name - An DNS exception of type {1} occurred. {2}"
+            msg = "{0}._resolve - An DNS exception of type {1} occurred. {2}"
             logger.debug(msg.format(self.__class__.__name__, type(ex).__name__, ex))
         return None
 
@@ -73,7 +73,7 @@ class DNSDelegation:
     def validate(self, name: str):
         """
         Determine the canonical name of given name by using the associated DNS zone and
-        nameservers. It returns the canonical name and the DNS Zone as tuple.
+        nameservers. It returns the DNS Zone and the canonical name as tuple.
         """
         zone = None
         nameservers = []
@@ -92,8 +92,8 @@ class DNSDelegation:
                 hop += 1
                 cname = dns.name.from_text(cname_r[0].to_text()).to_text(True)
             else:
-                msg = "{0}.validate - Zone: {1} CNAME: {2}"
-                logger.info(msg.format(self.__class__.__name__, zone, cname))
+                msg = "{0}.validate - QName: {1} | CName: {2} | Zone: {3}"
+                logger.info(msg.format(self.__class__.__name__, name, cname, zone))
                 return zone, cname
             if hop >= max_hops:
                 msg = ("{0}.validate - DNS record set {1} has a canonical name that points {2!s} "

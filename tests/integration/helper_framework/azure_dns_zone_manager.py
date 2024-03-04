@@ -18,8 +18,8 @@ class AzureDnsZoneManager:
         self._resource_group_name = resource_group_name
         self._zone_name = zone_name
         self._client = DnsManagementClient(DefaultAzureCredential(), subscription_id)
-        self._created_record_sets: [RecordSet] = []
-        self._additonal_records: [str] = []
+        self._created_record_sets: list[RecordSet] = []
+        self._additonal_records: list[str] = []
 
     def clean_up_all_resources(self):
         for record in self._created_record_sets:
@@ -78,7 +78,7 @@ class AzureDnsZoneManager:
 
     def create_txt_record(
         self, name, value: str = None, ttl: int = 120
-    ) -> None:
+    ) -> str:
         logging.info("Creating record %s", name)
         record_set: RecordSet = self._client.record_sets.create_or_update(
             resource_group_name=self._resource_group_name,
@@ -89,3 +89,4 @@ class AzureDnsZoneManager:
         )
         self._created_record_sets.append(record_set)
         logging.info("Created record %s", record_set)
+        return record_set.id

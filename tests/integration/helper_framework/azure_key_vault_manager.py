@@ -1,5 +1,4 @@
 import logging
-import time
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.certificates import (
@@ -18,10 +17,10 @@ class AzureKeyVaultManager:
         self._secret_client = SecretClient(
             vault_url=keyvault_uri, credential=DefaultAzureCredential()
         )
-        self._created_certs: [KeyVaultCertificate] = []
-        self._wrapper_created_staging_secret_name = (
+        self._created_certs: list[KeyVaultCertificate] = []
+        self._expected_secrets: list[str] = [
             "acme-account-acme-staging-v02-api-letsencrypt-org"
-        )
+        ]
 
     def create_certificate(
         self,
@@ -58,52 +57,34 @@ class AzureKeyVaultManager:
         try:
             logging.info("Deleting certificate %s...", name)
             certificate_poller = self._cert_client.begin_delete_certificate(name)
-            certificate_poller.wait(timeout=60)
-            certificate_poller.result()
+            certificate_poller.wait()
             self._cert_client.purge_deleted_certificate(name)
-
-            for _ in range(60):
-                time.sleep(1)
-                try:
-                    self._cert_client.get_deleted_certificate(name)
-                except ResourceNotFoundError:
-                    # Cert shortly being in ObjectIsBeingDeleted mode although not found
-                    time.sleep(1)
-                    break
-
         except Exception:
             logging.exception(
-                "Failed to delete certificate %s. Manual deletion required", name
+                "Failed to delete and purge certificate %s. Manual clean up required.",
+                certificate_poller.result().name
             )
 
     def _delete_secret(self, name):
         try:
             secret_poller = self._secret_client.begin_delete_secret(name)
-            secret_poller.wait(timeout=60)
-            secret_poller.result()
+            secret_poller.wait()
             self._secret_client.purge_deleted_secret(name)
-            for _ in range(60):
-                time.sleep(1)
-                try:
-                    self._secret_client.get_deleted_secret(name)
-                except ResourceNotFoundError:
-                    # Cert shortly being in ObjectIsBeingDeleted mode although not found
-                    time.sleep(1)
-                    break
-        except ResourceNotFoundError:
-            pass
         except Exception:
             logging.exception(
-                "Failed to delete secret %s. Manual deletion required",
-                self._wrapper_created_staging_secret_name,
+                "Failed to delete and purge secret %s. Manual clean up required.",
+                secret_poller.result().name
             )
 
     def clean_up_all_resources(self):
         for cert in self._created_certs:
             self._delete_certificate(cert.name)
         if not self._created_certs:
-            logging.info("Cleaning up certs created outside of test manager.")
-            cert_props = self._cert_client.list_properties_of_certificates()
-            for prop in cert_props:
-                self._delete_certificate(prop.name)
-        self._delete_secret(self._wrapper_created_staging_secret_name)
+            logging.info("Cleaning up all certificates stored in key vault.")
+            certs = self._cert_client.list_properties_of_certificates()
+            for cert in certs:
+                self._delete_certificate(cert.name)
+        secrets = self._secret_client.list_properties_of_secrets()
+        for secret in secrets:
+            if secret.name in self._expected_secrets:
+                self._delete_secret(secret.name)

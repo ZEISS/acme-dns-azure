@@ -20,7 +20,7 @@ class AcmeConfigManager:
     def add_certificate_to_config(
         self,
         cert_name,
-        domain_references: [DnsZoneDomainReference],
+        domain_references: list[DnsZoneDomainReference],
         renew_before_expiry: int = None,
     ):
         if self._config == "":
