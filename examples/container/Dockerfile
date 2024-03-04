@@ -17,6 +17,7 @@ RUN set -eux; \
     jq \
     gcc \
     musl-dev \
+    libffi-dev \
     certbot 
 
 RUN set -eux; \
