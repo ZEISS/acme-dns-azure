@@ -16,6 +16,7 @@ RUN set -eux; \
     git \
     jq \
     gcc \
+    musl-dev \
     certbot 
 
 RUN set -eux; \
