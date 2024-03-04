@@ -8,7 +8,7 @@ class DNSDelegation:
     def __init__(self) -> None:
         pass
 
-    def _zone_for_name(self, name: str):
+    def _zone_for_name(self, name: str) -> str | None:
         """
         Resolves the DNS zone and returns it as string.
         Needs associated child DNS absolute name (FQDN).
@@ -25,7 +25,7 @@ class DNSDelegation:
             logger.debug(msg.format(self.__class__.__name__, type(ex).__name__, ex))
         return None
 
-    def _nameservers(self, zone: str):
+    def _nameservers(self, zone: str) -> list[str]:
         """
         Resolves nameservers and returns their IPs as a list of strings.
         Returns None when no nameservers were found. Need associated DNS zone.
@@ -43,10 +43,11 @@ class DNSDelegation:
         if not nameservers:
             msg = "{0}._nameservers - Nameservers for DNS zone not found: {1}"
             logger.debug(msg.format(self.__class__.__name__, zone))
-            nameservers = None
         return nameservers
 
-    def _resolve(self, name: str, rdtype: str, nameservers: list[str] = []):
+    def _resolve(
+        self, name: str, rdtype: str, nameservers: list[str] = []
+    ) -> dns.resolver.Answer | None:
         """
         Resolves DNS using specified or system default nameservers. It returns the DNS
         answer The answer is None when an DNS exception occurred.
@@ -67,7 +68,7 @@ class DNSDelegation:
             logger.debug(msg.format(self.__class__.__name__, type(ex).__name__, ex))
         return None
 
-    def validate(self, name: str):
+    def validate(self, name: str) -> tuple[str | None, str | None]:
         """
         Determine the canonical name of given name by using the associated DNS zone and
         nameservers. It returns the DNS Zone and the canonical name as tuple.
