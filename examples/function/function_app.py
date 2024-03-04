@@ -1,9 +1,7 @@
 import logging
 import datetime
 from typing import List
-
 import azure.functions as func
-
 from acme_dns_azure.data import (
     RotationResult,
     CertbotResult,
