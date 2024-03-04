@@ -1,9 +1,9 @@
 name: blackduck
 on:
   push:
-    branches: [main, task/patch-release]
+    branches: [main, task/add-blackduck]
   pull_request:
-    branches: [main, task/patch-release]
+    branches: [main]
 
 permissions:
   issues: write
