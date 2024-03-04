@@ -2,6 +2,7 @@ name: Azure function
 
 on:
   workflow_call:
+  push:
 
 jobs:
   build:
