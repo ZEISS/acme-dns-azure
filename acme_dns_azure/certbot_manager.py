@@ -1,4 +1,5 @@
 import subprocess
+import os
 import base64
 import traceback
 from typing import List
@@ -411,8 +412,9 @@ class CertbotManager:
     def _generate_certonly_command(
         self, cert_name: str, domains: List[str]
     ) -> List[str]:
+        certbot_path = os.environ.get("CERTBOT_PATH", "certbot")
         command = [
-            "certbot",
+            certbot_path,
             "certonly",
             "--cert-name",
             cert_name,

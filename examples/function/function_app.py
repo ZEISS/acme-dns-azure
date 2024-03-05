@@ -1,5 +1,7 @@
 import logging
 import datetime
+import sys
+import os
 from typing import List
 import azure.functions as func
 from acme_dns_azure.data import (
@@ -26,6 +28,11 @@ def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
     logging.info("Python timer trigger function ran at %s", utc_timestamp)
 
     acme_dns_config_env_name = "ACME_DNS_CONFIG"
+
+    certbot_path: str = os.path.abspath("/".join([str(sys.executable), "../certbot"]))
+    assert os.path.isfile(certbot_path)
+    os.environ["CERTBOT_PATH"] = certbot_path
+    logging.info("Set environment variable CERTBOT_PATH: %s", certbot_path)
 
     try:
         client = AcmeDnsAzureClient(config_env_var=acme_dns_config_env_name)
