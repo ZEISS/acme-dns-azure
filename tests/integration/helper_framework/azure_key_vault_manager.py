@@ -1,4 +1,5 @@
 import logging
+import time
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.certificates import (
@@ -59,6 +60,14 @@ class AzureKeyVaultManager:
             certificate_poller = self._cert_client.begin_delete_certificate(name)
             certificate_poller.wait()
             self._cert_client.purge_deleted_certificate(name)
+            for _ in range(60):
+                time.sleep(0.5)
+                try:
+                    self._cert_client.get_deleted_certificate(name)
+                except ResourceNotFoundError:
+                    # Cert shortly being in ObjectIsBeingDeleted mode although not found
+                    time.sleep(1)
+                    break
         except Exception:
             logging.exception(
                 "Failed to delete and purge certificate %s. Manual clean up required.",
@@ -70,6 +79,14 @@ class AzureKeyVaultManager:
             secret_poller = self._secret_client.begin_delete_secret(name)
             secret_poller.wait()
             self._secret_client.purge_deleted_secret(name)
+            for _ in range(60):
+                time.sleep(0.5)
+                try:
+                    self._secret_client.get_deleted_secret(name)
+                except ResourceNotFoundError:
+                    # Secret shortly being in ObjectIsBeingDeleted mode although not found
+                    time.sleep(1)
+                    break
         except Exception:
             logging.exception(
                 "Failed to delete and purge secret %s. Manual clean up required.",
