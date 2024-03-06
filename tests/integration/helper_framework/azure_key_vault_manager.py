@@ -58,7 +58,8 @@ class AzureKeyVaultManager:
         try:
             logging.info("Deleting certificate %s...", name)
             certificate_poller = self._cert_client.begin_delete_certificate(name)
-            certificate_poller.wait()
+            certificate_poller.wait(timeout=60)
+            certificate_poller.result()
             self._cert_client.purge_deleted_certificate(name)
             for _ in range(60):
                 time.sleep(0.5)
@@ -71,13 +72,14 @@ class AzureKeyVaultManager:
         except Exception:
             logging.exception(
                 "Failed to delete and purge certificate %s. Manual clean up required.",
-                certificate_poller.result().name,
+                name,
             )
 
     def _delete_secret(self, name):
         try:
             secret_poller = self._secret_client.begin_delete_secret(name)
-            secret_poller.wait()
+            secret_poller.wait(timeout=60)
+            secret_poller.result()
             self._secret_client.purge_deleted_secret(name)
             for _ in range(60):
                 time.sleep(0.5)
@@ -90,7 +92,7 @@ class AzureKeyVaultManager:
         except Exception:
             logging.exception(
                 "Failed to delete and purge secret %s. Manual clean up required.",
-                secret_poller.result().name,
+                name,
             )
 
     def clean_up_all_resources(self):

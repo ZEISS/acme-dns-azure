@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - "main"
+      - "test/fix-deletion"
     paths:
       - "acme_dns_azure/**"
       - "!acme_dns_azure/___init___.py"
