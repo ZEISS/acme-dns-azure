@@ -2,9 +2,6 @@ name: Azure function
 
 on:
   workflow_call:
-  push:
-    branches:
-      - fix/allow-to-set-certbot-path
 
 jobs:
   build:
