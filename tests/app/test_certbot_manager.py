@@ -181,6 +181,7 @@ def test_certbot_certonly_command_created(working_dir):
     command = manager._generate_certonly_command(cert_name, domains)
 
     assert command == [
+        "",
         "certbot",
         "certonly",
         "--cert-name",
