@@ -44,7 +44,7 @@ pytest happy_path.py $params  --resource-prefix pd-XX01
 pytest unhappy_path.py $params  --resource-prefix pd-XX01
 
 # increase log level
-pytest happy_path.py $params  -s -v --log-cli-level=INFO
+pytest happy_path.py $params  -s -v --log-cli-level=INFO --show-capture=log
 # only run specific tests with pattern
 pytest unhappy_path.py $params  -k "test_automatic_renewal_for_existing_cert_multiple_domains_overwritten"
 ```

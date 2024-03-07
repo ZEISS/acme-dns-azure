@@ -4,6 +4,7 @@ import subprocess
 import os
 import sys
 
+
 def add_plugins():
     cmds = []
     cmds.append(["poetry", "-q", "self", "add", "poetry-bumpversion"])
@@ -117,14 +118,19 @@ def build():
     for root, _, files in os.walk("./.python_packages/lib/site-packages"):
         if root.endswith("bin"):
             for file in files:
-                with open(os.path.join(root, file), 'r') as f:
+                with open(os.path.join(root, file), "r") as f:
                     data = f.read()
                     if search in data:
                         data = data.replace(search, "#!/usr/bin/env python")
-                    with open(os.path.join(root, file), 'w') as f:
+                    with open(os.path.join(root, file), "w") as f:
                         f.write(data)
 
-    subprocess.run(["poetry", "build", "-f", "sdist"], text=True, check=True, stderr=subprocess.STDOUT)
+    subprocess.run(
+        ["poetry", "build", "-f", "sdist"],
+        text=True,
+        check=True,
+        stderr=subprocess.STDOUT,
+    )
     shutil.rmtree("./.python_packages")
 
     # Build zip archive on Linux and MacOS

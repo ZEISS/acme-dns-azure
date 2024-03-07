@@ -1,5 +1,4 @@
 import subprocess
-import os
 import base64
 import traceback
 from typing import List
