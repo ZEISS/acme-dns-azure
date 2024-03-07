@@ -6,9 +6,8 @@ COPY main.py /main.py
 
 RUN set -eux; \
     python -m pip install --upgrade pip; \
-    pip install --no-cache-dir pip-tools; \
     pip install --no-cache-dir \
-    certbot \
+    pip-tools \    
     acme-dns-azure
 
 CMD ["python", "/main.py"]
