@@ -67,7 +67,8 @@ class AzureKeyVaultManager:
                     self._cert_client.get_deleted_certificate(name)
                 except ResourceNotFoundError:
                     # Cert shortly being in ObjectIsBeingDeleted mode although not found
-                    time.sleep(1)
+                    time.sleep(0.5)
+                    logging.info("Deleted cert %s", name)
                     break
         except Exception:
             logging.exception(
@@ -87,7 +88,8 @@ class AzureKeyVaultManager:
                     self._secret_client.get_deleted_secret(name)
                 except ResourceNotFoundError:
                     # Secret shortly being in ObjectIsBeingDeleted mode although not found
-                    time.sleep(1)
+                    logging.info("Deleted secret %s", name)
+                    time.sleep(0.5)
                     break
         except Exception:
             logging.exception(
@@ -103,7 +105,5 @@ class AzureKeyVaultManager:
             certs = self._cert_client.list_properties_of_certificates()
             for cert in certs:
                 self._delete_certificate(cert.name)
-        secrets = self._secret_client.list_properties_of_secrets()
-        for secret in secrets:
-            if secret.name in self._expected_secrets:
-                self._delete_secret(secret.name)
+        for secret in self._expected_secrets:
+            self._delete_secret(secret)
