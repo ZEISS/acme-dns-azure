@@ -58,7 +58,8 @@ class AzureKeyVaultManager:
         try:
             logging.info("Deleting certificate %s...", name)
             certificate_poller = self._cert_client.begin_delete_certificate(name)
-            certificate_poller.wait()
+            certificate_poller.wait(timeout=60)
+            certificate_poller.result()
             self._cert_client.purge_deleted_certificate(name)
             for _ in range(60):
                 time.sleep(0.5)
@@ -66,18 +67,20 @@ class AzureKeyVaultManager:
                     self._cert_client.get_deleted_certificate(name)
                 except ResourceNotFoundError:
                     # Cert shortly being in ObjectIsBeingDeleted mode although not found
-                    time.sleep(1)
+                    time.sleep(0.5)
+                    logging.info("Deleted cert %s", name)
                     break
         except Exception:
             logging.exception(
                 "Failed to delete and purge certificate %s. Manual clean up required.",
-                certificate_poller.result().name,
+                name,
             )
 
     def _delete_secret(self, name):
         try:
             secret_poller = self._secret_client.begin_delete_secret(name)
-            secret_poller.wait()
+            secret_poller.wait(timeout=60)
+            secret_poller.result()
             self._secret_client.purge_deleted_secret(name)
             for _ in range(60):
                 time.sleep(0.5)
@@ -85,12 +88,13 @@ class AzureKeyVaultManager:
                     self._secret_client.get_deleted_secret(name)
                 except ResourceNotFoundError:
                     # Secret shortly being in ObjectIsBeingDeleted mode although not found
-                    time.sleep(1)
+                    logging.info("Deleted secret %s", name)
+                    time.sleep(0.5)
                     break
         except Exception:
             logging.exception(
                 "Failed to delete and purge secret %s. Manual clean up required.",
-                secret_poller.result().name,
+                name,
             )
 
     def clean_up_all_resources(self):
@@ -101,7 +105,5 @@ class AzureKeyVaultManager:
             certs = self._cert_client.list_properties_of_certificates()
             for cert in certs:
                 self._delete_certificate(cert.name)
-        secrets = self._secret_client.list_properties_of_secrets()
-        for secret in secrets:
-            if secret.name in self._expected_secrets:
-                self._delete_secret(secret.name)
+        for secret in self._expected_secrets:
+            self._delete_secret(secret)

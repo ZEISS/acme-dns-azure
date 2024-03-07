@@ -1,6 +1,6 @@
 # Integration test
 
-For integration test one must first set up the base infrastructure, which will be reused my all integration tests. This base infrastructure includes:
+For integration test one must first set up the base infrastructure, which will be reused by all integration tests. This base infrastructure includes:
 
 - azure key vault
 - Service Principal
@@ -15,7 +15,7 @@ The actual test run will:
 Required permissions:
 
 - Contributor
-- Role Based Access Control Administrator (only fur running unhappy_path test cases)
+- Role Based Access Control Administrator (only fur running unhappy_path test cases and for initially deploying terraform)
 
 ## Run integration test
 
@@ -45,7 +45,7 @@ pytest unhappy_path.py $params  --resource-prefix pd-XX01
 
 # increase log level
 pytest happy_path.py $params  -s -v --log-cli-level=INFO
-# only run specific test
+# only run specific tests with pattern
 pytest unhappy_path.py $params  -k "test_automatic_renewal_for_existing_cert_multiple_domains_overwritten"
 ```
 

@@ -8,3 +8,4 @@ dns_zone = {
   name                = "acme.example.com"
   resource_group_name = "acme-test-dns"
 }
+azure_ad_owner = []
