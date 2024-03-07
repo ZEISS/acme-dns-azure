@@ -7,10 +7,9 @@ ENV TIMEZONE=${TIMEZONE:-} \
 
 WORKDIR /usr/src/app
 
+COPY main.py /main.py
 
-COPY entrypoint.sh /entrypoint.sh
 RUN set -eux; \
-    chmod +x /entrypoint.sh; \
     # Install permanent system packages
     apk --update add --no-cache \
     libexpat=2.6.0-r0 \
@@ -23,6 +22,13 @@ RUN set -eux; \
     ; \
     # Install build-dependent system packages
     apk add --no-cache --virtual .build-deps \
+    gcc \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
+    openssl-dev \
+    cargo \
+    pkgconfig \
     tzdata \
     ; \
     \
@@ -34,12 +40,12 @@ RUN set -eux; \
     \
     # Install ACME client
     python -m pip install --upgrade pip; \
-    pip install --no-cache-dir pip-tools; \
-    # pip install --no-cache-dir acme-dns-azure; \
-    \
+    pip install --no-cache-dir pip-tools \
+    acme-dns-azure \
+    ; \
     # Remove build-dependent system packages and files
     apk del .build-deps; \
     pip cache purge; \
     rm -rf ~/.cache /tmp/*
 
-CMD [ "/bin/sh","-c","/entrypoint.sh" ]
+CMD ["python", "/main.py"]
