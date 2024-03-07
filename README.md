@@ -27,12 +27,14 @@ Based on the provided configuration and trigger, the wrapper library supports fo
 
 ![architecture](https://github.com/ZEISS/acme-dns-azure/blob/main/docs/architecture_concept.png?raw=true)
 
-1. Receive certificates, receive EAB & ACME credentials (if configured), receive ACME account information (if already present)
-2. Certbot: Init Renewal process to certificate Authority
+1. Receive certificates, receive EAB & ACME credentials (if configured), receive ACME account information (if already present) from KeyVault. Resolve DNS and setup certbot related configuration.
+2. Certbot: Init renewal process to certificate authority
 3. Certbot: DNS Challenge - create TXT record
 4. Certbot: Renew certificates
 5. Certbot: DNS Challenge - delete TXT record
-6. Upload renewed certificates, create/update ACME account information as secret
+6. Upload renewed certificates, create/update ACME account information as secret within KeyVault.
+
+Note: When using [DNS delegation](https://docs.certbot-dns-azure.co.uk/en/latest/#:~:text=management.microsoftazure.de/-,DNS%20delegation,%C2%B6,-DNS%20delegation%2C%20also) step _3._ and _5._ differ as the TXT record won´t be deleted.
 
 ### Features
 
@@ -56,8 +58,8 @@ The library can be used by:
 
 Within [examples](examples) you can find example implementations for running the python package:
 
-- Planned: Azure function
-- (Planned): container
+- Azure function
+- Container
 
 ![usage](https://github.com/ZEISS/acme-dns-azure/blob/main/docs/wrapper_usage.png?raw=true)
 
@@ -99,7 +101,7 @@ poetry run coverage report
 
 ## Run integration tests
 
-See [tests/integration](tests/integration/README.md)
+See [How to run integration tests](tests/integration/README.md)
 
 ## Release
 
