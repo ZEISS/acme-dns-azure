@@ -41,7 +41,6 @@ RUN set -eux; \
     # Install ACME client
     python -m pip install --upgrade pip; \
     pip install --no-cache-dir pip-tools; \
-    pip install --no-cache-dir \
     acme-dns-azure \
     \
     # Remove build-dependent system packages and files
