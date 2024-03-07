@@ -306,16 +306,11 @@ class CertbotManager:
         self, cert_name: str, domains: List[str]
     ) -> CertbotResult:
         try:
-            certbot_env = None
-            if "PYTHONPATH" in os.environ:
-                certbot_env = os.environ.copy()
-                certbot_env["PYTHONPATH"] = os.environ.get("PYTHONPATH")
             result: subprocess.CompletedProcess = subprocess.run(
                 args=self._generate_certonly_command(cert_name, domains),
                 capture_output=True,
                 encoding="utf-8",
                 check=True,
-                env=certbot_env,
             )
             result.check_returncode()
         except subprocess.CalledProcessError as error:
@@ -417,11 +412,8 @@ class CertbotManager:
     def _generate_certonly_command(
         self, cert_name: str, domains: List[str]
     ) -> List[str]:
-        python_path = os.environ.get("PYTHON_INTERPRETER_PATH", "")
-        certbot_path = os.environ.get("CERTBOT_PATH", "certbot")
         command = [
-            python_path,
-            certbot_path,
+            "certbot",
             "certonly",
             "--cert-name",
             cert_name,

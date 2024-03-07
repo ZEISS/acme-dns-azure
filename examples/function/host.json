@@ -9,9 +9,9 @@
       }
     },
     "logLevel": {
-      "default": "Debug",
+      "default": "Information",
       "Host.Results": "Error",
-      "Function": "Trace",
+      "Function": "Information",
       "Host.Aggregator": "Trace"
     }
   },

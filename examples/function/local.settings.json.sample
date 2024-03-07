@@ -4,6 +4,8 @@
     "AzureWebJobsFeatureFlags": "EnableWorkerIndexing",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "python",
-    "ScheduleAcmeDnsAzure": "0 */5 * * * *"
+    "ScheduleAcmeDnsAzure": "0 */5 * * * *",
+    "AzureFunctionsJobHost__logging__LogLevel__Default": "Information",
+    "AzureFunctionsJobHost__logging__LogLevel__Function": "Information"
   }
 }

@@ -10,6 +10,8 @@ from acme_dns_azure.data import (
     CertbotResult,
 )
 from acme_dns_azure.client import AcmeDnsAzureClient
+from path_tree import DisplayPath
+import time
 
 app = func.FunctionApp()
 
@@ -29,39 +31,20 @@ def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
     logging.info("Python timer trigger function ran at %s", utc_timestamp)
 
     acme_dns_config_env_name = "ACME_DNS_CONFIG"
-    certbot_relative_path = ".python_packages/lib/site-packages/bin/certbot"
-    packages_relative_path = ".python_packages/lib/site-packages"
 
-    try:
-        python_path: str = os.path.abspath("/".join([str(sys.executable), "../python"]))
-        certbot_path: str = "/".join(
-            [str(context.function_directory), certbot_relative_path]
-        )
-        packages_path: str = "/".join(
-            [str(context.function_directory), packages_relative_path]
-        )
-
-        assert os.path.isfile(certbot_path)
-        assert os.path.isfile(python_path)
-        assert acme_dns_config_env_name in os.environ
-
-        st = os.stat(certbot_path)
-        os.chmod(certbot_path, st.st_mode | stat.S_IEXEC)
-
-        os.environ["CERTBOT_PATH"] = certbot_path
-        os.environ["PYTHON_INTERPRETER_PATH"] = python_path
-        os.environ["PYTHONPATH"] = packages_path
-
-        logging.info("Set environment variable CERTBOT_PATH: %s", certbot_path)
-        logging.info(
-            "Set environment variable PYTHON_INTERPRETER_PATH: %s", python_path
-        )
-        logging.info("Set environment variable PYTHONPATH: %s", packages_path)
-    except Exception as exc:
-        logging.exception(
-            "Failed to setup Azure function environment for running renewal."
-        )
-        raise Exception from exc
+    # Ensure packages were added to system PATH and are executable
+    for root, dirs, files in os.walk(os.path.abspath("./.python_packages/lib/site-packages")):
+        if "bin" in dirs:
+            path = os.path.abspath(os.path.join(root, "bin"))
+            os.environ["PATH"] = path + ":" + os.environ.get("PATH")
+            logging.info("Extended system PATH: %s", path)
+        # if root.endswith("bin"):
+        #     for file in files:
+        #         path = os.path.join(root, file)
+        #         mode = os.stat(path).st_mode
+        #         if not bool(mode & stat.S_IXUSR or mode & stat.S_IXGRP or mode & stat.S_IXOTH):
+        #             os.chmod(path, stat.S_IXOTH)
+        #             logging.info("Modified file permissions: %s", path)
 
     try:
         client = AcmeDnsAzureClient(config_env_var=acme_dns_config_env_name)

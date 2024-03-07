@@ -2,7 +2,7 @@ import platform
 import shutil
 import subprocess
 import os
-
+import sys
 
 def add_plugins():
     cmds = []
@@ -109,9 +109,22 @@ def build():
             "requirements.txt",
         ]
     )
-    cmds.append(["poetry", "build", "-f", "sdist"])
     for cmd in cmds:
         subprocess.run(cmd, text=True, check=True, stderr=subprocess.STDOUT)
+
+    # Use more generic python interpreter for installed packages
+    search = "#!{0}".format(os.path.abspath(str(sys.executable)))
+    for root, _, files in os.walk("./.python_packages/lib/site-packages"):
+        if root.endswith("bin"):
+            for file in files:
+                with open(os.path.join(root, file), 'r') as f:
+                    data = f.read()
+                    if search in data:
+                        data = data.replace(search, "#!/usr/bin/env python")
+                    with open(os.path.join(root, file), 'w') as f:
+                        f.write(data)
+
+    subprocess.run(["poetry", "build", "-f", "sdist"], text=True, check=True, stderr=subprocess.STDOUT)
     shutil.rmtree("./.python_packages")
 
     # Build zip archive on Linux and MacOS
