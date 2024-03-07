@@ -42,7 +42,7 @@ RUN set -eux; \
     python -m pip install --upgrade pip; \
     pip install --no-cache-dir pip-tools \
     acme-dns-azure \
-    \
+    ; \
     # Remove build-dependent system packages and files
     apk del .build-deps; \
     pip cache purge; \
