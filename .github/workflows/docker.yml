@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - "main"
-      - "test/function-certbot-binary"
   pull_request:
     branches:
       - "main"
@@ -78,7 +77,6 @@ jobs:
           context: ./examples/container
           file: ./examples/container/Dockerfile
           platforms: linux/amd64,linux/arm64
-          # platforms: linux/amd64,linux/arm64,linux/386,linux/arm/v7
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.env.outputs.tags }}
           cache-from: type=local,src=/tmp/.buildx-cache

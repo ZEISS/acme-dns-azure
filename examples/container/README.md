@@ -1,9 +1,11 @@
-## Runing library within a container
+## Running library within a container
 
-Following find a base setup to run the acme-dns-azure within a container.
-For authentication [DefaultAzureCredential](https://learn.microsoft.com/en-us/python/api/overview/azure/identity-readme?view=azure-python) is used. Please refer to related documentation about the available options to provide credentials.
+Following find a base setup to run _acme-dns-azure_ within a container.
 
+The _package_ uses [DefaultAzureCredential](https://learn.microsoft.com/en-us/python/api/overview/azure/identity-readme?view=azure-python) for authentication. Please refer to related documentation about the available options to provide credentials.
 Following find a simple example using Service Principal secrets.
+
+The image can also be pulled from [GitHub registry](https://github.com/ZEISS/acme-dns-azure/pkgs/container/acme-dns-azure)
 
 ```bash
 docker build .
