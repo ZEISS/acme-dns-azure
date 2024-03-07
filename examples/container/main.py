@@ -1,3 +1,4 @@
+import os
 import logging
 from typing import List
 from acme_dns_azure.data import (
@@ -10,6 +11,7 @@ from acme_dns_azure.client import AcmeDnsAzureClient
 if __name__ == "__main__":
 
     acme_dns_config_env_name = "ACME_DNS_CONFIG"
+    assert acme_dns_config_env_name in os.environ
 
     try:
         client = AcmeDnsAzureClient(config_env_var=acme_dns_config_env_name)
