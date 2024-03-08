@@ -113,7 +113,7 @@ def build():
     for cmd in cmds:
         subprocess.run(cmd, text=True, check=True, stderr=subprocess.STDOUT)
 
-    # Use more generic python interpreter for installed packages
+    # Use more generic python interpreter for packaged modules
     search = "#!{0}".format(os.path.abspath(str(sys.executable)))
     for root, _, files in os.walk("./.python_packages/lib/site-packages"):
         if root.endswith("bin"):

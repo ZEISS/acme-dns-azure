@@ -1,6 +1,9 @@
 import subprocess
 import base64
 import traceback
+import os
+import sys
+import platform
 from typing import List
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
@@ -412,7 +415,8 @@ class CertbotManager:
         self, cert_name: str, domains: List[str]
     ) -> List[str]:
         command = [
-            "certbot",
+            sys.executable,
+            self._certbot_path(),
             "certonly",
             "--cert-name",
             cert_name,
@@ -428,3 +432,22 @@ class CertbotManager:
             command.append(domain)
 
         return command
+
+    @staticmethod
+    def _certbot_path() -> str:
+        name = "certbot"
+        try:
+            devnull = open(os.devnull)
+            subprocess.Popen([name], stdout=devnull, stderr=devnull).communicate()
+        except OSError:
+            logger.error("Did not find path for executable certbot python script.")
+            raise FileNotFoundError
+        cmd = "where" if platform.system() == "Windows" else "which"
+        path = subprocess.run(
+            args=[cmd, name],
+            text=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            encoding="utf-8",
+        ).stdout.strip(os.linesep)
+        return path

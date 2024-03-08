@@ -2,7 +2,6 @@ import logging
 import datetime
 import sys
 import os
-import stat
 from typing import List
 import azure.functions as func
 from acme_dns_azure.data import (
@@ -10,7 +9,6 @@ from acme_dns_azure.data import (
     CertbotResult,
 )
 from acme_dns_azure.client import AcmeDnsAzureClient
-from path_tree import DisplayPath
 import time
 
 app = func.FunctionApp()
@@ -32,21 +30,13 @@ def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
 
     acme_dns_config_env_name = "ACME_DNS_CONFIG"
 
-    # Ensure packages were added to system PATH and are executable
-    for root, dirs, files in os.walk(
+    # Ensure packaged executables were added to system PATH
+    for root, dirs, _ in os.walk(
         os.path.abspath("./.python_packages/lib/site-packages")
     ):
         if "bin" in dirs:
-            path = os.path.abspath(os.path.join(root, "bin"))
-            os.environ["PATH"] = path + ":" + os.environ.get("PATH")
-            logging.info("Extended system PATH: %s", path)
-        # if root.endswith("bin"):
-        #     for file in files:
-        #         path = os.path.join(root, file)
-        #         mode = os.stat(path).st_mode
-        #         if not bool(mode & stat.S_IXUSR or mode & stat.S_IXGRP or mode & stat.S_IXOTH):
-        #             os.chmod(path, stat.S_IXOTH)
-        #             logging.info("Modified file permissions: %s", path)
+            if not os.path.join(root, "bin") in os.environ.get("PATH"):
+                os.environ["PATH"] = os.path.join(root, "bin") + os.pathsep + os.environ.get("PATH")
 
     try:
         client = AcmeDnsAzureClient(config_env_var=acme_dns_config_env_name)
