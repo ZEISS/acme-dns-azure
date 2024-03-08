@@ -2,6 +2,7 @@ import shutil
 import subprocess
 import base64
 import traceback
+import os
 import sys
 import shutil
 from typing import List
@@ -307,12 +308,15 @@ class CertbotManager:
     def _create_or_renew_certificate(
         self, cert_name: str, domains: List[str]
     ) -> CertbotResult:
+        env = os.environ.copy()
+        env["PYTHONPATH"] = os.pathsep.join(sys.path)
         try:
             result: subprocess.CompletedProcess = subprocess.run(
                 args=self._generate_certonly_command(cert_name, domains),
                 capture_output=True,
                 encoding="utf-8",
                 check=True,
+                env=env,
             )
             result.check_returncode()
         except subprocess.CalledProcessError as error:
