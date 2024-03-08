@@ -36,7 +36,9 @@ def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
     ):
         if "bin" in dirs:
             if not os.path.join(root, "bin") in os.environ.get("PATH"):
-                os.environ["PATH"] = os.path.join(root, "bin") + os.pathsep + os.environ.get("PATH")
+                os.environ["PATH"] = (
+                    os.path.join(root, "bin") + os.pathsep + os.environ.get("PATH")
+                )
 
     try:
         client = AcmeDnsAzureClient(config_env_var=acme_dns_config_env_name)
