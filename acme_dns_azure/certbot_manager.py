@@ -4,7 +4,6 @@ import base64
 import traceback
 import os
 import sys
-import shutil
 from typing import List
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
