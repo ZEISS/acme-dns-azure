@@ -2,6 +2,7 @@ import platform
 import shutil
 import subprocess
 import os
+import sys
 
 
 def add_plugins():
@@ -86,6 +87,7 @@ def start_function():
 def build():
     add_plugins()
     cmds = []
+    packages_path = "./.python_packages/lib/site-packages"
     cmds.append(["pip", "install", "-q", "--upgrade", "pip"])
     cmds.append(
         [
@@ -104,14 +106,38 @@ def build():
             "pip",
             "install",
             "-q",
-            "--target=./.python_packages/lib/site-packages",
+            "--target=" + packages_path,
             "-r",
             "requirements.txt",
         ]
     )
-    cmds.append(["poetry", "build", "-f", "sdist"])
     for cmd in cmds:
         subprocess.run(cmd, text=True, check=True, stderr=subprocess.STDOUT)
+
+    search = "#!{0}".format(os.path.abspath(str(sys.executable)))
+    for root, dirs, files in os.walk(packages_path):
+        # Remove __pycache__ folders
+        if "__pycache__" in dirs:
+            shutil.rmtree(os.path.join(root, "__pycache__"))
+        for file in files:
+            # Remove .pyc, .pyo files
+            if file.endswith(".pyc") or file.endswith(".pyo"):
+                shutil.rmtree(os.path.join(root, file))
+            # Use generic python interpreter for packaged executable modules
+            if root.endswith("bin"):
+                with open(os.path.join(root, file), "r") as f:
+                    data = f.read()
+                    if search in data:
+                        data = data.replace(search, "#!/usr/bin/env python")
+                    with open(os.path.join(root, file), "w") as f:
+                        f.write(data)
+
+    subprocess.run(
+        ["poetry", "build", "-f", "sdist"],
+        text=True,
+        check=True,
+        stderr=subprocess.STDOUT,
+    )
     shutil.rmtree("./.python_packages")
 
     # Build zip archive on Linux and MacOS

@@ -9,7 +9,7 @@
       }
     },
     "logLevel": {
-      "default": "Debug",
+      "default": "Warning",
       "Host.Results": "Error",
       "Function": "Trace",
       "Host.Aggregator": "Trace"

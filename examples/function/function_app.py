@@ -1,5 +1,6 @@
 import logging
 import datetime
+import os
 from typing import List
 import azure.functions as func
 from acme_dns_azure.data import (
@@ -26,6 +27,12 @@ def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
     logging.info("Python timer trigger function ran at %s", utc_timestamp)
 
     acme_dns_config_env_name = "ACME_DNS_CONFIG"
+
+    # Ensure packaged executables were added to system PATH
+    bin_dir = os.path.abspath("./.python_packages/lib/site-packages/bin")
+    if not bin_dir in os.environ.get("PATH"):
+        os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH")
+        logging.info("Extended system PATH: %s", bin_dir)
 
     try:
         client = AcmeDnsAzureClient(config_env_var=acme_dns_config_env_name)

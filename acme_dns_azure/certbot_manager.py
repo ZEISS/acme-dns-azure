@@ -1,6 +1,9 @@
+import shutil
 import subprocess
 import base64
 import traceback
+import os
+import sys
 from typing import List
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
@@ -304,12 +307,15 @@ class CertbotManager:
     def _create_or_renew_certificate(
         self, cert_name: str, domains: List[str]
     ) -> CertbotResult:
+        env = os.environ.copy()
+        env["PYTHONPATH"] = os.pathsep.join(sys.path)
         try:
             result: subprocess.CompletedProcess = subprocess.run(
                 args=self._generate_certonly_command(cert_name, domains),
                 capture_output=True,
                 encoding="utf-8",
                 check=True,
+                env=env,
             )
             result.check_returncode()
         except subprocess.CalledProcessError as error:
@@ -411,8 +417,17 @@ class CertbotManager:
     def _generate_certonly_command(
         self, cert_name: str, domains: List[str]
     ) -> List[str]:
+        certbot_path = shutil.which("certbot")
+        if certbot_path:
+            logger.info(
+                "Found path to executable certbot python script: %s", certbot_path
+            )
+        else:
+            logger.error("Did not find path to executable certbot python script.")
+            raise FileNotFoundError
         command = [
-            "certbot",
+            sys.executable,
+            certbot_path,
             "certonly",
             "--cert-name",
             cert_name,
