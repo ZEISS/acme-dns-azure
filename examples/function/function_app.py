@@ -1,6 +1,5 @@
 import logging
 import datetime
-import sys
 import os
 from typing import List
 import azure.functions as func
@@ -9,7 +8,6 @@ from acme_dns_azure.data import (
     CertbotResult,
 )
 from acme_dns_azure.client import AcmeDnsAzureClient
-import time
 
 app = func.FunctionApp()
 

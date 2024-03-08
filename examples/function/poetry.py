@@ -87,6 +87,7 @@ def start_function():
 def build():
     add_plugins()
     cmds = []
+    packages_path = "./.python_packages/lib/site-packages"
     cmds.append(["pip", "install", "-q", "--upgrade", "pip"])
     cmds.append(
         [
@@ -105,7 +106,7 @@ def build():
             "pip",
             "install",
             "-q",
-            "--target=./.python_packages/lib/site-packages",
+            "--target=" + packages_path,
             "-r",
             "requirements.txt",
         ]
@@ -113,11 +114,17 @@ def build():
     for cmd in cmds:
         subprocess.run(cmd, text=True, check=True, stderr=subprocess.STDOUT)
 
-    # Use more generic python interpreter for packaged modules
     search = "#!{0}".format(os.path.abspath(str(sys.executable)))
-    for root, _, files in os.walk("./.python_packages/lib/site-packages"):
-        if root.endswith("bin"):
-            for file in files:
+    for root, dirs, files in os.walk(packages_path):
+        # Remove __pycache__ folders
+        if "__pycache__" in dirs:
+            shutil.rmtree(os.path.join(root, "__pycache__"))
+        for file in files:
+            # Remove .pyc, .pyo files
+            if file.endswith(".pyc") or file.endswith(".pyo"):
+                shutil.rmtree(os.path.join(root, file))
+            # Use generic python interpreter for packaged executable modules
+            if root.endswith("bin"):
                 with open(os.path.join(root, file), "r") as f:
                     data = f.read()
                     if search in data:
