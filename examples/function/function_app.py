@@ -29,14 +29,10 @@ def main(acmeDnsAzureTimer: func.TimerRequest, context: func.Context) -> None:
     acme_dns_config_env_name = "ACME_DNS_CONFIG"
 
     # Ensure packaged executables were added to system PATH
-    for root, dirs, _ in os.walk(
-        os.path.abspath("./.python_packages/lib/site-packages")
-    ):
-        if "bin" in dirs:
-            if not os.path.join(root, "bin") in os.environ.get("PATH"):
-                os.environ["PATH"] = (
-                    os.path.join(root, "bin") + os.pathsep + os.environ.get("PATH")
-                )
+    bin_dir = os.path.abspath("./.python_packages/lib/site-packages/bin")
+    if not bin_dir in os.environ.get("PATH"):
+        os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH")
+        logging.info("Extended system PATH: %s", bin_dir)
 
     try:
         client = AcmeDnsAzureClient(config_env_var=acme_dns_config_env_name)
