@@ -9,9 +9,11 @@ on:
   pull_request:
     branches:
       - "main"
-    paths:
-      - "examples/container/Dockerfile"
   workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
 
 jobs:
   container_build:
@@ -29,8 +31,8 @@ jobs:
           VERSION=noop
           if [ "${{ github.event_name }}" = "schedule" ]; then
             VERSION=edge
-          elif [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
+          elif [[ "${{ github.event_name }}" = "workflow_dispatch" ]]; then
+            VERSION=${{ inputs.tag }}
           elif [[ $GITHUB_REF == refs/heads/* ]]; then
             VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
             if [ "${{ github.event.repository.default_branch }}" = "$VERSION" ]; then
@@ -45,8 +47,6 @@ jobs:
             MINOR=${VERSION_STRIP%.*}
             MAJOR=${MINOR%.*}
             TAGS="$TAGS,${REGISTRY}${IMAGE}:${MINOR},${REGISTRY}${IMAGE}:${MAJOR},${REGISTRY}${IMAGE}:latest"
-          # elif [ "${{ github.event_name }}" = "push" ]; then
-          #   TAGS="$TAGS,${REGISTRY}${IMAGE}:sha-${GITHUB_SHA::8}"
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
