@@ -48,6 +48,8 @@ jobs:
   docker_build:
     needs: [publish_pypi]
     uses: ./.github/workflows/docker.yml
+    with:
+      tag: ${{ inputs.tag }}
   git_release:
     runs-on: ubuntu-latest
     needs: [docker_build, function_package]
