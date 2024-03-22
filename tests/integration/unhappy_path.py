@@ -318,5 +318,78 @@ def test_create_cert_for_dns_delegation_shared_txt_single_cert_with_minimum_perm
     assert san2 == [domain_name2]
 
 
-# TODO add test for shared TXT 'parallel renewal' after issue is fixed:
-# https://github.com/terrycain/certbot-dns-azure/issues/42
+def test_parallel_request_dns_delegation_shared_txt_single_cert(
+    acme_config_manager,
+    azure_key_vault_manager,
+    azure_dns_zone_manager,
+    azure_ad_manager,
+    config_file_path,
+    resource_name,
+    dns_zone_name,
+    principal_id,
+):
+    ## Config
+    domain_name1 = resource_name + "1." + dns_zone_name
+    key_vault_cert_name1 = domain_name1.replace(".", "")
+    key_vault_cert_name2 = domain_name1.replace(".", "").replace("1", "2")
+
+    ## Init
+    config_file_path = config_file_path.replace(
+        "config.yaml", "no_permission_config.yaml"
+    )
+    acme_config_manager.base_config_from_file(file_path=config_file_path)
+    azure_dns_zone_manager.create_cname_record(
+        name="_acme-challenge." + resource_name + "1",
+        value="_shared." + resource_name + "." + dns_zone_name + ".",
+    )
+
+    txt_rrset_id = azure_dns_zone_manager.create_txt_record(
+        name="_shared." + resource_name, value="-"
+    )
+    azure_ad_manager.create_role_assignment(
+        scope=txt_rrset_id,
+        principal_id=principal_id,
+    )
+    acme_config_manager.add_certificate_to_config(
+        cert_name=key_vault_cert_name1,
+        domain_references=[
+            DnsZoneDomainReference(name=domain_name1),
+        ],
+    )
+
+    client1 = AcmeDnsAzureClient(acme_config_manager.config)
+
+    acme_config_manager.base_config_from_file(file_path=config_file_path)
+    acme_config_manager.add_certificate_to_config(
+        cert_name=key_vault_cert_name2,
+        domain_references=[
+            DnsZoneDomainReference(name=domain_name1),
+        ],
+    )
+    client2 = AcmeDnsAzureClient(acme_config_manager.config)
+
+    ## Test
+    from multiprocessing.pool import ThreadPool
+
+    pool1 = ThreadPool(processes=1)
+    pool2 = ThreadPool(processes=1)
+
+    async_result1 = pool1.apply_async(client1.issue_certificates)
+    async_result2 = pool2.apply_async(client2.issue_certificates)
+
+    results1: list[RotationResult] = async_result1.get()
+    results2: list[RotationResult] = async_result2.get()
+
+    ## Validate
+    assert results1[0].result == CertbotResult.CREATED
+    assert results2[0].result == CertbotResult.CREATED
+    cn1, san1 = azure_key_vault_manager.get_cn_and_san_from_certificate(
+        key_vault_cert_name1
+    )
+    cn2, san2 = azure_key_vault_manager.get_cn_and_san_from_certificate(
+        key_vault_cert_name2
+    )
+    assert cn1 == f"CN={domain_name1}"
+    assert san1 == [domain_name1]
+    assert cn2 == f"CN={domain_name1}"
+    assert san2 == [domain_name1]
