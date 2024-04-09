@@ -2,13 +2,13 @@ name: docker build
 
 on:
   schedule:
-    - cron: "0 22 * * 0" # every sunday at 10pm
+    - cron: '0 22 * * 0' # every sunday at 10pm
   push:
     branches:
-      - "main"
+      - 'main'
   pull_request:
     branches:
-      - "main"
+      - 'main'
   workflow_call:
     inputs:
       tag:
@@ -29,13 +29,13 @@ jobs:
           REGISTRY=ghcr.io/
           IMAGE=zeiss/acme-dns-azure
           VERSION=noop
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event_name }}" == "schedule" ]; then
             VERSION=edge
-          elif [[ "${{ github.event_name }}" = "workflow_dispatch" ]]; then
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION=${{ inputs.tag }}
           elif [[ $GITHUB_REF == refs/heads/* ]]; then
             VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
-            if [ "${{ github.event.repository.default_branch }}" = "$VERSION" ]; then
+            if [ "${{ github.event.repository.default_branch }}" == "$VERSION" ]; then
               VERSION=edge
             fi
           elif [[ $GITHUB_REF == refs/pull/* ]]; then
@@ -47,6 +47,8 @@ jobs:
             MINOR=${VERSION_STRIP%.*}
             MAJOR=${MINOR%.*}
             TAGS="$TAGS,${REGISTRY}${IMAGE}:${MINOR},${REGISTRY}${IMAGE}:${MAJOR},${REGISTRY}${IMAGE}:latest"
+          # elif [ "${{ github.event_name }}" == "push" ]; then
+          #   TAGS="$TAGS,${REGISTRY}${IMAGE}:sha-${GITHUB_SHA::8}"
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
@@ -100,8 +102,8 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         with:
           image-ref: ${{ steps.env.outputs.tags }}
-          format: "table"
-          exit-code: "1"
+          format: 'table'
+          exit-code: '1'
           ignore-unfixed: true
-          vuln-type: "os,library"
-          severity: "CRITICAL,HIGH"
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
