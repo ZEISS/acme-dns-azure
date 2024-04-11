@@ -2,16 +2,18 @@ name: docker build
 
 on:
   schedule:
-    - cron: "0 22 * * 0" # every sunday at 10pm
+    - cron: '0 22 * * 0' # every sunday at 10pm
   push:
     branches:
-      - "main"
+      - 'main'
   pull_request:
     branches:
-      - "main"
-    paths:
-      - "examples/container/Dockerfile"
+      - 'main'
   workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
 
 jobs:
   container_build:
@@ -27,10 +29,10 @@ jobs:
           REGISTRY=ghcr.io/
           IMAGE=zeiss/acme-dns-azure
           VERSION=noop
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event_name }}" == "schedule" ]; then
             VERSION=edge
-          elif [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
+          elif [[ -n "${{ inputs.tag }}" ]]; then
+            VERSION=${{ inputs.tag }}
           elif [[ $GITHUB_REF == refs/heads/* ]]; then
             VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
             if [ "${{ github.event.repository.default_branch }}" = "$VERSION" ]; then
@@ -39,16 +41,15 @@ jobs:
           elif [[ $GITHUB_REF == refs/pull/* ]]; then
             VERSION=pr-${{ github.event.number }}
           fi
-          TAGS="${REGISTRY}${IMAGE}:${VERSION}"
-          if [[ $VERSION =~ ^v?[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-            VERSION_STRIP=${VERSION#v}
-            MINOR=${VERSION_STRIP%.*}
+          REF="${REGISTRY}${IMAGE}:${VERSION}"
+          TAGS="${REF}"
+          if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            MINOR=${VERSION%.*}
             MAJOR=${MINOR%.*}
-            TAGS="$TAGS,${REGISTRY}${IMAGE}:${MINOR},${REGISTRY}${IMAGE}:${MAJOR},${REGISTRY}${IMAGE}:latest"
-          # elif [ "${{ github.event_name }}" = "push" ]; then
-          #   TAGS="$TAGS,${REGISTRY}${IMAGE}:sha-${GITHUB_SHA::8}"
+            TAGS="${TAGS},${REGISTRY}${IMAGE}:${MINOR},${REGISTRY}${IMAGE}:${MAJOR}"
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "ref=${REF}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
 
@@ -71,7 +72,7 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Login to GitHub Container Registry
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || inputs.tag != ''
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -85,7 +86,7 @@ jobs:
           context: ./examples/container
           file: ./examples/container/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/386,linux/arm/v7
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' || inputs.tag != '' }}
           tags: ${{ steps.env.outputs.tags }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
@@ -97,11 +98,11 @@ jobs:
             org.opencontainers.image.licenses=${{ github.event.repository.license.name }}
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' || inputs.tag != '' }}
         with:
-          image-ref: ${{ steps.env.outputs.tags }}
-          format: "table"
-          exit-code: "1"
+          image-ref: ${{ steps.env.outputs.ref }}
+          format: 'table'
+          exit-code: '1'
           ignore-unfixed: true
-          vuln-type: "os,library"
-          severity: "CRITICAL,HIGH"
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
