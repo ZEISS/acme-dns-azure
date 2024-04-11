@@ -47,8 +47,6 @@ jobs:
             MINOR=${VERSION%.*}
             MAJOR=${MINOR%.*}
             TAGS="${TAGS},${REGISTRY}${IMAGE}:${MINOR},${REGISTRY}${IMAGE}:${MAJOR}"
-          # elif [ "${{ github.event_name }}" == "push" ]; then
-          #   TAGS="$TAGS,${REGISTRY}${IMAGE}:sha-${GITHUB_SHA::8}"
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "ref=${REF}" >> $GITHUB_OUTPUT
