@@ -12,24 +12,23 @@ COPY main.py /main.py
 RUN set -eux; \
     # Install permanent system packages
     apk --update add --no-cache \
-    libexpat=2.6.0-r0 \
-    coreutils \
-    curl \
-    bash \
-    zip \
-    git \
-    jq \
+        coreutils \
+        curl \
+        bash \
+        zip \
+        git \
+        jq \
     ; \
     # Install build-dependent system packages
     apk add --no-cache --virtual .build-deps \
-    gcc \
-    musl-dev \
-    python3-dev \
-    libffi-dev \
-    openssl-dev \
-    cargo \
-    pkgconfig \
-    tzdata \
+        gcc \
+        musl-dev \
+        python3-dev \
+        libffi-dev \
+        openssl-dev \
+        cargo \
+        pkgconfig \
+        tzdata \
     ; \
     \
     # Set timezone
