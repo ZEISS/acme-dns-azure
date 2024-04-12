@@ -9,7 +9,7 @@ on:
       prerelease:
         type: string
         required: false
-        default: "true"
+        default: 'true'
 
 permissions:
   issues: write
@@ -18,6 +18,7 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  packages: write
 
 jobs:
   unit_test:
@@ -65,11 +66,11 @@ jobs:
       - name: download artifact
         uses: actions/download-artifact@v4
         with:
-          path: "/tmp/${{  github.ref_name }}"
+          path: '/tmp/${{  github.ref_name }}'
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
           body: ${{ steps.changelog.outputs.changes }}
-          artifacts: "/tmp/${{  github.ref_name }}/**/*.zip"
+          artifacts: '/tmp/${{  github.ref_name }}/**/*.zip'
           prerelease: ${{ inputs.prerelease }}
           tag: ${{ inputs.tag }}
