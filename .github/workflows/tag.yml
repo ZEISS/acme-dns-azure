@@ -3,11 +3,11 @@ name: Tag
 on:
   pull_request:
     branches:
-      - "main"
+      - 'main'
     types:
       - closed
     paths:
-      - "pyproject.toml"
+      - 'pyproject.toml'
 
 permissions:
   contents: write
@@ -16,6 +16,7 @@ permissions:
   pull-requests: write
   pages: write
   id-token: write
+  packages: write
 
 jobs:
   create_tag:
@@ -44,7 +45,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: ${{ env.new_version }}
-          tag_prefix: v
+          tag_prefix: ''
   trigger_release:
     needs: [create_tag]
     uses: ./.github/workflows/release.yml
