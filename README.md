@@ -135,6 +135,7 @@ The other placeholders are specified separately.
 See [examples](examples/README.md) for configuration examples.
 
 ```yml
+# Client ID of managed identity
 [managed_identity_id: <string>]
 
 [sp_client_id: <string>]
@@ -157,7 +158,6 @@ server : <string>
 
 # config file content for certbot client
 [certbot.ini : <string> | default = ""]
-#
 ```
 
 NOTE: Either **managed_identity_id** or **sp_client_id** and **sp_client_secret** must be specified.
