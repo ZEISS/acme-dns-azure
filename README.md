@@ -194,7 +194,7 @@ certificates:
 name: <string>
 # Azure dns zone resource ID used for ACME DNS01 challenge
 dns_zone_resource_id: <string>
-# renewal in days before expiry for certificate to be renewed
+# renewal in days before expiry for certificate to be renewed. Default is 30
 [renew_before_expiry: <int>]
 domains:
   - <domain>
