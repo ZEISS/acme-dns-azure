@@ -46,7 +46,7 @@ class DNSChallenge:
         elif self._resolve(zone, "NS", nameservers) is None:
             msg = "{0}._nameservers - Nameservers for DNS zone not reachable: {1}"
             logger.debug(msg.format(self.__class__.__name__, zone))
-            return []
+            nameservers = []
         return nameservers
 
     def _resolve(
