@@ -82,11 +82,11 @@ class DNSChallenge:
         nameservers. Second, checks if the associated DNS challenge text record ID exists.
         It returns the DNS Zone and the existing DNS challenge text record name as tuple.
         """
-        name = "_acme-challenge" + name.removeprefix("*.")
+        name = "_acme-challenge." + name.removeprefix("*.")
         zone = None
         nameservers = []
         cname = None
-        txt = None
+        record = None
         hop, max_hops = 0, 2
         while True:
             qname = cname if cname else name
@@ -107,13 +107,14 @@ class DNSChallenge:
                 )
                 logger.error(msg.format(self.__class__.__name__, name, hop))
                 raise AssertionError
+        qname_rel = dns.name.from_text(qname).relativize(dns.name.from_text(zone)).to_text(True)
         txt_r = self._resolve(qname, "TXT", nameservers)
         if txt_r:
             for value in txt_r:
                 if value.to_text() == "-":
-                    txt = qname.removesuffix("." + zone)
+                    record = qname_rel
                     break
-        if cname and txt is None and name != qname.removesuffix("." + zone):
+        if cname and record is None and name != qname_rel:
             msg = (
                 "{0}.validate - The DNS record set {1} has a canonical name, but its relative "
                 "name does not correspond to the original record, nor does there exist an "
@@ -123,5 +124,5 @@ class DNSChallenge:
             logger.error(msg.format(self.__class__.__name__, name, qname))
             raise AssertionError
         msg = "{0}.validate - QName: {1} | CName: {2} | Zone: {3} | Record: {4}"
-        logger.info(msg.format(self.__class__.__name__, name, qname, zone, txt))
-        return zone, txt
+        logger.info(msg.format(self.__class__.__name__, name, cname, zone, record))
+        return zone, record
