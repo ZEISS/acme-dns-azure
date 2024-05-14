@@ -43,14 +43,10 @@ class DNSChallenge:
         if not nameservers:
             msg = "{0}._nameservers - Nameservers for DNS zone not found: {1}"
             logger.debug(msg.format(self.__class__.__name__, zone))
-        else:
-            for ns in ns_r:
-                if not self._resolve(ns.to_text(), ip_rdtype, nameservers):
-                    msg = (
-                        "{0}._nameservers - Nameservers for DNS zone not reachable: {1}"
-                    )
-                    logger.debug(msg.format(self.__class__.__name__, zone))
-                    return []
+        elif self._resolve(zone, "NS", nameservers) is None:
+            msg = "{0}._nameservers - Nameservers for DNS zone not reachable: {1}"
+            logger.debug(msg.format(self.__class__.__name__, zone))
+            return []
         return nameservers
 
     def _resolve(
