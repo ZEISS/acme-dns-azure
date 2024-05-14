@@ -79,7 +79,7 @@ class DNSChallenge:
     def validate(self, name: str) -> tuple[str | None, str | None]:
         """
         First, determines the canonical name of given name by using the associated DNS zone and
-        nameservers. Second, checks if the associated DNS challenge text record ID exists.
+        nameservers. Second, checks if the associated DNS challenge text record name exists.
         It returns the DNS Zone and the existing DNS challenge text record name as tuple.
         """
         name = "_acme-challenge." + name.removeprefix("*.")
@@ -95,11 +95,10 @@ class DNSChallenge:
                 zone = qzone
                 nameservers = self._nameservers(zone)
             cname_r = self._resolve(qname, "CNAME", nameservers)
-            if cname_r:
-                hop += 1
-                cname = dns.name.from_text(cname_r[0].to_text()).to_text(True)
-            else:
+            if cname_r is None:
                 break
+            cname = dns.name.from_text(cname_r[0].to_text()).to_text(True)
+            hop += 1
             if hop >= max_hops:
                 msg = (
                     "{0}.validate - DNS record set {1} has a canonical name that points {2!s} "
