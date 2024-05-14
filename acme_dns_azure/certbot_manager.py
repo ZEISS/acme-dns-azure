@@ -14,7 +14,7 @@ from acme_dns_azure.data import (
     RotationCertificate,
     CertbotResult,
 )
-from acme_dns_azure.dns_challenge import DNSChallenge
+from acme_dns_azure.dns_validation import DNSChallenge
 
 logger = setup_custom_logger(__name__)
 
@@ -140,6 +140,7 @@ class CertbotManager:
                 idx += 1
                 domain_name = domain["name"]
                 dns_zone_name, record_name = DNSChallenge().validate(domain_name)
+                logger.info("DNS Challenge: %s %s", dns_zone_name, record_name)
                 dns_zone_resource_id = certificate["dns_zone_resource_id"]
                 if domain["dns_zone_resource_id"]:
                     dns_zone_resource_id = domain["dns_zone_resource_id"]

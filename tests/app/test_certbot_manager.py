@@ -28,7 +28,7 @@ def certbot_manager_init(self, working_dir) -> None:
     self._create_certbot_init_directories()
 
 
-def _dns_challenge_validate_mock(name: str):
+def _dns_validation_challenge_mock(name: str):
     if name.endswith(".zyx.example.org"):
         return "my-dev.domain.com", "_acme-challenge.zyx"
     elif name.endswith(".abc.example.org"):
@@ -39,13 +39,13 @@ def _dns_challenge_validate_mock(name: str):
 
 @pytest.fixture(autouse=True)
 def _dns_challenge_validate_fixture(request):
-    _ignore_mock = request.node.get_closest_marker("ignore_dns_challenge_validate_mock")
+    _ignore_mock = request.node.get_closest_marker("ignore_dns_validation_challenge_mock")
     if _ignore_mock:
         yield
     else:
         with patch(
-            "acme_dns_azure.dns_challenge.DNSChallenge.validate",
-            side_effect=_dns_challenge_validate_mock,
+            "acme_dns_azure.dns_validation.DNSChallenge.validate",
+            side_effect=_dns_validation_challenge_mock,
         ) as fixture:
             yield fixture
 
