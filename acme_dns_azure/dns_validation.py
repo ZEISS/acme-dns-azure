@@ -111,7 +111,7 @@ class DNSChallenge:
         if txt_r:
             for value in txt_r:
                 if value.to_text() == "-":
-                    txt = txt_r.qname.to_text(True).removesuffix("." + zone)
+                    txt = qname.removesuffix("." + zone)
                     break
         if cname and txt is None and name != qname.removesuffix("." + zone):
             msg = (
