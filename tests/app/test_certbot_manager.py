@@ -38,8 +38,10 @@ def _dns_validation_challenge_mock(name: str):
 
 
 @pytest.fixture(autouse=True)
-def _dns_challenge_validate_fixture(request):
-    _ignore_mock = request.node.get_closest_marker("ignore_dns_validation_challenge_mock")
+def _dns_validation_challenge_fixture(request):
+    _ignore_mock = request.node.get_closest_marker(
+        "ignore_dns_validation_challenge_mock"
+    )
     if _ignore_mock:
         yield
     else:
