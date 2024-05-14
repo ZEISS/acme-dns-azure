@@ -29,9 +29,9 @@ def certbot_manager_init(self, working_dir) -> None:
 
 
 def _dns_validation_challenge_mock(name: str):
-    if name.endswith(".zyx.example.org"):
+    if name.endswith("zyx.example.org"):
         return "my-dev.domain.com", "_acme-challenge.zyx"
-    elif name.endswith(".abc.example.org"):
+    elif name.endswith("abc.example.org"):
         return "my-dev.domain.com", "_acme"
     else:
         return "example.org", None
