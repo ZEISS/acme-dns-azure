@@ -106,7 +106,9 @@ class DNSChallenge:
                 )
                 logger.error(msg.format(self.__class__.__name__, name, hop))
                 raise AssertionError
-        qname_rel = dns.name.from_text(qname).relativize(dns.name.from_text(zone)).to_text(True)
+        qname_rel = (
+            dns.name.from_text(qname).relativize(dns.name.from_text(zone)).to_text(True)
+        )
         txt_r = self._resolve(qname, "TXT", nameservers)
         if txt_r:
             for value in txt_r:
