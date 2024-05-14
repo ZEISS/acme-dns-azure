@@ -4,7 +4,7 @@ import dns.resolver
 logger = setup_custom_logger(__name__)
 
 
-class DNSDelegation:
+class DNSChallenge:
     def __init__(self) -> None:
         pass
 
@@ -43,6 +43,14 @@ class DNSDelegation:
         if not nameservers:
             msg = "{0}._nameservers - Nameservers for DNS zone not found: {1}"
             logger.debug(msg.format(self.__class__.__name__, zone))
+        else:
+            for ns in ns_r:
+                if not self._resolve(ns.to_text(), ip_rdtype, nameservers):
+                    msg = (
+                        "{0}._nameservers - Nameservers for DNS zone not reachable: {1}"
+                    )
+                    logger.debug(msg.format(self.__class__.__name__, zone))
+                    return []
         return nameservers
 
     def _resolve(
@@ -70,29 +78,28 @@ class DNSDelegation:
 
     def validate(self, name: str) -> tuple[str | None, str | None]:
         """
-        Determine the canonical name of given name by using the associated DNS zone and
-        nameservers. It returns the DNS Zone and the canonical name as tuple.
+        First, determines the canonical name of given name by using the associated DNS zone and
+        nameservers. Second, checks if the associated DNS challenge text record ID exists.
+        It returns the DNS Zone and the existing DNS challenge text record name as tuple.
         """
+        name = "_acme-challenge" + name.removeprefix("*.")
         zone = None
         nameservers = []
         cname = None
+        txt = None
         hop, max_hops = 0, 2
         while True:
             qname = cname if cname else name
             qzone = self._zone_for_name(qname)
             if zone != qzone:
                 zone = qzone
-                nameservers = []
-                if zone:
-                    nameservers = self._nameservers(zone)
+                nameservers = self._nameservers(zone)
             cname_r = self._resolve(qname, "CNAME", nameservers)
             if cname_r:
                 hop += 1
                 cname = dns.name.from_text(cname_r[0].to_text()).to_text(True)
             else:
-                msg = "{0}.validate - QName: {1} | CName: {2} | Zone: {3}"
-                logger.info(msg.format(self.__class__.__name__, name, cname, zone))
-                return zone, cname
+                break
             if hop >= max_hops:
                 msg = (
                     "{0}.validate - DNS record set {1} has a canonical name that points {2!s} "
@@ -100,3 +107,21 @@ class DNSDelegation:
                 )
                 logger.error(msg.format(self.__class__.__name__, name, hop))
                 raise AssertionError
+        txt_r = self._resolve(qname, "TXT", nameservers)
+        if txt_r:
+            for value in txt_r:
+                if value.to_text() == "-":
+                    txt = txt_r.qname.to_text(True).removesuffix("." + zone)
+                    break
+        if cname and txt is None and name != qname.removesuffix("." + zone):
+            msg = (
+                "{0}.validate - The DNS record set {1} has a canonical name, but its relative "
+                "name does not correspond to the original record, nor does there exist an "
+                "text record {2} that contains the value '-'. "
+                "Create/modify respective record set upfront!"
+            )
+            logger.error(msg.format(self.__class__.__name__, name, qname))
+            raise AssertionError
+        msg = "{0}.validate - QName: {1} | CName: {2} | Zone: {3} | Record: {4}"
+        logger.info(msg.format(self.__class__.__name__, name, qname, zone, txt))
+        return zone, txt
