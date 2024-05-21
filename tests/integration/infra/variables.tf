@@ -4,6 +4,10 @@ variable "location" {
   description = "The Azure location for the deployment."
 }
 
+variable "subscription_id" {
+  type = string
+}
+
 variable "resource_group_name" {
   type = string
 }
@@ -12,6 +16,7 @@ variable "dns_zone" {
   type = object({
     name                = string
     resource_group_name = string
+    subscription_id     = string
   })
 }
 
