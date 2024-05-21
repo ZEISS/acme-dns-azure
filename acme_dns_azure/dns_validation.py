@@ -50,7 +50,7 @@ class DNSChallenge:
         return nameservers
 
     def _resolve(
-        self, name: str, rdtype: str, nameservers: list[str] = None
+        self, name: str, rdtype: str, nameservers: list[str] = []
     ) -> dns.resolver.Answer | None:
         """
         Resolves DNS using specified or system default nameservers. It returns the DNS
@@ -108,7 +108,7 @@ class DNSChallenge:
         txt_r = self._resolve(qname, "TXT", nameservers)
         if txt_r:
             for value in txt_r:
-                if value.to_text().replace('"', "") == "-":
+                if value.to_text().strip("'\"") == "-":
                     record = qname_rel
                     break
         if cname and record is None and name != qname_rel:
