@@ -37,7 +37,7 @@ dns-azure-propagation-seconds = 60
 }
 
 output "integration_test_params" {
-  value     = "--dns-zone-id ${data.azurerm_dns_zone.this.id} --dns-zone-name ${data.azurerm_dns_zone.this.name} --dns-zone-resource-group-name ${data.azurerm_dns_zone.this.resource_group_name} --subscription-id ${data.azurerm_subscription.current.subscription_id} --keyvault-uri ${azurerm_key_vault.this.vault_uri} --principal-id ${azuread_service_principal.no_permission.object_id}"
+  value     = "--dns-zone-id ${data.azurerm_dns_zone.this.id} --dns-zone-name ${data.azurerm_dns_zone.this.name} --dns-zone-resource-group-name ${data.azurerm_dns_zone.this.resource_group_name} --subscription-id ${var.dns_zone.subscription_id} --keyvault-uri ${azurerm_key_vault.this.vault_uri} --principal-id ${azuread_service_principal.no_permission.object_id}"
   sensitive = false
 }
 

@@ -1,4 +1,5 @@
 import logging
+import time
 from dataclasses import dataclass
 
 from azure.mgmt.dns import DnsManagementClient
@@ -73,6 +74,7 @@ class AzureDnsZoneManager:
         )
         self._created_record_sets.append(record_set)
         logging.info("Created record %s", record_set)
+        self._wait_until_records_exists((name))
 
     def create_txt_record(self, name, value: str = None, ttl: int = 120) -> str:
         logging.info("Creating record %s", name)
@@ -84,5 +86,14 @@ class AzureDnsZoneManager:
             parameters={"ttl": ttl, "txt_records": [TxtRecord(value=[value])]},
         )
         self._created_record_sets.append(record_set)
+        self._wait_until_records_exists((name))
         logging.info("Created record %s", record_set)
         return record_set.id
+
+    def _wait_until_records_exists(self, name) -> bool:
+        t_end = time.time() + 5
+        while time.time() < t_end:
+            time.sleep(1)
+            if self.record_exists(name=name):
+                break
+        return True

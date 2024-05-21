@@ -396,3 +396,43 @@ def test_automatic_renewal_for_wildcard_cert(
     )
     assert cn == f"CN={domain_name}"
     assert san == [domain_name]
+
+
+def test_create_cert_for_txt_record_without_existing_cname_txt_not_deleted_success(
+    acme_config_manager,
+    azure_key_vault_manager,
+    azure_dns_zone_manager,
+    config_file_path,
+    resource_name,
+    dns_zone_name,
+):
+    ## Config
+    domain_name = resource_name + "." + dns_zone_name
+    key_vault_cert_name = domain_name.replace(".", "")
+
+    acme_config_manager.base_config_from_file(file_path=config_file_path)
+
+    azure_dns_zone_manager.create_txt_record(
+        name="_acme-challenge." + resource_name, value="-"
+    )
+
+    acme_config_manager.add_certificate_to_config(
+        cert_name=key_vault_cert_name,
+        domain_references=[
+            DnsZoneDomainReference(name=domain_name),
+        ],
+    )
+
+    ## Test
+    client = AcmeDnsAzureClient(acme_config_manager.config)
+    results: list[RotationResult] = client.issue_certificates()
+
+    ## Validate
+    assert results[0].result == CertbotResult.CREATED
+    cn, san = azure_key_vault_manager.get_cn_and_san_from_certificate(
+        key_vault_cert_name
+    )
+    assert cn == f"CN={domain_name}"
+    assert san == [domain_name]
+
+    assert azure_dns_zone_manager.record_exists(name="_acme-challenge." + resource_name)

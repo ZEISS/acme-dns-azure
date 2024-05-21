@@ -1,3 +1,4 @@
+import pytest
 from datetime import datetime, timezone
 from acme_dns_azure.client import AcmeDnsAzureClient
 from acme_dns_azure.data import (
@@ -185,12 +186,8 @@ def test_create_cert_for_dns_delegation_dedicated_txt_without_minimum_permission
     )
 
     ## Test
-    client = AcmeDnsAzureClient(acme_config_manager.config)
-    results: list[RotationResult] = client.issue_certificates()
-
-    ## Validate
-    for result in results:
-        assert result.result == CertbotResult.FAILED
+    with pytest.raises(AssertionError):
+        AcmeDnsAzureClient(acme_config_manager.config)
 
 
 def test_create_cert_for_dns_delegation_shared_txt_shared_cert_with_minimum_permission_success(

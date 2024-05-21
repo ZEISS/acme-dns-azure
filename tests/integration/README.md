@@ -15,7 +15,10 @@ The actual test run will:
 Required permissions:
 
 - Contributor
-- Role Based Access Control Administrator (only fur running unhappy_path test cases and for initially deploying terraform)
+
+Since the DNS Zone is part of a seperate subscription, additonally permissions on DNS Zone level are required:
+- DNS Zone Contributor
+- Role Based Access Control Administrator
 
 ## Run integration test
 

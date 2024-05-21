@@ -56,18 +56,16 @@ pyyaml = ">=3"
 requests = ">=2"
 strictyaml = ">=1.7.3"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 azure-mgmt-authorization = "*"
-black = {version = "*", allow-prereleases = true}
+black = {version = "^24.2.0", allow-prereleases = true}
 coverage = "*"
-flake8 = "*"
 isort = "*"
 mock = "*"
 mypy = "*"
 pdoc3 = "*"
 pytest = "*"
 pytest-cov = "*"
-pytest-xdist = "*"
 tox = ">=4"
 types-PyYAML = "*"
 types-pytz = "*"
@@ -79,9 +77,6 @@ vcrpy = "*"
 
 [tool.poetry.scripts]
 acme-dns-azure = "acme_dns_azure.cli:main"
-
-[tool.poetry.group.dev.dependencies]
-black = "^24.2.0"
 
 [tool.mypy]
 show_error_codes = true

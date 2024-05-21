@@ -14,7 +14,7 @@ from acme_dns_azure.data import (
     RotationCertificate,
     CertbotResult,
 )
-from acme_dns_azure.dns_delegation import DNSDelegation
+from acme_dns_azure.dns_validation import DNSChallenge
 
 logger = setup_custom_logger(__name__)
 
@@ -137,14 +137,9 @@ class CertbotManager:
         idx = 0
         for certificate in self._config["certificates"]:
             for domain in certificate["domains"]:
-                name = domain["name"]
-                if name.startswith("*."):
-                    logger.info("Handling wildard request %s", name)
-                    name = name.removeprefix("*.")
                 idx += 1
-                dns_zone_name, cname = DNSDelegation().validate(
-                    "_acme-challenge." + name
-                )
+                domain_name = domain["name"]
+                dns_zone_name, dns_record_name = DNSChallenge().validate(domain_name)
                 azure_resource_id = certificate["dns_zone_resource_id"]
                 if domain["dns_zone_resource_id"]:
                     azure_resource_id = domain["dns_zone_resource_id"]
@@ -155,14 +150,11 @@ class CertbotManager:
                         azure_resource_id,
                     )
                     raise AssertionError
-                if cname:
-                    azure_resource_id = (
-                        azure_resource_id
-                        + "/TXT/"
-                        + cname.removesuffix("." + dns_zone_name)
-                    )
+                if dns_record_name:
+                    azure_resource_id = azure_resource_id + "/TXT/" + dns_record_name
                 lines.append(
-                    "dns_azure_zone%i = %s:%s" % (idx, name, azure_resource_id)
+                    "dns_azure_zone%i = %s:%s"
+                    % (idx, domain_name.removeprefix("*."), azure_resource_id)
                 )
         return lines
 

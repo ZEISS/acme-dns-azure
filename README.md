@@ -228,10 +228,10 @@ When working with shared DNS Zones, one can work with DNS delegation with limite
 
 Example:
 
-| Record | Name                         | Value                     | Permission           |
-| ------ | ---------------------------- | ------------------------- | -------------------- |
-| TXT    | \_acme-dedicated             | -                         | DNS Zone Contributor |
-| CNAME  | \_acme-challenge.mysubdomain | \_acme-dedicated.mydomain | None                 |
+| Record | Name                         | Value                  | Permission           |
+| ------ | ---------------------------- | ---------------------- | -------------------- |
+| TXT    | \_acme-dedicated             | -                      | DNS Zone Contributor |
+| CNAME  | \_acme-challenge.mysubdomain | \_acme-dedicated.fqdn. | None                 |
 
 The CNAME and TXT record must be created upfront to enable users to use certbot. The permissions are required on the identity triggering certbot.
 

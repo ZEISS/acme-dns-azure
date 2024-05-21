@@ -28,26 +28,26 @@ def certbot_manager_init(self, working_dir) -> None:
     self._create_certbot_init_directories()
 
 
-def _dns_delegation_validate_mock(name: str):
-    if name.endswith(".zyx.example.org"):
-        return "my-dev.domain.com", "_acme-challenge.zyx.my-dev.domain.com"
-    elif name.endswith(".abc.example.org"):
-        return "my-dev.domain.com", "_acme.my-dev.domain.com"
+def _dns_validation_challenge_mock(name: str):
+    if name.endswith("zyx.example.org"):
+        return "my-dev.domain.com", "_acme-challenge.zyx"
+    elif name.endswith("abc.example.org"):
+        return "my-dev.domain.com", "_acme"
     else:
         return "example.org", None
 
 
 @pytest.fixture(autouse=True)
-def _dns_delegation_validate_fixture(request):
+def _dns_validation_challenge_fixture(request):
     _ignore_mock = request.node.get_closest_marker(
-        "ignore_dns_delegation_validate_mock"
+        "ignore_dns_validation_challenge_mock"
     )
     if _ignore_mock:
         yield
     else:
         with patch(
-            "acme_dns_azure.dns_delegation.DNSDelegation.validate",
-            side_effect=_dns_delegation_validate_mock,
+            "acme_dns_azure.dns_validation.DNSChallenge.validate",
+            side_effect=_dns_validation_challenge_mock,
         ) as fixture:
             yield fixture
 

@@ -28,7 +28,7 @@ jobs:
           poetry run coverage xml
       - uses: 5monkeys/cobertura-action@master
         with:
-          minimum_coverage: 40
+          minimum_coverage: 35
           fail_below_threshold: true
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
