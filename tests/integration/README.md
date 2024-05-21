@@ -16,7 +16,7 @@ Required permissions:
 
 - Contributor
 
-As the DNS Zone is part of a seperate subscription, additonally permissions on DNS Zone level are required:
+Since the DNS Zone is part of a seperate subscription, additonally permissions on DNS Zone level are required:
 - DNS Zone Contributor
 - Role Based Access Control Administrator
 
