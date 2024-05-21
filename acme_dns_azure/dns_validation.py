@@ -108,7 +108,7 @@ class DNSChallenge:
         txt_r = self._resolve(qname, "TXT", nameservers)
         if txt_r:
             for value in txt_r:
-                if value.to_text() == "-":
+                if value.to_text().strip("'\"") == "-":
                     record = qname_rel
                     break
         if cname and record is None and name != qname_rel:
