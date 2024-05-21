@@ -415,9 +415,6 @@ def test_create_cert_for_txt_record_without_existing_cname_txt_not_deleted_succe
     azure_dns_zone_manager.create_txt_record(
         name="_acme-challenge." + resource_name, value="-"
     )
-    import time
-
-    time.sleep(1)
 
     acme_config_manager.add_certificate_to_config(
         cert_name=key_vault_cert_name,
