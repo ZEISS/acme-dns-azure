@@ -48,7 +48,7 @@ class AzureADManager:
 
     def clean_up_all_resources(self):
         for assignment in self._created_assignments:
-            logger.info("Deleting role assignment from scope %s...", assignment.scope)
+            logger.debug("Deleting role assignment from scope %s...", assignment.scope)
             try:
                 self._client.role_assignments.delete(
                     scope=assignment.scope, role_assignment_name=assignment.uuid

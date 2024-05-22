@@ -77,6 +77,7 @@ class AzureKeyVaultManager:
 
     def _delete_secret(self, name):
         try:
+            logger.debug("Deleting secret %s...", name)
             secret_poller = self._secret_client.begin_delete_secret(name)
             secret_poller.wait()
             self._secret_client.purge_deleted_secret(name)
@@ -86,7 +87,7 @@ class AzureKeyVaultManager:
                     self._secret_client.get_deleted_secret(name)
                 except ResourceNotFoundError:
                     # Secret shortly being in ObjectIsBeingDeleted mode, although not found
-                    logger.info("Deleted secret %s", name)
+                    logger.debug("Deleted secret %s", name)
                     break
         except Exception:
             logger.exception(

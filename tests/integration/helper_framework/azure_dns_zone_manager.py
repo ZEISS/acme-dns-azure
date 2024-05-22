@@ -26,7 +26,7 @@ class AzureDnsZoneManager:
 
     def clean_up_all_resources(self):
         for record in self._created_record_sets:
-            logger.info("Deleting record %s...", record.name)
+            logger.debug("Deleting record %s...", record.name)
             try:
                 self._delete_record(
                     name=record.name,
@@ -66,7 +66,7 @@ class AzureDnsZoneManager:
         self._additonal_records.append(name)
 
     def create_cname_record(self, name, value, ttl: int = 120) -> None:
-        logger.info("Creating CNAME record %s", name)
+        logger.debug("Creating CNAME record %s", name)
         record_set: RecordSet = self._client.record_sets.create_or_update(
             resource_group_name=self._resource_group_name,
             zone_name=self._zone_name,
@@ -79,7 +79,7 @@ class AzureDnsZoneManager:
         self._wait_until_record_is_propagated(name + "." + self._zone_name, "CNAME", value)
 
     def create_txt_record(self, name, value: str = None, ttl: int = 120) -> str:
-        logger.info("Creating TXT record %s", name)
+        logger.debug("Creating TXT record %s", name)
         record_set: RecordSet = self._client.record_sets.create_or_update(
             resource_group_name=self._resource_group_name,
             zone_name=self._zone_name,
