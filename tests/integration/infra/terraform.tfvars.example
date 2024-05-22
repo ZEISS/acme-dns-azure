@@ -1,3 +1,4 @@
+subscription_id                  = "00000000-0000-0000-0000-000000000000"
 location                         = "westeurope"
 resource_group_name              = "pd-XX01-acme"
 email                            = "user@example.com"
@@ -5,6 +6,7 @@ key_vault_name                   = "pdXX01acmetestvault"
 azuread_application_display_name = "ACME integration test"
 key_size                         = 4096
 dns_zone = {
+  subscription_id     = "00000000-0000-0000-0000-000000000000"
   name                = "acme.example.com"
   resource_group_name = "acme-test-dns"
 }
