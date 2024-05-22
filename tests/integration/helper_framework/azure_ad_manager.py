@@ -11,6 +11,7 @@ from acme_dns_azure.log import setup_custom_logger
 
 logger = setup_custom_logger(__name__)
 
+
 @dataclass
 class Assignment:
     scope: str
@@ -55,5 +56,6 @@ class AzureADManager:
                 )
             except Exception:
                 logger.exception(
-                    "Please manually delete role assignment from scope %s", assignment.scope
+                    "Please manually delete role assignment from scope %s",
+                    assignment.scope,
                 )

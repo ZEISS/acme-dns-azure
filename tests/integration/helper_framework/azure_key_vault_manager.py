@@ -11,6 +11,7 @@ from acme_dns_azure.log import setup_custom_logger
 
 logger = setup_custom_logger(__name__)
 
+
 class AzureKeyVaultManager:
     def __init__(self, keyvault_uri):
         self._cert_client = CertificateClient(

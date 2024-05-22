@@ -10,6 +10,7 @@ from acme_dns_azure.log import setup_custom_logger
 
 logger = setup_custom_logger(__name__)
 
+
 @dataclass
 class DnsZoneDomainReference:
     name: str
@@ -76,7 +77,9 @@ class AzureDnsZoneManager:
         )
         self._created_record_sets.append(record_set)
         logger.debug("Created CNAME record %s", record_set.fqdn)
-        self._wait_until_record_is_propagated(name + "." + self._zone_name, "CNAME", value)
+        self._wait_until_record_is_propagated(
+            name + "." + self._zone_name, "CNAME", value
+        )
 
     def create_txt_record(self, name, value: str = None, ttl: int = 120) -> str:
         logger.debug("Creating TXT record %s", name)
@@ -89,10 +92,14 @@ class AzureDnsZoneManager:
         )
         self._created_record_sets.append(record_set)
         logger.debug("Created TXT record %s", record_set.fqdn)
-        self._wait_until_record_is_propagated(name + "." + self._zone_name, "TXT", value)
+        self._wait_until_record_is_propagated(
+            name + "." + self._zone_name, "TXT", value
+        )
         return record_set.id
 
-    def _wait_until_record_is_propagated(self, name: str, type: str, value: str) -> bool:
+    def _wait_until_record_is_propagated(
+        self, name: str, type: str, value: str
+    ) -> bool:
         t_end = time.time() + 30
         dns = DNSChallenge()
         zone = dns._zone_for_name(name)
