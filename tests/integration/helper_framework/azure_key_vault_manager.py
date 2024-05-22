@@ -58,7 +58,7 @@ class AzureKeyVaultManager:
 
     def _delete_certificate(self, name):
         try:
-            logger.info("Deleting certificate %s...", name)
+            logger.debug("Deleting certificate %s...", name)
             certificate_poller = self._cert_client.begin_delete_certificate(name)
             certificate_poller.wait()
             self._cert_client.purge_deleted_certificate(name)

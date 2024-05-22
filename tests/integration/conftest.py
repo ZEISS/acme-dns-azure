@@ -76,6 +76,11 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(autouse=True)
+def print_linebreak():
+    print("")
+
+
+@pytest.fixture(autouse=True)
 def resource_name(request):
     prefix = request.config.getoption("--resource-prefix")
     default_name = request.config.getoption("--resource-name")

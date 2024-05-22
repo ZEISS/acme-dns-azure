@@ -21,6 +21,7 @@ class AzureDnsZoneManager:
     def __init__(self, subscription_id, resource_group_name, zone_name):
         self._resource_group_name = resource_group_name
         self._zone_name = zone_name
+        self._nameservers = DNSChallenge()._nameservers(zone_name)
         self._client = DnsManagementClient(DefaultAzureCredential(), subscription_id)
         self._created_record_sets: list[RecordSet] = []
         self._additonal_records: list[str] = []
@@ -100,12 +101,9 @@ class AzureDnsZoneManager:
     def _wait_until_record_is_propagated(
         self, name: str, type: str, value: str
     ) -> bool:
-        t_end = time.time() + 30
-        dns = DNSChallenge()
-        zone = dns._zone_for_name(name)
-        nameservers = dns._nameservers(zone)
+        t_end = time.time() + 60
         while time.time() < t_end:
-            rrset = dns._resolve(name, type, nameservers)
+            rrset = DNSChallenge()._resolve(name, type, self._nameservers)
             if rrset:
                 for rr in rrset:
                     if rr.to_text().strip("'\"") == value:

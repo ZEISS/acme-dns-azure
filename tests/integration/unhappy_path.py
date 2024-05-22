@@ -186,8 +186,12 @@ def test_create_cert_for_dns_delegation_dedicated_txt_without_minimum_permission
     )
 
     ## Test
-    with pytest.raises(AssertionError):
-        AcmeDnsAzureClient(acme_config_manager.config)
+    client = AcmeDnsAzureClient(acme_config_manager.config)
+    results: list[RotationResult] = client.issue_certificates()
+
+    ## Validate
+    for result in results:
+        assert result.result == CertbotResult.FAILED
 
 
 def test_create_cert_for_dns_delegation_shared_txt_shared_cert_with_minimum_permission_success(
