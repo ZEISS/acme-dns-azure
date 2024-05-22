@@ -1,4 +1,3 @@
-import logging
 import time
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
@@ -8,6 +7,9 @@ from azure.keyvault.certificates import (
     KeyVaultCertificate,
 )
 from azure.keyvault.secrets import SecretClient
+from acme_dns_azure.log import setup_custom_logger
+
+logger = setup_custom_logger(__name__)
 
 
 class AzureKeyVaultManager:
@@ -56,7 +58,7 @@ class AzureKeyVaultManager:
 
     def _delete_certificate(self, name):
         try:
-            logging.info("Deleting certificate %s...", name)
+            logger.debug("Deleting certificate %s...", name)
             certificate_poller = self._cert_client.begin_delete_certificate(name)
             certificate_poller.wait()
             self._cert_client.purge_deleted_certificate(name)
@@ -66,16 +68,17 @@ class AzureKeyVaultManager:
                     self._cert_client.get_deleted_certificate(name)
                 except ResourceNotFoundError:
                     # Cert shortly being in ObjectIsBeingDeleted mode, although not found
-                    logging.info("Deleted cert %s", name)
+                    logger.debug("Deleted cert %s", name)
                     break
         except Exception:
-            logging.exception(
+            logger.exception(
                 "Failed to delete and purge certificate %s. Manual clean up required.",
                 name,
             )
 
     def _delete_secret(self, name):
         try:
+            logger.debug("Deleting secret %s...", name)
             secret_poller = self._secret_client.begin_delete_secret(name)
             secret_poller.wait()
             self._secret_client.purge_deleted_secret(name)
@@ -85,10 +88,10 @@ class AzureKeyVaultManager:
                     self._secret_client.get_deleted_secret(name)
                 except ResourceNotFoundError:
                     # Secret shortly being in ObjectIsBeingDeleted mode, although not found
-                    logging.info("Deleted secret %s", name)
+                    logger.debug("Deleted secret %s", name)
                     break
         except Exception:
-            logging.exception(
+            logger.exception(
                 "Failed to delete and purge secret %s. Manual clean up required.",
                 name,
             )
@@ -97,7 +100,7 @@ class AzureKeyVaultManager:
         for cert in self._created_certs:
             self._delete_certificate(cert.name)
         if not self._created_certs:
-            logging.info("Cleaning up all certificates stored in key vault.")
+            logger.debug("Cleaning up all certificates stored in key vault.")
             certs = self._cert_client.list_properties_of_certificates()
             for cert in certs:
                 self._delete_certificate(cert.name)

@@ -76,6 +76,11 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(autouse=True)
+def print_linebreak():
+    print("")
+
+
+@pytest.fixture(autouse=True)
 def resource_name(request):
     prefix = request.config.getoption("--resource-prefix")
     default_name = request.config.getoption("--resource-name")
@@ -121,7 +126,6 @@ def azure_dns_zone_manager(request):
         zone_name=dns_zone_name,
     )
     yield azure_dns_zone_manager
-    print("\nTeardown DNS resources...")
     azure_dns_zone_manager.clean_up_all_resources()
 
 
@@ -130,7 +134,6 @@ def azure_key_vault_manager(request):
     keyvault_uri = request.config.getoption("--keyvault-uri")
     azure_key_vault_manager = AzureKeyVaultManager(keyvault_uri=keyvault_uri)
     yield azure_key_vault_manager
-    print("\nTeardown KeyVault resources...")
     azure_key_vault_manager.clean_up_all_resources()
 
 
@@ -139,5 +142,4 @@ def azure_ad_manager(request):
     subscription_id = request.config.getoption("--subscription-id")
     azure_ad_manager = AzureADManager(subscription_id=subscription_id)
     yield azure_ad_manager
-    print("\nTeardown Role assignments...")
     azure_ad_manager.clean_up_all_resources()

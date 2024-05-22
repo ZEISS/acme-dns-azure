@@ -1,4 +1,3 @@
-import logging
 import time
 from dataclasses import dataclass
 
@@ -6,6 +5,10 @@ from azure.mgmt.dns import DnsManagementClient
 from azure.mgmt.dns.models import RecordSet, TxtRecord, CnameRecord
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
+from acme_dns_azure.dns_validation import DNSChallenge
+from acme_dns_azure.log import setup_custom_logger
+
+logger = setup_custom_logger(__name__)
 
 
 @dataclass
@@ -18,13 +21,14 @@ class AzureDnsZoneManager:
     def __init__(self, subscription_id, resource_group_name, zone_name):
         self._resource_group_name = resource_group_name
         self._zone_name = zone_name
+        self._nameservers = DNSChallenge()._nameservers(zone_name)
         self._client = DnsManagementClient(DefaultAzureCredential(), subscription_id)
         self._created_record_sets: list[RecordSet] = []
         self._additonal_records: list[str] = []
 
     def clean_up_all_resources(self):
         for record in self._created_record_sets:
-            logging.info("Deleting record %s...", record.name)
+            logger.debug("Deleting record %s...", record.name)
             try:
                 self._delete_record(
                     name=record.name,
@@ -33,12 +37,12 @@ class AzureDnsZoneManager:
                     ],  #'Microsoft.Network/dnszones/CNAME' not accepted
                 )
             except Exception:
-                logging.exception("Please manually delete record %s", record)
+                logger.exception("Please manually delete record %s", record)
         for name in self._additonal_records:
             try:
                 self._delete_record(name=name)
             except Exception:
-                logging.exception("Please manually delete record %s", name)
+                logger.exception("Please manually delete record %s", name)
 
     def record_exists(self, name: str, record_type: str = "TXT"):
         try:
@@ -64,7 +68,7 @@ class AzureDnsZoneManager:
         self._additonal_records.append(name)
 
     def create_cname_record(self, name, value, ttl: int = 120) -> None:
-        logging.info("Creating record %s", name)
+        logger.debug("Creating CNAME record %s", name)
         record_set: RecordSet = self._client.record_sets.create_or_update(
             resource_group_name=self._resource_group_name,
             zone_name=self._zone_name,
@@ -73,11 +77,13 @@ class AzureDnsZoneManager:
             parameters={"ttl": ttl, "cname_record": CnameRecord(cname=value)},
         )
         self._created_record_sets.append(record_set)
-        logging.info("Created record %s", record_set)
-        self._wait_until_records_exists((name))
+        logger.debug("Created CNAME record %s", record_set.fqdn)
+        self._wait_until_record_is_propagated(
+            name + "." + self._zone_name, "CNAME", value
+        )
 
     def create_txt_record(self, name, value: str = None, ttl: int = 120) -> str:
-        logging.info("Creating record %s", name)
+        logger.debug("Creating TXT record %s", name)
         record_set: RecordSet = self._client.record_sets.create_or_update(
             resource_group_name=self._resource_group_name,
             zone_name=self._zone_name,
@@ -86,14 +92,22 @@ class AzureDnsZoneManager:
             parameters={"ttl": ttl, "txt_records": [TxtRecord(value=[value])]},
         )
         self._created_record_sets.append(record_set)
-        self._wait_until_records_exists((name))
-        logging.info("Created record %s", record_set)
+        logger.debug("Created TXT record %s", record_set.fqdn)
+        self._wait_until_record_is_propagated(
+            name + "." + self._zone_name, "TXT", value
+        )
         return record_set.id
 
-    def _wait_until_records_exists(self, name) -> bool:
-        t_end = time.time() + 5
+    def _wait_until_record_is_propagated(
+        self, name: str, type: str, value: str
+    ) -> bool:
+        t_end = time.time() + 60
         while time.time() < t_end:
+            rrset = DNSChallenge()._resolve(name, type, self._nameservers)
+            if rrset:
+                for rr in rrset:
+                    if rr.to_text().strip("'\"") == value:
+                        logger.debug("Propagated %s record %s", type, name)
+                        return True
             time.sleep(1)
-            if self.record_exists(name=name):
-                break
-        return True
+        return False

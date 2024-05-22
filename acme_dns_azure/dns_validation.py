@@ -15,7 +15,8 @@ class DNSChallenge:
         """
         try:
             resolver = dns.resolver.Resolver()
-            resolver.lifetime = 1.0
+            resolver.timeout = 2.0
+            resolver.lifetime = 5.0
             zone = dns.resolver.zone_for_name(name, resolver=resolver).to_text(True)
             msg = "{0}._zone_for_name - Answer: {1}"
             logger.debug(msg.format(self.__class__.__name__, zone))
@@ -58,7 +59,8 @@ class DNSChallenge:
         """
         try:
             resolver = dns.resolver.Resolver()
-            resolver.lifetime = 1.0
+            resolver.timeout = 2.0
+            resolver.lifetime = 5.0
             if nameservers:
                 resolver.nameservers = nameservers
             r = resolver.resolve(name, rdtype)
