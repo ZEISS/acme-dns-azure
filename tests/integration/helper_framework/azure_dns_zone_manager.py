@@ -6,7 +6,7 @@ from azure.mgmt.dns import DnsManagementClient
 from azure.mgmt.dns.models import RecordSet, TxtRecord, CnameRecord
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
-
+from acme_dns_azure.dns_validation import DNSChallenge
 
 @dataclass
 class DnsZoneDomainReference:
@@ -74,7 +74,7 @@ class AzureDnsZoneManager:
         )
         self._created_record_sets.append(record_set)
         logging.info("Created record %s", record_set)
-        self._wait_until_records_exists((name))
+        self._wait_until_record_is_propagated(name, "CNAME", value)
 
     def create_txt_record(self, name, value: str = None, ttl: int = 120) -> str:
         logging.info("Creating record %s", name)
@@ -86,14 +86,21 @@ class AzureDnsZoneManager:
             parameters={"ttl": ttl, "txt_records": [TxtRecord(value=[value])]},
         )
         self._created_record_sets.append(record_set)
-        self._wait_until_records_exists((name))
         logging.info("Created record %s", record_set)
+        self._wait_until_record_is_propagated(name, "TXT", value)
         return record_set.id
 
-    def _wait_until_records_exists(self, name) -> bool:
-        t_end = time.time() + 5
+    def _wait_until_record_is_propagated(self, name: str, type: str, value: str) -> bool:
+        t_end = time.time() + 60
+        dns = DNSChallenge()
         while time.time() < t_end:
+            zone = dns._zone_for_name(name)
+            nameservers = dns._nameservers(zone)
+            record_set = dns._resolve(name, type, nameservers)
+            if record_set:
+                for value in record_set:
+                    if value.to_text().strip("'\"") == value:
+                        logging.info("Propagated record %s", record_set.qname.to_text(True))
+                        return True
             time.sleep(1)
-            if self.record_exists(name=name):
-                break
-        return True
+        return False
