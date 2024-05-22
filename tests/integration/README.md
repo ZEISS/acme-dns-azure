@@ -16,7 +16,7 @@ Required permissions:
 
 - Contributor
 
-Since the DNS Zone is part of a seperate subscription, additonally permissions on DNS Zone level are required:
+As the DNS Zone is part of a seperate subscription, additonally permissions on DNS Zone level are required:
 - DNS Zone Contributor
 - Role Based Access Control Administrator
 
@@ -47,7 +47,7 @@ pytest happy_path.py $params  --resource-prefix pd-XX01
 pytest unhappy_path.py $params  --resource-prefix pd-XX01
 
 # increase log level
-pytest happy_path.py $params  -s -v --log-cli-level=INFO --show-capture=log
+ACME_DNS_AZURE_LOG_LEVEL=INFO pytest happy_path.py $params  -s -v --log-cli-level=INFO --show-capture=log
 # only run specific tests with pattern
 pytest unhappy_path.py $params  -k "test_automatic_renewal_for_existing_cert_multiple_domains_overwritten"
 ```
