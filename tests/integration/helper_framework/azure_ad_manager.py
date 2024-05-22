@@ -1,5 +1,4 @@
 import uuid
-import logging
 from dataclasses import dataclass
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.authorization import (
@@ -8,7 +7,9 @@ from azure.mgmt.authorization import (
 from azure.mgmt.authorization.models import (
     RoleAssignmentCreateParameters,
 )
+from acme_dns_azure.log import setup_custom_logger
 
+logger = setup_custom_logger(__name__)
 
 @dataclass
 class Assignment:
@@ -47,12 +48,12 @@ class AzureADManager:
 
     def clean_up_all_resources(self):
         for assignment in self._created_assignments:
-            logging.info("Deleting record %s...", assignment.scope)
+            logger.debug("Deleting role assignment from scope %s...", assignment.scope)
             try:
                 self._client.role_assignments.delete(
                     scope=assignment.scope, role_assignment_name=assignment.uuid
                 )
             except Exception:
-                logging.exception(
-                    "Please manually delete role assignment %s", assignment.scope
+                logger.exception(
+                    "Please manually delete role assignment from scope %s", assignment.scope
                 )
