@@ -2,14 +2,27 @@ from strictyaml import Map, Str, Seq, Bool, Optional, Regex, Int
 
 schema = Map(
     {
+        # Azure identity choice section. Choose credentials to be used to interact with Azure, we only accept one value to be true from this set, for reference see: https://docs.certbot-dns-azure.co.uk/en/latest/index.html#certbot-azure-workload-identity-ini
+        Optional("use_system_assigned_identity"): Bool(),
+        Optional("use_azure_cli_credentials"): Bool(),
+        Optional("use_workload_identity_credentials"): Bool(),
+        Optional(
+            "use_managed_identity_credentials"
+        ): Bool(),  # added to support validation logic when choosing credentials to be used
+        Optional(
+            "use_provided_service_principal_credentials"
+        ): Bool(),  # added to support validation logic when choosing credentials to be used
+        # managed_identity_id must be provided if use_managed_identity_credentials is true
         Optional("managed_identity_id"): Regex(
             r"^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$"
         ),
+        # sp_client* values must be provided if use_provided_service_principal_credentials is true
+        Optional("sp_client_id"): Str(),
+        Optional("sp_client_secret"): Str(),
+        # End of Azure identity choice section
         Optional("azure_environment", default="AzurePublicCloud"): Regex(
             "AzurePublicCloud|AzureUSGovernmentCloud|AzureChinaCloud|AzureGermanCloud"
         ),
-        Optional("sp_client_id"): Str(),
-        Optional("sp_client_secret"): Str(),
         "tenant_id": Regex(
             r"^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$"
         ),
