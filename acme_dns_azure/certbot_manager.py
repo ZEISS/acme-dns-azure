@@ -117,7 +117,7 @@ class CertbotManager:
     def _create_certbot_dns_azure_ini(self) -> List[str]:
         lines = []
         # decide on credentials to be use to interact with Azure
-        if "use_system_assigned_identity" in self._config:
+        if "use_system_assigned_identity_credentials" in self._config:
             if self._config["use_system_assigned_identity_credentials"] is True:
                 logger.info(
                     "Using Azure system assigned identity."

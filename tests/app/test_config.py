@@ -63,5 +63,5 @@ def test_schema_validation_raises_exception_multiple_credential_flags():
     """
     with pytest.raises(ConfigurationError):
         config_handler.load_from_file(
-            resources_dir + "not_accepted_multiple_credential_flags.yaml"
+            resources_dir + "credential_tests/not_accepted_multiple_credential_flags.yaml"
         )
