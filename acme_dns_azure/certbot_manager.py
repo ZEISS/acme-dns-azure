@@ -118,7 +118,7 @@ class CertbotManager:
         lines = []
         # decide on credentials to be use to interact with Azure
         if "use_system_assigned_identity" in self._config:
-            if self._config["use_system_assigned_identity"] is True:
+            if self._config["use_system_assigned_identity_credentials"] is True:
                 logger.info(
                     "Using Azure system assigned identity."
                 )

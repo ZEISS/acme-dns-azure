@@ -3,7 +3,7 @@ from strictyaml import Map, Str, Seq, Bool, Optional, Regex, Int
 schema = Map(
     {
         # Azure identity choice section. Choose credentials to be used to interact with Azure, we only accept one value to be true from this set, for reference see: https://docs.certbot-dns-azure.co.uk/en/latest/index.html#certbot-azure-workload-identity-ini
-        Optional("use_system_assigned_identity"): Bool(),
+        Optional("use_system_assigned_identity_credentials"): Bool(),
         Optional("use_azure_cli_credentials"): Bool(),
         Optional("use_workload_identity_credentials"): Bool(),
         Optional(

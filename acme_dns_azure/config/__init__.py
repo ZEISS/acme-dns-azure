@@ -73,7 +73,8 @@ def load_from_file(filename: str = None):
 
 
 def validate_azure_credentials_use(config: dict):
-    """Validates config for valid Azure credentials configuration.
+    """
+    Validates config for valid Azure credentials configuration.
 
     Args:
         config (dict): pre validated config.yaml as dict.
@@ -85,8 +86,8 @@ def validate_azure_credentials_use(config: dict):
     """
     # check if only one identity flag is set to true
     credential_flags = 0
-    if "use_system_assigned_identity" in config:
-        if config["use_system_assigned_identity"] is True:
+    if "use_system_assigned_identity_credentials" in config:
+        if config["use_system_assigned_identity_credentials"] is True:
             credential_flags += 1
     if "use_azure_cli_credentials" in config:
         if config["use_azure_cli_credentials"] is True:
@@ -103,10 +104,10 @@ def validate_azure_credentials_use(config: dict):
 
     # to avoid confusion we only accept one flag to be set to true
     if credential_flags > 1:
-        message = f"{credential_flags} use_*_identity flags set to true."
+        message = f"{credential_flags} \"use_*_identity\" flags set to true."
         return config, False, message
 
-    # if no flags are set to true we check if other fields are enough for authentication, this was done for backwards compatibility
+    # if no flags are set to true we check if other fields are enough for authentication, this was done for backwards compatibility. The old logic of preferring the sp credentials is preserved here.
     if credential_flags == 0:
         if not ("sp_client_id" in config and "sp_client_secret" in config):
             if "managed_identity_id" not in config:
