@@ -6,8 +6,6 @@ import pytest
 from test_certbot_manager import _dns_validation_challenge_fixture, certbot_manager_init
 
 from acme_dns_azure.certbot_manager import CertbotManager
-from acme_dns_azure.context import Context
-import acme_dns_azure.config as config
 
 path_to_current_file = os.path.realpath(__file__)
 current_directory = os.path.split(path_to_current_file)[0]
