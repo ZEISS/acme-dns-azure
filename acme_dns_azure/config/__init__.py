@@ -84,21 +84,16 @@ def validate_azure_credentials_use(config: dict):
     """
     # check if only one identity flag is set to true
     credential_flags = 0
-    if "use_system_assigned_identity_credentials" in config:
-        if config["use_system_assigned_identity_credentials"] is True:
-            credential_flags += 1
-    if "use_azure_cli_credentials" in config:
-        if config["use_azure_cli_credentials"] is True:
-            credential_flags += 1
-    if "use_workload_identity_credentials" in config:
-        if config["use_workload_identity_credentials"] is True:
-            credential_flags += 1
-    if "use_managed_identity_credentials" in config:
-        if config["use_managed_identity_credentials"] is True:
-            credential_flags += 1
-    if "use_provided_service_principal_credentials" in config:
-        if config["use_provided_service_principal_credentials"] is True:
-            credential_flags += 1
+    if config.get("use_system_assigned_identity_credentials"):
+        credential_flags += 1
+    if config.get("use_azure_cli_credentials"):
+        credential_flags += 1
+    if config.get("use_workload_identity_credentials"):
+        credential_flags += 1
+    if config.get("use_managed_identity_credentials"):
+        credential_flags += 1
+    if config.get("use_provided_service_principal_credentials"):
+        credential_flags += 1
 
     # to avoid confusion we only accept one flag to be set to true
     if credential_flags > 1:

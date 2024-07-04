@@ -40,16 +40,16 @@ def test_use_x_credentials_flags_combinations(
     config, result, message = config_handler.validate_azure_credentials_use(config)
 
     # Calculate the number of True flags in the dict.
-    expected_result = sum(config.values())
+    true_flag_number = sum(config.values())
 
     # If the dict has more than one or 0 true flags we expect the validation to fail in this case.
-    if expected_result > 1 or expected_result == 0:
+    if true_flag_number > 1 or true_flag_number == 0:
         assert result is False
         # The function should return an error message not a success message.
         assert message != "Validation successful!"
 
     # if there is exactly one true flag in the dict the validation should be successful.
-    if expected_result == 1:
+    if true_flag_number == 1:
         assert result is True
         # This is checked to make sure the validation of the error message is correct.
         assert message == "Validation successful!"
