@@ -7,7 +7,7 @@ schema = Map(
         Optional("use_azure_cli_credentials"): Bool(),
         Optional("use_workload_identity_credentials"): Bool(),
         # added to support validation logic when choosing credentials to be used
-        Optional("use_managed_identity_credentials"): Bool(), 
+        Optional("use_managed_identity_credentials"): Bool(),
         # added to support validation logic when choosing credentials to be used
         Optional("use_provided_service_principal_credentials"): Bool(),
         # managed_identity_id must be provided if use_managed_identity_credentials is true
