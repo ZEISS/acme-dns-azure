@@ -6,12 +6,10 @@ schema = Map(
         Optional("use_system_assigned_identity_credentials"): Bool(),
         Optional("use_azure_cli_credentials"): Bool(),
         Optional("use_workload_identity_credentials"): Bool(),
-        Optional(
-            "use_managed_identity_credentials"
-        ): Bool(),  # added to support validation logic when choosing credentials to be used
-        Optional(
-            "use_provided_service_principal_credentials"
-        ): Bool(),  # added to support validation logic when choosing credentials to be used
+        # added to support validation logic when choosing credentials to be used
+        Optional("use_managed_identity_credentials"): Bool(), 
+        # added to support validation logic when choosing credentials to be used
+        Optional("use_provided_service_principal_credentials"): Bool(),
         # managed_identity_id must be provided if use_managed_identity_credentials is true
         Optional("managed_identity_id"): Regex(
             r"^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$"
@@ -55,7 +53,8 @@ schema = Map(
                     "domains": Seq(
                         Map(
                             {
-                                "name": Str(),  # TODO: Check regex Regex(r"(?=^.{4,253}$)(^((?!-)[*a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)")
+                                # TODO: Check regex Regex(r"(?=^.{4,253}$)(^((?!-)[*a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)")
+                                "name": Str(),
                                 Optional("dns_zone_resource_id", default=""): Str(),
                             }
                         )
