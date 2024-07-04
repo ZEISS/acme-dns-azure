@@ -40,8 +40,7 @@ def load_from_base64_env_var(env_var: str = None):
     try:
         env_config_b64 = os.environ.get(env_var)
         if env_config_b64:
-            logger.debug(
-                "Loading config from environment variable '%s'.", env_var)
+            logger.debug("Loading config from environment variable '%s'.", env_var)
             return load(base64.b64decode(env_config_b64).decode("utf8"))
         else:
             raise ConfigurationError(
@@ -65,8 +64,7 @@ def load_from_file(filename: str = None):
         raise ConfigurationError("Config file not found at '%s'" % filename)
     except OSError as e:
         raise ConfigurationError(
-            "Unable to read configuration from '%s': %s" % (
-                filename, e.strerror)
+            "Unable to read configuration from '%s': %s" % (filename, e.strerror)
         )
     except Exception as e:
         raise ConfigurationError("Error while loading configuration: %s" % e)
@@ -104,7 +102,7 @@ def validate_azure_credentials_use(config: dict):
 
     # to avoid confusion we only accept one flag to be set to true
     if credential_flags > 1:
-        message = f"{credential_flags} \"use_*_identity\" flags set to true."
+        message = f'{credential_flags} "use_*_identity" flags set to true.'
         return config, False, message
 
     # if no flags are set to true we check if other fields are enough for authentication, this was done for backwards compatibility. The old logic of preferring the sp credentials is preserved here.

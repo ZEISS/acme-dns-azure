@@ -119,26 +119,21 @@ class CertbotManager:
         # decide on credentials to be use to interact with Azure
         if "use_system_assigned_identity_credentials" in self._config:
             if self._config["use_system_assigned_identity_credentials"] is True:
-                logger.info(
-                    "Using Azure system assigned identity."
-                )
+                logger.info("Using Azure system assigned identity.")
                 lines.append("dns_azure_msi_system_assigned = true")
         if "use_azure_cli_credentials" in self._config:
             if self._config["use_azure_cli_credentials"] is True:
-                logger.info(
-                    "Using Azure CLI credentials."
-                    )
+                logger.info("Using Azure CLI credentials.")
                 lines.append("dns_azure_use_cli_credentials = true")
         if "use_workload_identity_credentials" in self._config:
             if self._config["use_workload_identity_credentials"] is True:
-                logger.info(
-                    "Using Azure workflow identity."
-                )
+                logger.info("Using Azure workflow identity.")
                 lines.append("dns_azure_use_workload_identity_credentials = true")
         if "use_managed_identity_credentials" in self._config:
             if self._config["use_managed_identity_credentials"] is True:
                 logger.info(
-                "Using Azure managed identity '%s'", self._config["managed_identity_id"]
+                    "Using Azure managed identity '%s'",
+                    self._config["managed_identity_id"],
                 )
                 lines.append(
                     "dns_azure_msi_client_id = %s" % self._config["managed_identity_id"]
@@ -148,7 +143,9 @@ class CertbotManager:
                 logger.info(
                     "Using Azure service principal '%s'", self._config["sp_client_id"]
                 )
-                lines.append("dns_azure_sp_client_id = %s" % self._config["sp_client_id"])
+                lines.append(
+                    "dns_azure_sp_client_id = %s" % self._config["sp_client_id"]
+                )
                 lines.append(
                     "dns_azure_sp_client_secret = %s" % self._config["sp_client_secret"]
                 )

@@ -29,8 +29,7 @@ def test_schema_validation_raises_exception_unspported_value():
 
 def test_schema_validation_raises_exception_incorrect_web_reference():
     with pytest.raises(ConfigurationError):
-        config_handler.load_from_file(
-            resources_dir + "not_accepted_wrong_web_ref.yaml")
+        config_handler.load_from_file(resources_dir + "not_accepted_wrong_web_ref.yaml")
 
 
 def test_schema_validation_raises_exception_cert_empty_domain():
@@ -48,7 +47,7 @@ def test_service_principal_os_environ_import():
     os.environ["ARM_CLIENT_SECRET"] = "yyy"
 
     config = config_handler.load_from_file(resources_dir + "accepted.yaml")
-# cleanup
+    # cleanup
     os.environ.pop("ARM_CLIENT_ID")
     os.environ.pop("ARM_CLIENT_SECRET")
 
@@ -63,5 +62,6 @@ def test_schema_validation_raises_exception_multiple_credential_flags():
     """
     with pytest.raises(ConfigurationError):
         config_handler.load_from_file(
-            resources_dir + "credential_tests/not_accepted_multiple_credential_flags.yaml"
+            resources_dir
+            + "credential_tests/not_accepted_multiple_credential_flags.yaml"
         )

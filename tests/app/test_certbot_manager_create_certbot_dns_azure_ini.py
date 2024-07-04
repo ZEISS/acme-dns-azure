@@ -15,25 +15,46 @@ resources_dir = current_directory + "/resources/"
 
 
 @patch.object(CertbotManager, "__init__", certbot_manager_init)
-@pytest.mark.parametrize("input_file,expected_file",
-                         [
-                             ("config/credential_tests/accepted_azure_cli_credentials.yaml",
-                              "certbot_init/expected_azure_cli_credentials.ini"),
-                             ("config/credential_tests/accepted_managed_idty_no_flag.yaml",
-                              "certbot_init/expected_managed_idty.ini"),
-                             ("config/credential_tests/accepted_managed_idty.yaml",
-                              "certbot_init/expected_managed_idty.ini"),
-                             ("config/credential_tests/accepted_sp_credentials_no_flag.yaml",
-                              "certbot_init/expected_sp_credentials.ini"),
-                             ("config/credential_tests/accepted_sp_credentials.yaml",
-                              "certbot_init/expected_sp_credentials.ini"),
-                             ("config/credential_tests/accepted_system_assigned_idty_credentials.yaml",
-                              "certbot_init/expected_system_assigned_idty_credentials.ini"),
-                             ("config/credential_tests/accepted_workload_idty_credentials.yaml",
-                              "certbot_init/expected_workload_idty_credentials.ini")
-                         ])
+@pytest.mark.parametrize(
+    "input_file,expected_file",
+    [
+        (
+            "config/credential_tests/accepted_azure_cli_credentials.yaml",
+            "certbot_init/expected_azure_cli_credentials.ini",
+        ),
+        (
+            "config/credential_tests/accepted_managed_idty_no_flag.yaml",
+            "certbot_init/expected_managed_idty.ini",
+        ),
+        (
+            "config/credential_tests/accepted_managed_idty.yaml",
+            "certbot_init/expected_managed_idty.ini",
+        ),
+        (
+            "config/credential_tests/accepted_sp_credentials_no_flag.yaml",
+            "certbot_init/expected_sp_credentials.ini",
+        ),
+        (
+            "config/credential_tests/accepted_sp_credentials.yaml",
+            "certbot_init/expected_sp_credentials.ini",
+        ),
+        (
+            "config/credential_tests/accepted_system_assigned_idty_credentials.yaml",
+            "certbot_init/expected_system_assigned_idty_credentials.ini",
+        ),
+        (
+            "config/credential_tests/accepted_workload_idty_credentials.yaml",
+            "certbot_init/expected_workload_idty_credentials.ini",
+        ),
+    ],
+)
 def test_azure_cli_credentials(
-        working_dir, cleanup_certbot_init_files, cleanup_certbot_config_dir, input_file, expected_file):
+    working_dir,
+    cleanup_certbot_init_files,
+    cleanup_certbot_config_dir,
+    input_file,
+    expected_file,
+):
     """
     Test to check if the data flow and the logic of _create_certbot_dns_azure_ini function work as intended.
 
@@ -43,6 +64,5 @@ def test_azure_cli_credentials(
     """
     CertbotManager(working_dir=working_dir, config_file=input_file)
     assert filecmp.cmp(
-        working_dir + "certbot_dns_azure.ini",
-        resources_dir + expected_file
+        working_dir + "certbot_dns_azure.ini", resources_dir + expected_file
     )

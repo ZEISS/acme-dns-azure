@@ -13,7 +13,7 @@ current_directory = os.path.split(path_to_current_file)[0]
 resources_dir = current_directory + "/resources/"
 
 
-def certbot_manager_init(self, working_dir, config_file = "config/accepted.yaml") -> None:
+def certbot_manager_init(self, working_dir, config_file="config/accepted.yaml") -> None:
     ctx = Context()
     ctx.config = config.load_from_file(resources_dir + config_file)
     ctx.credentials = "..."
@@ -158,7 +158,9 @@ def test_certbot_domain_file_structure_is_created_successfully(
         assert os.path.islink(a)
 
 
-def certbot_manager_init_without_creating_init_files(self, working_dir, config_file = "config/accepted.yaml") -> None:
+def certbot_manager_init_without_creating_init_files(
+    self, working_dir, config_file="config/accepted.yaml"
+) -> None:
     ctx = Context()
     ctx.config = config.load_from_file(resources_dir + config_file)
     ctx.credentials = "..."

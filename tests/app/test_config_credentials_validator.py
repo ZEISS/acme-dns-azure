@@ -22,11 +22,9 @@ def test_no_credential_flags_with_manged_identity_id_provided():
 @pytest.mark.parametrize("uwic", [True, False])
 @pytest.mark.parametrize("umic", [True, False])
 @pytest.mark.parametrize("upspc", [True, False])
-def test_use_x_credentials_flags_combinations(usaic: bool,
-                                              uacc: bool,
-                                              uwic: bool,
-                                              umic: bool,
-                                              upspc: bool):
+def test_use_x_credentials_flags_combinations(
+    usaic: bool, uacc: bool, uwic: bool, umic: bool, upspc: bool
+):
     """
     Test for asserting if all credential flag combinations are checked correctly.
     """
@@ -36,11 +34,10 @@ def test_use_x_credentials_flags_combinations(usaic: bool,
         "use_azure_cli_credentials": uacc,
         "use_workload_identity_credentials": uwic,
         "use_managed_identity_credentials": umic,
-        "use_provided_service_principal_credentials": upspc
+        "use_provided_service_principal_credentials": upspc,
     }
     # Execute logic, save the resulting objects.
-    config, result, message = config_handler.validate_azure_credentials_use(
-        config)
+    config, result, message = config_handler.validate_azure_credentials_use(config)
 
     # Calculate the number of True flags in the dict.
     expected_result = sum(config.values())
