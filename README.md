@@ -135,11 +135,22 @@ The other placeholders are specified separately.
 See [examples](examples/README.md) for configuration examples.
 
 ```yml
-# Client ID of managed identity
+# Azure credentials choice section. Only one of the following flags should be set ot true to indicate which credentials to use. Otherwise an exception would be raised by the validator. 
+# These values are translated into ini file as specified here: https://docs.certbot-dns-azure.co.uk/en/latest/index.html#certbot-azure-workload-identity-ini
+# If no flag is provided the program will try to use sp_client_* values to use service principal credentials first. If those are not both present it will try to use managed_identity_id.
+[use_system_assigned_identity_credentials: <boolean>]
+[use_azure_cli_credentials: <boolean>]
+[use_workload_identity_credentials: <boolean>]
+[use_managed_identity_credentials: <boolean>]
+[use_provided_service_principal_credentials: <boolean>]
+
+# Client ID of managed identity. Must be provided if use_managed_identity_credentials is true. Will be used even if all use_*_credentials flags are set to false, but only if sp_client_* values are not all provided.
 [managed_identity_id: <string>]
 
+# sp_client_* values must be provided if use_provided_service_principal_credentials is true. Will be used even if all use_*_credentials flags are set to false. If both values are provided and none of the flags is set to true it has precedence over the use of provided managed_identity_id.
 [sp_client_id: <string>]
 [sp_client_secret: <secret>]
+# End of Azure credentials choice section.
 
 [azure_environment: <string> | default = "AzurePublicCloud"]
 
