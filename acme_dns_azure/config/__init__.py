@@ -27,6 +27,8 @@ def load(config_yaml: str = ""):
 
     if result is False:
         raise ConfigurationError(message)
+    
+    logger.info(message)
 
     if config["keyvault_account_secret_name"] == "":
         config["keyvault_account_secret_name"] = "acme-account-%s" % (
@@ -111,5 +113,5 @@ def validate_azure_credentials_use(config: dict):
         else:
             config["use_provided_service_principal_credentials"] = True
 
-    message = "Validation successful!"
+    message = "Azure credentials validation successful!"
     return config, True, message

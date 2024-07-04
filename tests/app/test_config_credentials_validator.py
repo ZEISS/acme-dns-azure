@@ -46,10 +46,10 @@ def test_use_x_credentials_flags_combinations(
     if true_flag_number > 1 or true_flag_number == 0:
         assert result is False
         # The function should return an error message not a success message.
-        assert message != "Validation successful!"
+        assert message != "Azure credentials validation successful!"
 
     # if there is exactly one true flag in the dict the validation should be successful.
     if true_flag_number == 1:
         assert result is True
         # This is checked to make sure the validation of the error message is correct.
-        assert message == "Validation successful!"
+        assert message == "Azure credentials validation successful!"
