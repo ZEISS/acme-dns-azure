@@ -51,6 +51,7 @@ src/
 # Local testing
 acme_dns_azure/config.yaml
 tests/**/*/*.yaml
+!tests/app/resources/**/*.yaml
 
 # test results 
 .coverage

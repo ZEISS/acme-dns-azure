@@ -65,3 +65,21 @@ def test_schema_validation_raises_exception_multiple_credential_flags():
             resources_dir
             + "credential_tests/not_accepted_multiple_credential_flags.yaml"
         )
+
+
+@pytest.mark.parametrize(
+    "input_file",
+    [
+        ("credential_tests/not_accepted_no_credentials.yaml"),
+        ("credential_tests/not_accepted_incomplete_sp_credentials_pwd.yaml"),
+        ("credential_tests/not_accepted_incomplete_sp_credentials_id.yaml"),
+    ],
+)
+def test_schema_validation_raises_exception_azure_credentials_not_present_or_incomplete(
+    input_file,
+):
+    """
+    Test that check if providing no or incomplete Azure credentials raises an error.
+    """
+    with pytest.raises(ConfigurationError):
+        config_handler.load_from_file(resources_dir + input_file)

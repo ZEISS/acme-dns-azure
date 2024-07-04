@@ -1,0 +1,29 @@
+use_managed_identity_credentials: True
+managed_identity_id: 00000000-0000-0000-0000-000000000000
+server: https://acme-staging-v02.api.letsencrypt.org/directory
+
+tenant_id: 56578228-5913-11ee-8c99-0242ac120002
+
+key_vault_id: https://my12keyvaultdev.vault.azure.net/
+# keyvault_account_secret_name: #optional / default: acme-account-${acme_server} #if non-existing or empty, certbot register will be executed, account directory will be stored as base64 tar.gz file
+eab:
+  enabled: false #optional / default: false
+#  kid_secret_name: #optional / default: acme-eab-kid #must be created upfront with information from CIT
+#   hmac_key_secret_name: #optional / default: acme-eab-hmac-key #must be created upfront with information from CIT
+
+certbot.ini: |
+  key-type = rsa
+  rsa-key-size = 2048
+
+certificates:
+  - name: tls-xyz-example-org
+    dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/example.org
+    domains: # min 1 entry
+      - name: xyz.example.org
+      - name: zyx.example.org
+        dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com
+
+  - name: tls-wildcard-abc-example-org
+    dns_zone_resource_id: /subscriptions/2709c03e-5888-11ee-8c99-0242ac120002/resourceGroups/rg123-my-rg/providers/Microsoft.Network/dnszones/my-dev.domain.com
+    domains:
+      - name: "*.abc.example.org"

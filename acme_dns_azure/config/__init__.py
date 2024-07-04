@@ -27,7 +27,7 @@ def load(config_yaml: str = ""):
 
     if result is False:
         raise ConfigurationError(message)
-    
+
     logger.info(message)
 
     if config["keyvault_account_secret_name"] == "":
