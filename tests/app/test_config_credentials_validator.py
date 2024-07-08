@@ -35,12 +35,15 @@ def test_use_x_credentials_flags_combinations(
         "use_workload_identity_credentials": uwic,
         "use_managed_identity_credentials": umic,
         "use_provided_service_principal_credentials": upspc,
+        "sp_client_id": "00000000-0000-0000-0000-000000000000",
+        "sp_client_secret": "xyz",
+        "managed_identity_id": "00000000-0000-0000-0000-000000000000",
     }
     # Execute logic, save the resulting objects.
     config, result, message = config_handler.validate_azure_credentials_use(config)
 
-    # Calculate the number of True flags in the dict.
-    true_flag_number = sum(config.values())
+    # Calculate the number of True flags in the dict. Convert to list to tolerate strings.
+    true_flag_number = list(config.values()).count(True)
 
     # If the dict has more than one or 0 true flags we expect the validation to fail in this case.
     if true_flag_number > 1 or true_flag_number == 0:
@@ -53,3 +56,53 @@ def test_use_x_credentials_flags_combinations(
         assert result is True
         # This is checked to make sure the validation of the error message is correct.
         assert message == "Azure credentials validation successful!"
+
+
+@pytest.mark.parametrize(
+    "sp_id,sp_secret",
+    [
+        (None, None),
+        ("", ""),
+        (None, ""),
+        ("", None),
+        ("00000000-0000-0000-0000-000000000000", None),
+        ("00000000-0000-0000-0000-000000000000", ""),
+        (None, "xyz"),
+        ("", "xyz"),
+    ],
+)
+def test_additional_sp_values_completeness_failure(sp_id, sp_secret):
+    """
+    Test if the check of service principal id and password fails if they are not complete.
+    Success is checked in test_use_x_credentials_flags_combinations.
+    """
+    config = {
+        "use_provided_service_principal_credentials": True,
+        "sp_client_id": sp_id,
+        "sp_client_secret": sp_secret,
+    }
+
+    config, result, message = config_handler.validate_azure_credentials_use(config)
+
+    assert result is False
+    assert message != "Azure credentials validation successful!"
+
+
+@pytest.mark.parametrize(
+    "mi_id",
+    [None, ""],
+)
+def test_additional_mi_values_completeness_failure(mi_id):
+    """
+    Test if the check of managed identity id fails if managed identity id is missing.
+    Success is checked in test_use_x_credentials_flags_combinations.
+    """
+    config = {
+        "use_managed_identity_credentials": True,
+        "managed_identity_id": mi_id,
+    }
+
+    config, result, message = config_handler.validate_azure_credentials_use(config)
+
+    assert result is False
+    assert message != "Azure credentials validation successful!"

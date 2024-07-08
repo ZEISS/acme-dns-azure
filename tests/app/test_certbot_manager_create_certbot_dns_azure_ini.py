@@ -44,6 +44,10 @@ resources_dir = current_directory + "/resources/"
             "config/credential_tests/accepted_workload_idty_credentials.yaml",
             "certbot_init/expected_workload_idty_credentials.ini",
         ),
+        (
+            "config/credential_tests/accepted_multiple_flags_sp_true.yaml",
+            "certbot_init/expected_sp_credentials.ini",
+        ),
     ],
 )
 def test_azure_cli_credentials(
