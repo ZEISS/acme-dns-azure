@@ -7,6 +7,7 @@ import acme_dns_azure.config as config_handler
 path_to_current_file = os.path.realpath(__file__)
 current_directory = os.path.split(path_to_current_file)[0]
 resources_dir = current_directory + "/resources/config/"
+validation_success_message = "Azure credentials validation successful!"
 
 
 def test_no_credential_flags_with_manged_identity_id_provided():
@@ -49,43 +50,86 @@ def test_use_x_credentials_flags_combinations(
     if true_flag_number > 1 or true_flag_number == 0:
         assert result is False
         # The function should return an error message not a success message.
-        assert message != "Azure credentials validation successful!"
+        assert message != validation_success_message
 
     # if there is exactly one true flag in the dict the validation should be successful.
     if true_flag_number == 1:
         assert result is True
         # This is checked to make sure the validation of the error message is correct.
-        assert message == "Azure credentials validation successful!"
+        assert message == validation_success_message
 
 
-@pytest.mark.parametrize(
-    "sp_id,sp_secret",
-    [
-        (None, None),
-        ("", ""),
-        (None, ""),
-        ("", None),
-        ("00000000-0000-0000-0000-000000000000", None),
-        ("00000000-0000-0000-0000-000000000000", ""),
-        (None, "xyz"),
-        ("", "xyz"),
-    ],
-)
-def test_additional_sp_values_completeness_failure(sp_id, sp_secret):
+@pytest.mark.parametrize("sp_id", [None, ""])
+@pytest.mark.parametrize("sp_secret", [None, ""])
+@pytest.mark.parametrize("sp_cert_path", [None, ""])
+def test_additional_sp_values_completeness_failure_no_values(
+    sp_id, sp_secret, sp_cert_path
+):
     """
-    Test if the check of service principal id and password fails if they are not complete.
-    Success is checked in test_use_x_credentials_flags_combinations.
+    Test if the check of service principal id and password fails if they are all empty.
     """
     config = {
         "use_provided_service_principal_credentials": True,
         "sp_client_id": sp_id,
         "sp_client_secret": sp_secret,
+        "sp_certificate_path": sp_cert_path,
     }
 
     config, result, message = config_handler.validate_azure_credentials_use(config)
 
     assert result is False
-    assert message != "Azure credentials validation successful!"
+    assert message != validation_success_message
+
+
+@pytest.mark.parametrize(
+    "sp_id,sp_secret,sp_cert_path",
+    [
+        ("00000000-0000-0000-0000-000000000000", "xyz", "/path/to/cert.pem"),
+        ("00000000-0000-0000-0000-000000000000", None, None),
+        (None, "xyz", "/path/to/cert.pem"),
+        (None, "xyz", None),
+        (None, None, "/path/to/cert.pem"),
+    ],
+)
+def test_additional_sp_values_completeness_failure(sp_id, sp_secret, sp_cert_path):
+    """
+    Test if the check of service principal id and password fails if some are empty or all present.
+    """
+    config = {
+        "use_provided_service_principal_credentials": True,
+        "sp_client_id": sp_id,
+        "sp_client_secret": sp_secret,
+        "sp_certificate_path": sp_cert_path,
+    }
+
+    config, result, message = config_handler.validate_azure_credentials_use(config)
+
+    assert result is False
+    assert message != validation_success_message
+
+
+@pytest.mark.parametrize(
+    "sp_id,sp_secret,sp_cert_path",
+    [
+        ("00000000-0000-0000-0000-000000000000", "xyz", None),
+        ("00000000-0000-0000-0000-000000000000", None, "/path/to/cert.pem"),
+    ],
+)
+def test_additional_sp_values_completeness_success(sp_id, sp_secret, sp_cert_path):
+    """
+    Test if the check of service principal id and password succeeds if a valid pair is present.
+    """
+    config = {
+        "use_provided_service_principal_credentials": True,
+        "sp_client_id": sp_id,
+        "sp_client_secret": sp_secret,
+        "sp_certificate_path": sp_cert_path,
+    }
+
+    config, result, message = config_handler.validate_azure_credentials_use(config)
+
+    assert result is True
+    assert message == validation_success_message
 
 
 @pytest.mark.parametrize(
@@ -105,4 +149,4 @@ def test_additional_mi_values_completeness_failure(mi_id):
     config, result, message = config_handler.validate_azure_credentials_use(config)
 
     assert result is False
-    assert message != "Azure credentials validation successful!"
+    assert message != validation_success_message

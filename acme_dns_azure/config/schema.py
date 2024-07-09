@@ -14,9 +14,10 @@ schema = Map(
         Optional("managed_identity_id"): Regex(
             r"^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$"
         ),
-        # sp_client* values must be provided if use_provided_service_principal_credentials is true
+        # sp_client* values must be provided if use_provided_service_principal_credentials is true, user can provide password or certificate path
         Optional("sp_client_id"): Str(),
         Optional("sp_client_secret"): Str(),
+        Optional("sp_certificate_path"): Str(),
         # End of Azure identity choice section
         Optional("azure_environment", default="AzurePublicCloud"): Regex(
             "AzurePublicCloud|AzureUSGovernmentCloud|AzureChinaCloud|AzureGermanCloud"

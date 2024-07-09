@@ -120,31 +120,36 @@ class CertbotManager:
         if self._config.get("use_system_assigned_identity_credentials"):
             logger.info("Using Azure system assigned identity.")
             lines.append("dns_azure_msi_system_assigned = true")
-        if self._config.get("use_azure_cli_credentials"):
+        elif self._config.get("use_azure_cli_credentials"):
             logger.info("Using Azure CLI credentials.")
             lines.append("dns_azure_use_cli_credentials = true")
-        if self._config.get("use_workload_identity_credentials"):
+        elif self._config.get("use_workload_identity_credentials"):
             logger.info("Using Azure workflow identity.")
             lines.append("dns_azure_use_workload_identity_credentials = true")
-        if self._config.get("use_managed_identity_credentials"):
+        elif self._config.get("use_managed_identity_credentials"):
             logger.info(
                 "Using Azure managed identity '%s'",
                 self._config["managed_identity_id"],
             )
             lines.append(
-                "dns_azure_msi_client_id = %s" % self._config["managed_identity_id"]
+                f'dns_azure_msi_client_id = {self._config.get("managed_identity_id")}'
             )
-        if self._config.get("use_provided_service_principal_credentials"):
+        elif self._config.get("use_provided_service_principal_credentials"):
             logger.info(
                 "Using Azure service principal '%s'", self._config["sp_client_id"]
             )
-            lines.append("dns_azure_sp_client_id = %s" % self._config["sp_client_id"])
-            lines.append(
-                "dns_azure_sp_client_secret = %s" % self._config["sp_client_secret"]
-            )
+            lines.append(f'dns_azure_sp_client_id = {self._config.get("sp_client_id")}')
+            if self._config.get("sp_client_secret"):
+                lines.append(
+                    f'dns_azure_sp_client_secret = {self._config.get("sp_client_secret")}'
+                )
+            elif self._config.get("sp_certificate_path"):
+                lines.append(
+                    f'dns_azure_sp_certificate_path = {self._config.get("sp_certificate_path")}'
+                )
 
-        lines.append("dns_azure_tenant_id = %s" % self._config["tenant_id"])
-        lines.append("dns_azure_environment = %s" % self._config["azure_environment"])
+        lines.append(f'dns_azure_tenant_id = {self._config.get("tenant_id")}')
+        lines.append(f'dns_azure_environment = {self._config.get("azure_environment")}')
 
         # validate and build certificate list
         idx = 0

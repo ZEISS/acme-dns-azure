@@ -41,7 +41,7 @@ def test_schema_validation_raises_exception_cert_empty_domain():
 
 def test_service_principal_os_environ_import():
     """
-    Test that checks if values are correctly imported from environment variables into config. Can also check if sp credentials are preferred if "managed_identity_id" is provided in the input yaml.
+    Test that checks if values are correctly imported from environment variables into config. Also checks if sp credentials are preferred if "managed_identity_id" is provided in the input yaml.
     """
     os.environ["ARM_CLIENT_ID"] = "xxx"
     os.environ["ARM_CLIENT_SECRET"] = "yyy"
@@ -73,6 +73,8 @@ def test_schema_validation_raises_exception_multiple_credential_flags():
         ("credential_tests/not_accepted_no_credentials.yaml"),
         ("credential_tests/not_accepted_incomplete_sp_credentials_pwd.yaml"),
         ("credential_tests/not_accepted_incomplete_sp_credentials_id.yaml"),
+        ("credential_tests/not_accepted_incomplete_sp_credentials_cert.yaml"),
+        ("credential_tests/not_accepted_invalid_sp_credentials.yaml"),
     ],
 )
 def test_schema_validation_raises_exception_azure_credentials_not_present_or_incomplete(

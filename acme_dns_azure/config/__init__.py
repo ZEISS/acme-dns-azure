@@ -104,7 +104,10 @@ def validate_azure_credentials_use(config: dict):
 
     # if no flags are set to true we check if other fields are enough for authentication, this was done for backwards compatibility. The old logic of preferring the sp credentials is preserved here.
     if credential_flags == 0:
-        if not (config.get("sp_client_id") and config.get("sp_client_secret")):
+        if not (
+            config.get("sp_client_id")
+            and (config.get("sp_client_secret") or config.get("sp_certificate_path"))
+        ):
             if not config.get("managed_identity_id"):
                 message = "Azure credentials not specified or incomplete."
                 return config, False, message
@@ -113,10 +116,19 @@ def validate_azure_credentials_use(config: dict):
         else:
             config["use_provided_service_principal_credentials"] = True
     # check if the additional values are provided for Service principal and Managed identity use
-    elif config.get("use_provided_service_principal_credentials") and (
-        not config.get("sp_client_id") or not config.get("sp_client_secret")
+    if (
+        config.get("use_provided_service_principal_credentials")
+        and (
+            not (
+                config.get("sp_client_id")
+                and (
+                    config.get("sp_client_secret") or config.get("sp_certificate_path")
+                )
+            )
+        )
+        or (config.get("sp_certificate_path") and config.get("sp_client_secret"))
     ):
-        message = "Service Principal id and/or password is missing!."
+        message = "Service Principal credential set is invalid. Id and either password or certificate path must be provided (not both)."
         return config, False, message
 
     elif config.get("use_managed_identity_credentials") and not config.get(

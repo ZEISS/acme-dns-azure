@@ -147,9 +147,10 @@ See [examples](examples/README.md) for configuration examples.
 # Client ID of managed identity. Must be provided if use_managed_identity_credentials is true. Will be used even if all use_*_credentials flags are set to false, but only if sp_client_* values are not all provided.
 [managed_identity_id: <string>]
 
-# sp_client_* values must be provided if use_provided_service_principal_credentials is true. Will be used even if all use_*_credentials flags are set to false. If both values are provided and none of the flags is set to true it has precedence over the use of provided managed_identity_id.
+# sp_client_* values must be provided if use_provided_service_principal_credentials is true. Will be used even if all use_*_credentials flags are set to false. User must specify id and either secret or certificate path. If both values (id and pwd/cert path) are provided and none of the flags is set to true it has precedence over the use of provided managed_identity_id.
 [sp_client_id: <string>]
 [sp_client_secret: <secret>]
+[sp_certificate_path: <string>]
 # End of Azure credentials choice section.
 
 [azure_environment: <string> | default = "AzurePublicCloud"]

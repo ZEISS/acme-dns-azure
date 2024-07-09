@@ -48,6 +48,14 @@ resources_dir = current_directory + "/resources/"
             "config/credential_tests/accepted_multiple_flags_sp_true.yaml",
             "certbot_init/expected_sp_credentials.ini",
         ),
+        (
+            "config/credential_tests/accepted_sp_credentials_cert_no_flag.yaml",
+            "certbot_init/expected_sp_credentials_cert.ini",
+        ),
+        (
+            "config/credential_tests/accepted_sp_credentials_cert.yaml",
+            "certbot_init/expected_sp_credentials_cert.ini",
+        ),
     ],
 )
 def test_azure_cli_credentials(
