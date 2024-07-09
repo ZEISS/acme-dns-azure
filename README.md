@@ -135,7 +135,7 @@ The other placeholders are specified separately.
 See [examples](examples/README.md) for configuration examples.
 
 ```yml
-# Azure credentials choice section. Only one of the following flags should be set ot true to indicate which credentials to use. Otherwise an exception would be raised by the validator. 
+# Azure credentials choice section. Only one of the following flags should be set to true to indicate which credentials to use. Otherwise an exception would be raised by the validator. 
 # These values are translated into ini file as specified here: https://docs.certbot-dns-azure.co.uk/en/latest/index.html#certbot-azure-workload-identity-ini
 # If no flag is provided the program will try to use sp_client_* values to use service principal credentials first. If those are not both present it will try to use managed_identity_id.
 [use_system_assigned_identity_credentials: <boolean>]
