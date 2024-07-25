@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        runs: [1, 2, 3, 4, 5]
+        run: [1, 2, 3, 4, 5]
     environment:
       name: cicd
     steps:
@@ -55,17 +55,17 @@ jobs:
       - name: Terraform Apply
         run: |
           echo "${{ vars.TFVARS }}" | base64 --decode | jq  > "infra/tfvars.json"
-          terraform -chdir="infra" apply -auto-approve -var="resource_group_name=ci-${{ github.run_id }}" -var="key_vault_name=ci${{ github.run_id }}" -var-file=tfvars.json
+          terraform -chdir="infra" apply -auto-approve -var="resource_group_name=ci-${{ matrix.run }}${{ github.run_id }}" -var="key_vault_name=ci${{ matrix.run }}${{ github.run_id }}" -var-file=tfvars.json
       - name: Happy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
           source ./../../.venv/bin/activate
-          pytest happy_path.py $params --resource-prefix ci-${{ github.run_number }}
+          pytest happy_path.py $params --resource-prefix ci-${{ matrix.run }}${{ github.run_number }}
       - name: Unhappy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value) 
           source ./../../.venv/bin/activate 
-          pytest unhappy_path.py $params --resource-prefix ci-${{ github.run_number }}
+          pytest unhappy_path.py $params --resource-prefix ci-${{ matrix.run }}${{ github.run_number }}
       - name: Terraform Destroy
         if: always()
-        run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ github.run_id }}" -var="key_vault_name=ci${{ github.run_id }}" -var-file=tfvars.json
+        run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ matrix.run }}${{ github.run_id }}" -var="key_vault_name=ci${{ matrix.run }}${{ github.run_id }}" -var-file=tfvars.json
