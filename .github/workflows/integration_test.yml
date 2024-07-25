@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        run: [1, 2, 3, 4, 5, 6 ,7, 8]
+        run: [1, 2, 3, 4, 5, 6 ,7, 8, 9]
     environment:
       name: cicd
     steps:
@@ -60,12 +60,20 @@ jobs:
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
           source ./../../.venv/bin/activate
-          pytest happy_path.py $params --resource-prefix ci-${{ matrix.run }}${{ github.run_number }} -s -v --log-cli-level=INFO --show-capture=log
+          pytest happy_path.py $params --resource-prefix ci-${{ matrix.run }}${{ github.run_number }} --log-cli-level='WARNING' --log-file='happy.log' --log-file-level='INFO'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-${{ matrix.run }}${{ github.run_number }}-happy.log
+          path: happy.log
       - name: Unhappy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value) 
           source ./../../.venv/bin/activate 
-          pytest unhappy_path.py $params --resource-prefix ci-${{ matrix.run }}${{ github.run_number }} -s -v --log-cli-level=INFO --show-capture=log
+          pytest unhappy_path.py $params --resource-prefix ci-${{ matrix.run }}${{ github.run_number }} --log-cli-level='WARNING' --log-file='unhappy.log' --log-file-level='INFO'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-${{ matrix.run }}${{ github.run_number }}-unhappy.log
+          path: unhappy.log
       - name: Terraform Destroy
         if: always()
         run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ matrix.run }}${{ github.run_id }}" -var="key_vault_name=ci${{ matrix.run }}${{ github.run_id }}" -var-file=tfvars.json
