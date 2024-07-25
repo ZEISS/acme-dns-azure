@@ -64,7 +64,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ci-${{ matrix.run }}${{ github.run_number }}-happy.log
-          path: happy.log
+          path: |
+            happy.log
+            /tmp
       - name: Unhappy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value) 
@@ -73,7 +75,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ci-${{ matrix.run }}${{ github.run_number }}-unhappy.log
-          path: unhappy.log
+          path: |
+            unhappy.log
+            /tmp
       - name: Terraform Destroy
         if: always()
         run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ matrix.run }}${{ github.run_id }}" -var="key_vault_name=ci${{ matrix.run }}${{ github.run_id }}" -var-file=tfvars.json
