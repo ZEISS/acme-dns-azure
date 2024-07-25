@@ -1,6 +1,7 @@
 name: Azure integration test
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 22 * * 0" # every sunday at 10pm
   push:
@@ -24,6 +25,9 @@ defaults:
 jobs:
   integration_test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runs: [1, 2, 3]
     environment:
       name: cicd
     steps:
