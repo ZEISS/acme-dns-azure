@@ -53,7 +53,8 @@ class AzureDnsZoneManager:
                 record_type=record_type,
             )
             return True
-        except ResourceNotFoundError:
+        except Exception:
+            logger.exception("Failed to check record existance")
             return False
 
     def _delete_record(self, name: str, record_type: str = "TXT"):
