@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        runs: [1, 2, 3]
+        runs: [1, 2, 3, 4, 5]
     environment:
       name: cicd
     steps:
