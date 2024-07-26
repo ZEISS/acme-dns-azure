@@ -109,7 +109,7 @@ class AzureDnsZoneManager:
                 for rr in rrset:
                     if rr.to_text().strip("'\"") == value:
                         logger.debug("Propagated %s record %s", type, name)
-                        # time.sleep(1)
+                        time.sleep(1)
                         return True
             time.sleep(1)
         return False
