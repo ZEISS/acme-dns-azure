@@ -8,6 +8,8 @@ resource "azuread_application" "this" {
 
 resource "azuread_application_password" "this" {
   application_id = azuread_application.this.id
+  # Manually setting order to ensure first deletion to fix https://github.com/hashicorp/terraform-provider-azuread/issues/661
+  depends_on = [azuread_application.this]
 }
 
 resource "azuread_service_principal" "this" {
@@ -22,6 +24,8 @@ resource "azuread_application" "no_permission" {
 
 resource "azuread_application_password" "no_permission" {
   application_id = azuread_application.no_permission.id
+  # Manually setting order to ensure first deletion to fix https://github.com/hashicorp/terraform-provider-azuread/issues/661
+  depends_on = [azuread_application.no_permission]
 }
 
 resource "azuread_service_principal" "no_permission" {

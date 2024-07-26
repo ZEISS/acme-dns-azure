@@ -66,8 +66,8 @@ jobs:
         with:
           name: ci-${{ matrix.run }}${{ github.run_number }}-happy.log
           path: |
-            happy.log
-            /tmp/acme_dns_azure*/**/*
+            ./happy.log
+            ./tests/integration/happy.log
       - name: Unhappy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value) 
@@ -77,8 +77,8 @@ jobs:
         with:
           name: ci-${{ matrix.run }}${{ github.run_number }}-unhappy.log
           path: |
-            unhappy.log
-            /tmp/acme_dns_azure*/**/*
+            ./unhappy.log
+            ./tests/integration/unhappy.log
       - name: Terraform Destroy
         if: always()
         run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ matrix.run }}${{ github.run_id }}-acme" -var="key_vault_name=ci${{ matrix.run }}${{ github.run_id }}" -var-file=tfvars.json
