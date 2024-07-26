@@ -111,5 +111,5 @@ class AzureDnsZoneManager:
                         logger.debug("Propagated %s record %s", type, name)
                         time.sleep(1)
                         return True
-            time.sleep(1)
+            # time.sleep(1)
         return False
