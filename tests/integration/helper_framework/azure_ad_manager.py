@@ -1,4 +1,5 @@
 import uuid
+import time
 from dataclasses import dataclass
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.authorization import (
@@ -46,6 +47,7 @@ class AzureADManager:
             ),
         )
         self._created_assignments.append(Assignment(scope=scope, uuid=id))
+        time.sleep(1)
 
     def clean_up_all_resources(self):
         for assignment in self._created_assignments:
