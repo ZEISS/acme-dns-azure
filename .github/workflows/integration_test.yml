@@ -26,6 +26,7 @@ jobs:
   integration_test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         run: [1, 2, 3, 4, 5, 6 ,7, 8, 9]
     environment:
@@ -55,7 +56,7 @@ jobs:
       - name: Terraform Apply
         run: |
           echo "${{ vars.TFVARS }}" | base64 --decode | jq  > "infra/tfvars.json"
-          terraform -chdir="infra" apply -auto-approve -var="resource_group_name=ci-${{ matrix.run }}${{ github.run_id }}" -var="key_vault_name=ci${{ matrix.run }}${{ github.run_id }}" -var-file=tfvars.json
+          terraform -chdir="infra" apply -auto-approve -var="resource_group_name=ci-${{ matrix.run }}${{ github.run_id }}-acme" -var="key_vault_name=ci${{ matrix.run }}${{ github.run_id }}" -var-file=tfvars.json
       - name: Happy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
@@ -66,7 +67,7 @@ jobs:
           name: ci-${{ matrix.run }}${{ github.run_number }}-happy.log
           path: |
             happy.log
-            /tmp
+            /tmp/acme_dns_azure*/**/*
       - name: Unhappy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value) 
@@ -77,7 +78,7 @@ jobs:
           name: ci-${{ matrix.run }}${{ github.run_number }}-unhappy.log
           path: |
             unhappy.log
-            /tmp
+            /tmp/acme_dns_azure*/**/*
       - name: Terraform Destroy
         if: always()
-        run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ matrix.run }}${{ github.run_id }}" -var="key_vault_name=ci${{ matrix.run }}${{ github.run_id }}" -var-file=tfvars.json
+        run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ matrix.run }}${{ github.run_id }}-acme" -var="key_vault_name=ci${{ matrix.run }}${{ github.run_id }}" -var-file=tfvars.json
