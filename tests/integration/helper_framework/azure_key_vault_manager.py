@@ -56,57 +56,53 @@ class AzureKeyVaultManager:
         policy = self._cert_client.get_certificate_policy(name)
         return policy.subject, policy.san_dns_names
 
-    def _delete_certificate(self, name):
-        try:
-            logger.debug("Deleting certificate %s...", name)
-            certificate_poller = self._cert_client.begin_delete_certificate(name)
-            certificate_poller.wait()
-            self._cert_client.purge_deleted_certificate(name)
-            while True:
+    def _wait_until_secret_is_deleted(self, secret_name: str):
+        t_end = time.time() + 60
+        self._secret_client.begin_delete_secret(secret_name).wait()
+        while time.time() < t_end:
+            try:
+                self._secret_client.get_secret(secret_name)
                 time.sleep(1)
-                try:
-                    self._cert_client.get_deleted_certificate(name)
-                except ResourceNotFoundError:
-                    # Cert shortly being in ObjectIsBeingDeleted mode, although not found
-                    time.sleep(1)
-                    logger.debug("Deleted cert %s", name)
-                    break
-        except Exception:
-            logger.exception(
-                "Failed to delete and purge certificate %s. Manual clean up required.",
-                name,
-            )
+            except Exception:
+                pass
+        t_end = time.time() + 60
+        self._secret_client.purge_deleted_secret(secret_name)
+        while time.time() < t_end:
+            try:
+                self._secret_client.get_deleted_secret(secret_name)
+                time.sleep(1)
+            except Exception:
+                pass
+        return
 
-    def _delete_secret(self, name):
-        try:
-            logger.debug("Deleting secret %s...", name)
-            secret_poller = self._secret_client.begin_delete_secret(name)
-            secret_poller.wait()
-            self._secret_client.purge_deleted_secret(name)
-            while True:
+    def _wait_until_cert_is_deleted(self, cert_name: str):
+        t_end = time.time() + 60
+        self._cert_client.begin_delete_certificate(cert_name).wait()
+        while time.time() < t_end:
+            try:
+                self._cert_client.get_certificate(cert_name)
                 time.sleep(1)
-                try:
-                    self._secret_client.get_deleted_secret(name)
-                except ResourceNotFoundError:
-                    # Secret shortly being in ObjectIsBeingDeleted mode, although not found
-                    time.sleep(1)
-                    logger.debug("Deleted secret %s", name)
-                    break
-        except Exception:
-            logger.exception(
-                "Failed to delete and purge secret %s. Manual clean up required.",
-                name,
-            )
+            except Exception:
+                pass
+        self._cert_client.purge_deleted_certificate(cert_name)
+        t_end = time.time() + 60
+        while time.time() < t_end:
+            try:
+                self._cert_client.get_deleted_certificate(cert_name)
+                time.sleep(1)
+            except Exception:
+                pass
+        return
 
     def clean_up_all_resources(self):
         for cert in self._created_certs:
-            self._delete_certificate(cert.name)
+            self._wait_until_cert_is_deleted(cert.name)
         if not self._created_certs:
             logger.debug("Cleaning up all certificates stored in key vault.")
             certs = self._cert_client.list_properties_of_certificates()
             for cert in certs:
-                self._delete_certificate(cert.name)
+                self._wait_until_cert_is_deleted(cert.name)
         secrets = self._secret_client.list_properties_of_secrets()
         for secret in secrets:
             if secret.name in self._expected_secrets:
-                self._delete_secret(secret.name)
+                self._wait_until_secret_is_deleted(secret.name)

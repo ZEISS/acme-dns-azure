@@ -79,6 +79,7 @@ class AzureDnsZoneManager:
         )
         self._created_record_sets.append(record_set)
         logger.debug("Created CNAME record %s", record_set.fqdn)
+        self._wait_until_record_exists(name, "CNAME")
         self._wait_until_record_is_propagated(
             name + "." + self._zone_name, "CNAME", value
         )
@@ -94,10 +95,19 @@ class AzureDnsZoneManager:
         )
         self._created_record_sets.append(record_set)
         logger.debug("Created TXT record %s", record_set.fqdn)
+        self._wait_until_record_exists(name, "TXT")
         self._wait_until_record_is_propagated(
             name + "." + self._zone_name, "TXT", value
         )
         return record_set.id
+
+    def _wait_until_record_exists(self, name: str, type: str) -> bool:
+        t_end = time.time() + 60
+        while time.time() < t_end:
+            time.sleep(1)
+            if self.record_exists(name=name, record_type=type):
+                return True
+        return False
 
     def _wait_until_record_is_propagated(
         self, name: str, type: str, value: str

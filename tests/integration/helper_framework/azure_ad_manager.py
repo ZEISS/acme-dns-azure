@@ -47,7 +47,18 @@ class AzureADManager:
             ),
         )
         self._created_assignments.append(Assignment(scope=scope, uuid=id))
-        time.sleep(1)
+        self._wait_until_role_assignment_exists(role_id=id)
+
+    def _wait_until_role_assignment_exists(self, role_id: str):
+        t_end = time.time() + 60
+        while time.time() < t_end:
+            time.sleep(1)
+            try:
+                self._client.role_assignments.get_by_id(role_id)
+                return
+            except Exception:
+                pass
+        return
 
     def clean_up_all_resources(self):
         for assignment in self._created_assignments:
