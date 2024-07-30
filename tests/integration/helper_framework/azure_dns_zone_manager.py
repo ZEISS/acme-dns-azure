@@ -104,12 +104,12 @@ class AzureDnsZoneManager:
     ) -> bool:
         t_end = time.time() + 60
         while time.time() < t_end:
+            time.sleep(1)
             rrset = DNSChallenge()._resolve(name, type, self._nameservers)
             if rrset:
                 for rr in rrset:
                     if rr.to_text().strip("'\"") == value:
                         logger.debug("Propagated %s record %s", type, name)
-                        time.sleep(1)
                         return True
-            time.sleep(1)
+
         return False
