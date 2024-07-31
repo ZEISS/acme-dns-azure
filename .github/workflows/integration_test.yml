@@ -56,22 +56,22 @@ jobs:
       - name: Terraform Apply
         run: |
           echo "${{ vars.TFVARS }}" | base64 --decode | jq  > "infra/tfvars.json"
-          terraform -chdir="infra" apply -auto-approve -var="resource_group_name=ci-${{ matrix.run }}${{ github.run_id }}-acme" -var="key_vault_name=ci${{ matrix.run }}${{ github.run_id }}" -var-file=tfvars.json
+          terraform -chdir="infra" apply -auto-approve -var="resource_group_name=ci-${{ github.run_id }}${{ matrix.run }}-acme" -var="key_vault_name=ci${{ github.run_id }}${{ matrix.run }}" -var-file=tfvars.json
       - name: Happy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
           source ./../../.venv/bin/activate
-          pytest happy_path.py $params --resource-prefix ci-${{ matrix.run }}${{ github.run_number }} --log-cli-level='WARNING' --log-file='happy.log' --log-file-level='INFO'
+          pytest happy_path.py $params --resource-prefix ci-${{ github.run_number }}${{ matrix.run }} --log-cli-level='WARNING' --log-file='happy.log' --log-file-level='INFO'
       - uses: actions/upload-artifact@v4
         with:
-          name: ci-${{ matrix.run }}${{ github.run_number }}-happy.log
+          name: ci-${{ github.run_number }}${{ matrix.run }}-happy.log
           path: |
             ./tests/integration/happy.log
       - name: Unhappy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value) 
           source ./../../.venv/bin/activate 
-          pytest unhappy_path.py $params --resource-prefix ci-${{ matrix.run }}${{ github.run_number }} --log-cli-level='WARNING' --log-file='unhappy.log' --log-file-level='INFO'
+          pytest unhappy_path.py $params --resource-prefix ci-${{ github.run_number }}${{ matrix.run }} --log-cli-level='WARNING' --log-file='unhappy.log' --log-file-level='INFO'
       - uses: actions/upload-artifact@v4
         with:
           name: ci-${{ matrix.run }}${{ github.run_number }}-unhappy.log
@@ -79,4 +79,4 @@ jobs:
             ./tests/integration/unhappy.log
       - name: Terraform Destroy
         if: always()
-        run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ matrix.run }}${{ github.run_id }}-acme" -var="key_vault_name=ci${{ matrix.run }}${{ github.run_id }}" -var-file=tfvars.json
+        run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ github.run_id }}${{ matrix.run }}-acme" -var="key_vault_name=ci${{ github.run_id }}${{ matrix.run }}" -var-file=tfvars.json
