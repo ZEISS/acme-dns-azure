@@ -1,9 +1,10 @@
 name: Azure integration test
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 22 * * 0" # every sunday at 10pm
-  push:
+  pull_request:
     branches:
       - "main"
     paths:
@@ -24,6 +25,10 @@ defaults:
 jobs:
   integration_test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        run: [1, 2]
     environment:
       name: cicd
     steps:
@@ -51,17 +56,27 @@ jobs:
       - name: Terraform Apply
         run: |
           echo "${{ vars.TFVARS }}" | base64 --decode | jq  > "infra/tfvars.json"
-          terraform -chdir="infra" apply -auto-approve -var="resource_group_name=ci-${{ github.run_id }}" -var="key_vault_name=ci${{ github.run_id }}" -var-file=tfvars.json
+          terraform -chdir="infra" apply -auto-approve -var="resource_group_name=ci-${{ github.run_id }}${{ matrix.run }}-acme" -var="key_vault_name=ci${{ github.run_id }}${{ matrix.run }}" -var-file=tfvars.json
       - name: Happy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
           source ./../../.venv/bin/activate
-          pytest happy_path.py $params --resource-prefix ci-${{ github.run_number }}
+          pytest happy_path.py $params --resource-prefix ci-${{ github.run_number }}${{ matrix.run }} --log-cli-level='WARNING' --log-file='happy.log' --log-file-level='INFO'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-${{ github.run_number }}${{ matrix.run }}-happy.log
+          path: |
+            ./tests/integration/happy.log
       - name: Unhappy path
         run: |
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value) 
           source ./../../.venv/bin/activate 
-          pytest unhappy_path.py $params --resource-prefix ci-${{ github.run_number }}
+          pytest unhappy_path.py $params --resource-prefix ci-${{ github.run_number }}${{ matrix.run }} --log-cli-level='WARNING' --log-file='unhappy.log' --log-file-level='INFO'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-${{ matrix.run }}${{ github.run_number }}-unhappy.log
+          path: |
+            ./tests/integration/unhappy.log
       - name: Terraform Destroy
         if: always()
-        run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ github.run_id }}" -var="key_vault_name=ci${{ github.run_id }}" -var-file=tfvars.json
+        run: terraform -chdir="infra" destroy -auto-approve -var="resource_group_name=ci-${{ github.run_id }}${{ matrix.run }}-acme" -var="key_vault_name=ci${{ github.run_id }}${{ matrix.run }}" -var-file=tfvars.json

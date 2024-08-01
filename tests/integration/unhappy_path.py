@@ -10,15 +10,6 @@ from tests.integration.helper_framework.azure_dns_zone_manager import (
 )
 
 
-def get_latest_properties_of_certificate_versions(key_vault_certificates):
-    now = datetime.now(timezone.utc)
-    dates = []
-    for version in key_vault_certificates:
-        dates.append(version.created_on)
-    latest = max(dt for dt in dates if dt < now)
-    return key_vault_certificates[dates.index(latest)]
-
-
 def test_automatic_renewal_for_existing_cert_multiple_domains_skipped(
     acme_config_manager,
     azure_key_vault_manager,
