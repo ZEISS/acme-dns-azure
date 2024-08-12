@@ -56,7 +56,6 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "ref=${REF}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-
           CREATED="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           echo "created=$CREATED" >> $GITHUB_OUTPUT
           if [[ -n "${{ inputs.tag }}" ]]; then
@@ -64,6 +63,7 @@ jobs:
           else
             echo "cache_date=$(date -u +'%Y_%W')" >> $GITHUB_OUTPUT
           fi
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
