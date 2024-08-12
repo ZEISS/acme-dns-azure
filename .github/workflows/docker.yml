@@ -14,6 +14,11 @@ on:
       tag:
         type: string
         required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        required: false
 
 jobs:
   container_build:
@@ -51,8 +56,13 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "ref=${REF}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-          echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
-          echo "cache_date=$(date -u +'%Y_%W')" >> $GITHUB_OUTPUT
+          CREATED="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          echo "created=$CREATED" >> $GITHUB_OUTPUT
+          if [[ -n "${{ inputs.tag }}" ]]; then
+            echo "cache_date=$CREATED" >> $GITHUB_OUTPUT
+          else
+            echo "cache_date=$(date -u +'%Y_%W')" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
