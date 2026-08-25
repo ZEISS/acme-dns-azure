@@ -7,7 +7,6 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography import x509
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.serialization.pkcs12 import PKCS12KeyAndCertificates
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
@@ -142,8 +141,7 @@ def test_pfx_without_chain_created(
         private_key_path=gen_priv_dir, certificate_path=gen_cert_dir
     )
 
-    backend = default_backend()
-    pfx_from_module = backend.load_pkcs12(pfx_formatted, None)
+    pfx_from_module = pkcs12.load_pkcs12(pfx_formatted, None)
     assert isinstance(pfx_from_module, PKCS12KeyAndCertificates)
 
 
@@ -183,6 +181,5 @@ def test_pfx_with_empty_chain_created_and_extracted_correctly(
         chain_file_path=gen_chain_dir,
     )
 
-    backend = default_backend()
-    pfx_from_module = backend.load_pkcs12(pfx_formatted, None)
+    pfx_from_module = pkcs12.load_pkcs12(pfx_formatted, None)
     assert isinstance(pfx_from_module, PKCS12KeyAndCertificates)
