@@ -15,7 +15,6 @@ from cryptography.x509 import load_pem_x509_certificate, Certificate
 from acme_dns_azure.key_vault_manager import KeyVaultManager
 import acme_dns_azure.config as config
 
-
 path_to_current_file = os.path.realpath(__file__)
 current_directory = os.path.split(path_to_current_file)[0]
 resources_dir = current_directory + "/resources/"
