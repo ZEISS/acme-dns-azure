@@ -22,7 +22,7 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         uses: blackduck-inc/black-duck-security-scan@v2.11.0
         env:
-          DETECT_PROJECT_NAME: "MED_acme-dns-azure"
+          DETECT_PROJECT_NAME: "MED_HDP_Central_Container_Registry"
         with:
           blackducksca_url: ${{ secrets.BLACKDUCK_URL }}
           blackducksca_token: ${{ secrets.BLACKDUCK_TOKEN }}
@@ -39,7 +39,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         uses: blackduck-inc/black-duck-security-scan@v2.11.0
         env:
-          DETECT_PROJECT_NAME: "MED_acme-dns-azure"
+          DETECT_PROJECT_NAME: "MED_HDP_Central_Container_Registry"
         with:
           blackducksca_url: ${{ secrets.BLACKDUCK_URL }}
           blackducksca_token: ${{ secrets.BLACKDUCK_TOKEN }}
