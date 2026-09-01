@@ -22,14 +22,14 @@ jobs:
         env:
           DETECT_PROJECT_NAME: "MED_acme-dns-azure"
         with:
-          blackduck_url: ${{ secrets.BLACKDUCK_URL }}
-          blackduck_token: ${{ secrets.BLACKDUCK_TOKEN }}
-          blackduck_scan_full: true
-          blackduck_scan_failure_severities: "BLOCKER,CRITICAL"
-          blackduck_fixpr_enabled: true
-          blackduck_fixpr_maxCount: 5
-          blackduck_fixpr_filter_severities: "CRITICAL,HIGH"
-          blackduck_fixpr_useUpgradeGuidance: "SHORT_TERM,LONG_TERM"
+          blackducksca_url: ${{ secrets.BLACKDUCK_URL }}
+          blackducksca_token: ${{ secrets.BLACKDUCK_TOKEN }}
+          blackducksca_scan_full: true
+          blackducksca_scan_failure_severities: "BLOCKER,CRITICAL"
+          blackducksca_fixpr_enabled: true
+          blackducksca_fixpr_maxCount: 5
+          blackducksca_fixpr_filter_severities: "CRITICAL,HIGH"
+          blackducksca_fixpr_useUpgradeGuidance: "SHORT_TERM,LONG_TERM"
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Black Duck PR Scan
@@ -38,8 +38,8 @@ jobs:
         env:
           DETECT_PROJECT_NAME: "MED_acme-dns-azure"
         with:
-          blackduck_url: ${{ secrets.BLACKDUCK_URL }}
-          blackduck_token: ${{ secrets.BLACKDUCK_TOKEN }}
-          blackduck_scan_full: false
-          blackduck_prComment_enabled: true
+          blackducksca_url: ${{ secrets.BLACKDUCK_URL }}
+          blackducksca_token: ${{ secrets.BLACKDUCK_TOKEN }}
+          blackducksca_scan_full: false
+          blackducksca_prComment_enabled: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
