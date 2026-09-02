@@ -45,8 +45,8 @@ version = "0.4.0"
 
 [tool.poetry.dependencies]
 azure-identity = ">=1.25.3"
-azure-keyvault-certificates = ">=4.11.1"
-azure-keyvault-secrets = ">=4.11.1"
+azure-keyvault-certificates = "4.11.1"
+azure-keyvault-secrets = "4.11.1"
 certbot = ">=3.3"
 certbot-dns-azure = ">=2.6.0"
 cryptography = ">=45.0.7,<47"

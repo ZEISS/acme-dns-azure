@@ -144,14 +144,14 @@ typing-extensions = ">=4.0.0"
 
 [[package]]
 name = "azure-keyvault-certificates"
-version = "4.11.2"
+version = "4.11.1"
 description = "Microsoft Corporation Key Vault Certificates Client Library for Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "azure_keyvault_certificates-4.11.2-py3-none-any.whl", hash = "sha256:cc719633bf70c0bb9540762ce76c605d123c24907dfb14f450bf62cc5322acda"},
-    {file = "azure_keyvault_certificates-4.11.2.tar.gz", hash = "sha256:1fbc1df1ae1b9b5b49a5b5915f826ec0b1662ecfee909cc757ad35208398bfbd"},
+    {file = "azure_keyvault_certificates-4.11.1-py3-none-any.whl", hash = "sha256:33dc110e4c265dec923f2c5490d30039d87b2c28a765f4f35459b0cc2c4cde9b"},
+    {file = "azure_keyvault_certificates-4.11.1.tar.gz", hash = "sha256:734d9a65faa0f2bd45b9e162d317acadec71056934ebf4bbfe058b23d74bd073"},
 ]
 
 [package.dependencies]
@@ -161,14 +161,14 @@ typing-extensions = ">=4.6.0"
 
 [[package]]
 name = "azure-keyvault-secrets"
-version = "4.11.2"
+version = "4.11.1"
 description = "Microsoft Corporation Key Vault Secrets Client Library for Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "azure_keyvault_secrets-4.11.2-py3-none-any.whl", hash = "sha256:7abdd4a830bd8f4998bea0edbe69b8a772d672c17eabfdf3f77d8e4ef29442e9"},
-    {file = "azure_keyvault_secrets-4.11.2.tar.gz", hash = "sha256:c0d86db01a8ae34d1db92ec6b9ef92d9a2aef7fbb1a67c0956513d46b85d7adb"},
+    {file = "azure_keyvault_secrets-4.11.1-py3-none-any.whl", hash = "sha256:a5745d17d56061130cc56aa53c02c783e5d597031faf551b1873948461e8e700"},
+    {file = "azure_keyvault_secrets-4.11.1.tar.gz", hash = "sha256:23b11cbecf4525081121e68a82d7f3a4211556f6dbb4ddbb390a94db8b72c938"},
 ]
 
 [package.dependencies]
@@ -2309,4 +2309,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "ac39256b07f4f0438f65eece11ca487d586119ff64a94f2ab8ad20ed4de0c391"
+content-hash = "db862211592e2a908a52e011dc3f236cfadceaf1e000354548f02dfff8a3b748"
