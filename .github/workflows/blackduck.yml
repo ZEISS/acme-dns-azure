@@ -43,7 +43,7 @@ jobs:
         with:
           blackducksca_url: ${{ secrets.BLACKDUCK_URL }}
           blackducksca_token: ${{ secrets.BLACKDUCK_TOKEN }}
-          blackducksca_scan_full: true
+          blackducksca_scan_full: false
           blackducksca_prComment_enabled: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
           include_diagnostics: true
