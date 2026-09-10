@@ -48,7 +48,7 @@ jobs:
         with:
           terraform_wrapper: false
       - name: Azure login
-        uses: azure/login@v1
+        uses: azure/login@v3
         with:
           creds: "${{ secrets.AZURE_CREDENTIALS }}"
       - name: Terraform Init
