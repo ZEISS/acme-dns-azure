@@ -15,7 +15,7 @@ files = [
 [package.dependencies]
 cryptography = ">=43.0.0"
 josepy = ">=1.13.0,<2"
-PyOpenSSL = ">=25.0.0"
+PyOpenSSL = ">=26.4.0"
 pyrfc3339 = "*"
 pytz = ">=2019.3"
 requests = ">=2.20.0"
@@ -1088,7 +1088,7 @@ files = [
 
 [package.dependencies]
 cryptography = ">=1.5"
-pyopenssl = ">=0.13"
+pyopenssl = ">=26.4.0"
 
 [package.extras]
 docs = ["sphinx (>=4.3.0)", "sphinx-rtd-theme (>=1.0)"]
@@ -1639,14 +1639,14 @@ crypto = ["cryptography (>=3.4.0)"]
 
 [[package]]
 name = "pyopenssl"
-version = "25.3.0"
+version = "26.4.0"
 description = "Python wrapper module around the OpenSSL library"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "pyopenssl-25.3.0-py3-none-any.whl", hash = "sha256:1fda6fc034d5e3d179d39e59c1895c9faeaf40a79de5fc4cbbfbe0d36f4a77b6"},
-    {file = "pyopenssl-25.3.0.tar.gz", hash = "sha256:c981cb0a3fd84e8602d7afc209522773b94c1c2446a3c710a75b06fe1beae329"},
+    {file = "pyopenssl-26.4.0-py3-none-any.whl", hash = "sha256:1fda6fc034d5e3d179d39e59c1895c9faeaf40a79de5fc4cbbfbe0d36f4a77b6"},
+    {file = "pyopenssl-26.4.0.tar.gz", hash = "sha256:c981cb0a3fd84e8602d7afc209522773b94c1c2446a3c710a75b06fe1beae329"},
 ]
 
 [package.dependencies]
