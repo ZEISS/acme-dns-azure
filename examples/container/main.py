@@ -7,7 +7,6 @@ from acme_dns_azure.data import (
 )
 from acme_dns_azure.client import AcmeDnsAzureClient
 
-
 if __name__ == "__main__":
 
     acme_dns_config_env_name = "ACME_DNS_CONFIG"

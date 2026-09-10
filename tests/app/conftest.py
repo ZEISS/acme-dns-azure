@@ -2,7 +2,6 @@ import os
 import pytest
 import shutil
 
-
 testing_dir = "/tmp/acme_local_test/"
 
 
