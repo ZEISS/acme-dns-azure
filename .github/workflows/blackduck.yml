@@ -36,7 +36,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Black Duck PR Scan
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.title, 'Create release') }}
         uses: blackduck-inc/black-duck-security-scan@v2.11.0
         env:
           DETECT_PROJECT_NAME: "MED_acme-dns-azure"
