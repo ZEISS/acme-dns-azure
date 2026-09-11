@@ -38,7 +38,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.12"
       - name: Install dependencies
         working-directory: ./
         run: |
@@ -48,7 +48,7 @@ jobs:
         with:
           terraform_wrapper: false
       - name: Azure login
-        uses: azure/login@v1
+        uses: azure/login@v3
         with:
           creds: "${{ secrets.AZURE_CREDENTIALS }}"
       - name: Terraform Init
