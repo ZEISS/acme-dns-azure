@@ -105,15 +105,17 @@ See [How to run integration tests](tests/integration/README.md)
 
 ## Release
 
-For releasing a new version, create a PR with one of following labels:
+For releasing a new version, create a PR with **ONE** of following labels:
 
-- minor
-- major
-- patch
-- prepatch
-- preminor
-- premajor
-- prerelease
+- `minor`
+- `major`
+- `patch`
+- `prepatch`
+- `preminor`
+- `premajor`
+- `prerelease`
+
+**Important**: Add the label **BEFORE** merging the PR. Without the label, the release workflow will not trigger automatically.
 
 # Usage
 
