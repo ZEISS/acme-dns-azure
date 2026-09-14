@@ -2262,4 +2262,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12,<3.14"
-content-hash = "88208b54ea8b1052ed6e80456a23e1cbbd92fc910fdb16f4d2d04b95a68a47c7"
+content-hash = "16a4a7468f1f451fe26bd13265088b545fbea179f438589f55b92056ee6b9d40"
