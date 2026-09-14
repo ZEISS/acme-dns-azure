@@ -4,75 +4,35 @@ resource "azurerm_key_vault" "this" {
   resource_group_name           = azurerm_resource_group.this.name
   enabled_for_disk_encryption   = true
   tenant_id                     = data.azurerm_client_config.current.tenant_id
+  sku_name                      = "standard"
+  rbac_authorization_enabled    = true
   purge_protection_enabled      = false
   public_network_access_enabled = true
+  soft_delete_retention_days    = 7
 
-  sku_name = "standard"
-
-  access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = data.azurerm_client_config.current.object_id
-    certificate_permissions = [
-      "Create",
-      "Delete",
-      "Get",
-      "Import",
-      "List",
-      "Recover",
-      "Update",
-      "Purge",
-    ]
-    key_permissions = [
-      "Create",
-      "Delete",
-      "Get",
-      "Import",
-      "List",
-      "Recover",
-      "Update",
-    ]
-    secret_permissions = [
-      "Delete",
-      "Get",
-      "List",
-      "Recover",
-      "Set",
-      "Purge",
-      "Backup",
-      "Restore",
-    ]
-  }
-  access_policy {
-    tenant_id      = data.azurerm_client_config.current.tenant_id
-    object_id      = azuread_service_principal.this.object_id
-    application_id = azuread_application.this.client_id
-    certificate_permissions = [
-      "Create",
-      "Delete",
-      "Get",
-      "Import",
-      "List",
-      "Recover",
-      "Update",
-    ]
-    key_permissions = [
-      "Create",
-      "Delete",
-      "Get",
-      "Import",
-      "List",
-      "Recover",
-      "Update",
-    ]
-    secret_permissions = [
-      "Delete",
-      "Get",
-      "List",
-      "Recover",
-      "Set",
-    ]
-  }
   lifecycle {
     ignore_changes = [tags]
   }
+}
+
+resource "azurerm_role_assignment" "key_vault_current_principal" {
+  scope                = azurerm_key_vault.this.id
+  role_definition_name = "Key Vault Administrator"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+resource "azurerm_role_assignment" "key_vault_certificates" {
+  scope                            = azurerm_key_vault.this.id
+  role_definition_name             = "Key Vault Certificates Officer"
+  principal_id                     = azuread_service_principal.this.object_id
+  principal_type                   = "ServicePrincipal"
+  skip_service_principal_aad_check = true
+}
+
+resource "azurerm_role_assignment" "key_vault_secrets" {
+  scope                            = azurerm_key_vault.this.id
+  role_definition_name             = "Key Vault Secrets Officer"
+  principal_id                     = azuread_service_principal.this.object_id
+  principal_type                   = "ServicePrincipal"
+  skip_service_principal_aad_check = true
 }

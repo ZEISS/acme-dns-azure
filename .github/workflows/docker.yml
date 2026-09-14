@@ -75,7 +75,7 @@ jobs:
               max-parallelism = 4
 
       - name: Check out Docker Buildx cache
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ steps.env.outputs.cache_date }}-${{ github.sha }}
@@ -92,7 +92,7 @@ jobs:
 
       - name: Build and push image
         id: docker_build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./examples/container
           file: ./examples/container/Dockerfile

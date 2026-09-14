@@ -10,25 +10,27 @@ WORKDIR /usr/src/app
 COPY main.py /main.py
 
 RUN set -eux; \
+    # Update ALL packages to latest available versions
+    apk update && apk upgrade --no-cache; \
     # Install permanent system packages
-    apk --update add --no-cache \
-        coreutils \
-        curl \
-        bash \
-        zip \
-        git \
-        jq \
+    apk add --no-cache \
+    coreutils \
+    curl \
+    bash \
+    zip \
+    git \
+    jq \
     ; \
     # Install build-dependent system packages
     apk add --no-cache --virtual .build-deps \
-        gcc \
-        musl-dev \
-        python3-dev \
-        libffi-dev \
-        openssl-dev \
-        cargo \
-        pkgconfig \
-        tzdata \
+    gcc \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
+    openssl-dev \
+    cargo \
+    pkgconfig \
+    tzdata \
     ; \
     \
     # Set timezone

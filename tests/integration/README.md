@@ -8,17 +8,41 @@ For integration test one must first set up the base infrastructure, which will b
 
 The actual test run will:
 
-- create&delete DNS record set entries within this DNS zone
-- create&delete Certificates and secrets within the Key Vault
-- create&delete role assignments on temporarly created DNS Zone entries
+- Create and delete DNS record set entries within this DNS zone
+- Create and delete certificates and secrets within the Key Vault
+- Create and delete role assignments on temporarily created DNS Zone entries
 
 Required permissions:
 
 - Contributor
+- Role Based Access Control Administrator
 
-As the DNS Zone is part of a seperate subscription, additonally permissions on DNS Zone level are required:
+As the DNS Zone is part of a separate subscription, additionally permissions on DNS Zone level are required:
+
 - DNS Zone Contributor
 - Role Based Access Control Administrator
+
+## Prerequisites
+
+### Install Poetry
+
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+### Install Dependencies
+
+Run from the project root:
+
+```bash
+poetry install --all-extras
+```
+
+### Activate the Virtual Environment
+
+```bash
+source .venv/bin/activate
+```
 
 ## Run integration test
 

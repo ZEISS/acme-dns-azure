@@ -38,7 +38,7 @@ def pytest_addoption(parser):
         "--subscription-id",
         action="store",
         required=True,
-        help="Please set subsciption ID.",
+        help="Please set subscription ID.",
     )
     parser.addoption(
         "--keyvault-uri",
@@ -71,7 +71,7 @@ def pytest_addoption(parser):
         "--principal-id",
         action="store",
         required=False,
-        help="Principal ID for assigning role assignments for temporarly created DNS records.",
+        help="Principal ID for assigning role assignments for temporarily created DNS records.",
     )
 
 
