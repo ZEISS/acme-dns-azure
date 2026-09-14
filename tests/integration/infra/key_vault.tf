@@ -15,12 +15,6 @@ resource "azurerm_key_vault" "this" {
   }
 }
 
-resource "azurerm_role_assignment" "key_vault_current_principal" {
-  scope                = azurerm_key_vault.this.id
-  role_definition_name = "Key Vault Administrator"
-  principal_id         = data.azurerm_client_config.current.object_id
-}
-
 resource "azurerm_role_assignment" "key_vault_certificates" {
   scope                            = azurerm_key_vault.this.id
   role_definition_name             = "Key Vault Certificates Officer"
