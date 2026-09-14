@@ -9,7 +9,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: false
 
 jobs:
@@ -21,11 +21,11 @@ jobs:
     steps:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-          python-version: "3.x"
+          python-version: '3.x'
       - name: Install dependencies
         run: |
           poetry install --all-extras
@@ -38,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "docs/api"
+          path: 'docs/api'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

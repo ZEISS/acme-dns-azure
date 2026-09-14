@@ -3,19 +3,19 @@ name: Azure integration test
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 22 * * 0" # every sunday at 10pm
+    - cron: '0 22 * * 0' # every sunday at 10pm
   pull_request:
     branches:
-      - "main"
+      - 'main'
     paths:
-      - "acme_dns_azure/**"
-      - "!acme_dns_azure/___init___.py"
-      - "tests/integration/**"
-      - ".github/workflows/integration_test.yml"
+      - 'acme_dns_azure/**'
+      - '!acme_dns_azure/___init___.py'
+      - 'tests/integration/**'
+      - '.github/workflows/integration_test.yml'
   workflow_call:
 
 concurrency:
-  group: "integration-test"
+  group: 'integration-test'
   cancel-in-progress: false
 
 defaults:
@@ -34,23 +34,23 @@ jobs:
     steps:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version: '3.12'
       - name: Install dependencies
         working-directory: ./
         run: |
           poetry install --all-extras
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
         with:
           terraform_wrapper: false
       - name: Azure login
         uses: azure/login@v3
         with:
-          creds: "${{ secrets.AZURE_CREDENTIALS }}"
+          creds: '${{ secrets.AZURE_CREDENTIALS }}'
       - name: Terraform Init
         run: terraform -chdir="infra" init
       - name: Terraform Apply
