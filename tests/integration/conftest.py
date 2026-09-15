@@ -1,5 +1,6 @@
 import pytest
 import os
+import time
 from tests.integration.helper_framework.acme_config_manager import AcmeConfigManager
 from tests.integration.helper_framework.azure_key_vault_manager import (
     AzureKeyVaultManager,
@@ -103,6 +104,10 @@ def config_file_path(request):
 def principal_id(request):
     return request.config.getoption("--principal-id")
 
+@pytest.fixture(autouse=True)
+def throttle_integration_tests():
+    yield
+    time.sleep(15)
 
 @pytest.fixture(autouse=False)
 def acme_config_manager(request):

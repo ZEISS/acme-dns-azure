@@ -10,15 +10,15 @@ resource "azuread_application" "this" {
   owners       = local.owners
 }
 
+resource "azuread_application_password" "this" {
+  application_id = azuread_application.this.id
+}
+
 resource "azuread_service_principal" "this" {
   client_id = azuread_application.this.client_id
   owners    = local.owners
-}
-
-resource "azuread_application_password" "this" {
-  application_id = azuread_application.this.id
   # Manually setting order to ensure first deletion to fix https://github.com/hashicorp/terraform-provider-azuread/issues/661
-  depends_on = [azuread_application.this]
+  depends_on = [azuread_application_password.this]
 }
 
 resource "azuread_application" "no_permission" {
@@ -26,13 +26,13 @@ resource "azuread_application" "no_permission" {
   owners       = local.owners
 }
 
+resource "azuread_application_password" "no_permission" {
+  application_id = azuread_application.no_permission.id
+}
+
 resource "azuread_service_principal" "no_permission" {
   client_id = azuread_application.no_permission.client_id
   owners    = local.owners
-}
-
-resource "azuread_application_password" "no_permission" {
-  application_id = azuread_application.no_permission.id
   # Manually setting order to ensure first deletion to fix https://github.com/hashicorp/terraform-provider-azuread/issues/661
-  depends_on = [azuread_application.no_permission]
+  depends_on = [azuread_application_password.no_permission]
 }

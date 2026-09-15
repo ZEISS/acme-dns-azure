@@ -55,7 +55,7 @@ def test_automatic_renewal_for_existing_cert_single_domain(
             name=key_vault_cert_name
         )
     )
-    assert len(cert_versions) is 2
+    assert len(cert_versions) == 2
     cert = get_latest_properties_of_certificate_versions(cert_versions)
     assert cert.enabled
     assert (
@@ -104,7 +104,7 @@ def test_skip_for_valid_existing_cert(
             name=key_vault_cert_name
         )
     )
-    assert len(cert_versions) is 1
+    assert len(cert_versions) == 1
     for result in results:
         assert result.result == CertbotResult.STILL_VALID
 
@@ -150,7 +150,7 @@ def test_automatic_renewal_for_existing_cert_only_once_then_skipped(
             name=key_vault_cert_name
         )
     )
-    assert len(cert_versions) is 2
+    assert len(cert_versions) == 2
     cert = get_latest_properties_of_certificate_versions(cert_versions)
     assert cert.enabled
     assert (
@@ -262,8 +262,8 @@ def test_handle_two_certificates_create_and_renew(
             name=key_vault_cert_name2
         )
     )
-    assert len(cert_versions1) is 2
-    assert len(cert_versions2) is 1
+    assert len(cert_versions1) == 2
+    assert len(cert_versions2) == 1
 
 
 def test_create_new_cert_when_not_present_in_vault(
@@ -296,7 +296,7 @@ def test_create_new_cert_when_not_present_in_vault(
             name=key_vault_cert_name
         )
     )
-    assert len(cert_versions) is 1
+    assert len(cert_versions) == 1
     cert = get_latest_properties_of_certificate_versions(cert_versions)
     assert cert.enabled
     assert (
@@ -381,7 +381,7 @@ def test_automatic_renewal_for_wildcard_cert(
             name=key_vault_cert_name
         )
     )
-    assert len(cert_versions) is 2
+    assert len(cert_versions) == 2
     cert = get_latest_properties_of_certificate_versions(cert_versions)
     assert cert.enabled
     assert (
