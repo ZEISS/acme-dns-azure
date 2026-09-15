@@ -315,7 +315,7 @@ class CertbotManager:
             )
         return certificates
 
-    _ACME_RETRY_ERRORS = ("Service busy", "too many requests", "rate limit")    
+    _ACME_RETRY_ERRORS = ("Service busy", "too many requests", "rate limit")
     _ACME_MAX_RETRIES = 5
     _ACME_RETRY_DELAY = 300
 
