@@ -108,7 +108,7 @@ def principal_id(request):
 @pytest.fixture(autouse=True)
 def throttle_integration_tests():
     yield
-    time.sleep(15)
+    time.sleep(30)
 
 
 @pytest.fixture(autouse=False)

@@ -62,7 +62,7 @@ jobs:
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
           source ./../../.venv/bin/activate
           pytest happy_path.py $params --resource-prefix ci-${{ github.run_number }}${{ matrix.run }} --log-cli-level='WARNING' --log-file='happy.log' --log-file-level='INFO'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ci-${{ github.run_number }}${{ matrix.run }}-happy.log
           path: |
@@ -72,7 +72,7 @@ jobs:
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value) 
           source ./../../.venv/bin/activate 
           pytest unhappy_path.py $params --resource-prefix ci-${{ github.run_number }}${{ matrix.run }} --log-cli-level='WARNING' --log-file='unhappy.log' --log-file-level='INFO'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ci-${{ matrix.run }}${{ github.run_number }}-unhappy.log
           path: |
