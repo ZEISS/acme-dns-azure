@@ -104,10 +104,12 @@ def config_file_path(request):
 def principal_id(request):
     return request.config.getoption("--principal-id")
 
+
 @pytest.fixture(autouse=True)
 def throttle_integration_tests():
     yield
     time.sleep(15)
+
 
 @pytest.fixture(autouse=False)
 def acme_config_manager(request):
