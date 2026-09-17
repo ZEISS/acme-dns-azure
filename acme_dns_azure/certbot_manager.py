@@ -315,7 +315,7 @@ class CertbotManager:
             )
         return certificates
 
-    _ACME_RETRY_ERRORS = ("Service busy", "too many requests", "rate limit")
+    _ACME_RETRY_ERRORS = ("service busy", "too many requests", "rate limit")
     _ACME_MAX_RETRIES = 5
     _ACME_RETRY_DELAY = 300
 
@@ -339,7 +339,7 @@ class CertbotManager:
                 for line in stderr.splitlines():
                     logger.error(line)
                 if attempt < self._ACME_MAX_RETRIES and any(
-                    msg in stderr for msg in self._ACME_RETRY_ERRORS
+                    msg in stderr.lower() for msg in self._ACME_RETRY_ERRORS
                 ):
                     time.sleep(self._ACME_RETRY_DELAY)
                     continue
