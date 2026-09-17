@@ -59,7 +59,7 @@ jobs:
     steps:
       - name: Create changelog text
         id: changelog
-        uses: loopwerk/tag-changelog@b4e8627bdc44f527663dc36b3187e32f663d1778 # v1.6.0
+        uses: loopwerk/tag-changelog@5935b306b0f84d4ebd40175b182a0b7175509ebe # v1.6.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           exclude_types: doc
