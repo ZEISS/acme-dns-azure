@@ -29,8 +29,8 @@ jobs:
       prerelease: ${{ steps.version_type.outputs.is_prerelease }}
     steps:
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-      - uses: actions/checkout@v7
+        uses: snok/install-poetry@a783c322200f0519c7926aa6faa857c4e23e9263 # v1.4.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Receive version
         id: version_type
         run: |
@@ -41,7 +41,7 @@ jobs:
           echo "is_prerelease=${is_prerelease}" >> $GITHUB_OUTPUT
       - name: create git tag
         id: tag_version
-        uses: mathieudutour/github-tag-action@v6.1
+        uses: mathieudutour/github-tag-action@d28fa2ccfbd16e871a4bdf35e11b3ad1bd56c0c1 # v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: ${{ env.new_version }}
