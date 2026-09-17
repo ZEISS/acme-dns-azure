@@ -16,12 +16,8 @@ classifiers = [
   "Topic :: System :: Systems Administration",
   "Topic :: Utilities",
   "License :: OSI Approved :: MIT License",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13"
 ]
 description = "ACME client setup based on Certbot for dns-01 challenges via Azure Cloud services"
 documentation = "https://zeiss.github.io/acme-dns-azure/"
@@ -45,17 +41,17 @@ version = "1.1.0"
 
 [tool.poetry.dependencies]
 azure-identity = ">=1.25.3"
-azure-keyvault-certificates = "4.11.1"
-azure-keyvault-secrets = "4.11.1"
-certbot = ">=3.3"
-certbot-dns-azure = ">=2.6.0"
-cryptography = ">=45.0.7,<47"
+azure-keyvault-certificates = ">=4.11.1"
+azure-keyvault-secrets = ">=4.11.1"
+certbot = ">=5.8.0"
+certbot-dns-azure-modern = ">=2.8.0"
+cryptography = "^50.0.0"
 dnspython = ">=2.8.0"
 python = "^3.12,<3.14"
 pyyaml = ">=6"
 requests = ">=2"
 strictyaml = ">=1.7.3"
-pyopenssl = ">=25.0.0,<26.0.0"
+pyopenssl = "^26.4.0"
 azure-mgmt-dns = ">=8.2.0,<9.0.0"
 
 [tool.poetry.group.dev.dependencies]

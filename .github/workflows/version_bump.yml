@@ -3,7 +3,7 @@ name: Bump version
 on:
   pull_request:
     branches:
-      - "main"
+      - 'main'
     types:
       - closed
 
@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Bump version
         run: |
           label_names='${{ toJSON(github.event.pull_request.labels) }}'
@@ -44,5 +44,5 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          title: "Create release: ${{ env.version_bump }} ${{ env.new_version }}"
+          title: 'Create release: ${{ env.version_bump }} ${{ env.new_version }}'
           labels: automatic_bump

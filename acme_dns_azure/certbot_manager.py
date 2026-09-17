@@ -4,6 +4,7 @@ import base64
 import traceback
 import os
 import sys
+import time
 from typing import List
 from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
@@ -314,36 +315,48 @@ class CertbotManager:
             )
         return certificates
 
+    _ACME_RETRY_ERRORS = ("service busy", "too many requests", "rate limit")
+    _ACME_MAX_RETRIES = 5
+    _ACME_RETRY_DELAY = 300
+
     def _create_or_renew_certificate(
         self, cert_name: str, domains: List[str]
     ) -> CertbotResult:
         env = os.environ.copy()
         env["PYTHONPATH"] = os.pathsep.join(sys.path)
-        try:
-            result: subprocess.CompletedProcess = subprocess.run(
-                args=self._generate_certonly_command(cert_name, domains),
-                capture_output=True,
-                encoding="utf-8",
-                check=True,
-                env=env,
-            )
-            result.check_returncode()
-        except subprocess.CalledProcessError as error:
-            for error in error.stderr.splitlines():
-                logger.error(error)
-            return CertbotResult.FAILED
-        for info in result.stdout.splitlines():
-            logger.info(info)
-        for info in result.stdout.splitlines():
-            if "Certificate not yet due for renewal" in info:
-                logger.info("Cert %s skipped. Not yet due for renewal.", cert_name)
-                return CertbotResult.STILL_VALID
-            if "Requesting a certificate for" in info:
-                logger.info("Creating new cert %s.", cert_name)
-                return CertbotResult.CREATED
-            if "Renewing an existing certificate" in info:
-                logger.info("Renewing %s.", cert_name)
-        return CertbotResult.RENEWED
+        for attempt in range(1, self._ACME_MAX_RETRIES + 1):
+            try:
+                result: subprocess.CompletedProcess = subprocess.run(
+                    args=self._generate_certonly_command(cert_name, domains),
+                    capture_output=True,
+                    encoding="utf-8",
+                    check=True,
+                    env=env,
+                )
+                result.check_returncode()
+            except subprocess.CalledProcessError as error:
+                stderr = error.stderr or ""
+                for line in stderr.splitlines():
+                    logger.error(line)
+                if attempt < self._ACME_MAX_RETRIES and any(
+                    msg in stderr.lower() for msg in self._ACME_RETRY_ERRORS
+                ):
+                    time.sleep(self._ACME_RETRY_DELAY)
+                    continue
+                return CertbotResult.FAILED
+            for info in result.stdout.splitlines():
+                logger.info(info)
+            for info in result.stdout.splitlines():
+                if "Certificate not yet due for renewal" in info:
+                    logger.info("Cert %s skipped. Not yet due for renewal.", cert_name)
+                    return CertbotResult.STILL_VALID
+                if "Requesting a certificate for" in info:
+                    logger.info("Creating new cert %s.", cert_name)
+                    return CertbotResult.CREATED
+                if "Renewing an existing certificate" in info:
+                    logger.info("Renewing %s.", cert_name)
+            return CertbotResult.RENEWED
+        return CertbotResult.FAILED
 
     def _create_certificate_files(
         self,

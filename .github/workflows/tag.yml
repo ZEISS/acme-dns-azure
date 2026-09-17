@@ -30,7 +30,7 @@ jobs:
     steps:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Receive version
         id: version_type
         run: |

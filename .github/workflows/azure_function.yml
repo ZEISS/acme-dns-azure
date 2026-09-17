@@ -9,18 +9,18 @@ jobs:
     steps:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-          python-version: "3.x"
+          python-version: '3.12'
       - name: Install dependencies
         working-directory: ./examples/function
         run: |
           poetry install --all-extras
           poetry run build
       - name: upload_artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: acme_dns_azure_function
           path: ./examples/function/dist/*.zip

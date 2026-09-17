@@ -1,5 +1,6 @@
 import pytest
 import os
+import time
 from tests.integration.helper_framework.acme_config_manager import AcmeConfigManager
 from tests.integration.helper_framework.azure_key_vault_manager import (
     AzureKeyVaultManager,
@@ -38,7 +39,7 @@ def pytest_addoption(parser):
         "--subscription-id",
         action="store",
         required=True,
-        help="Please set subsciption ID.",
+        help="Please set subscription ID.",
     )
     parser.addoption(
         "--keyvault-uri",
@@ -71,7 +72,7 @@ def pytest_addoption(parser):
         "--principal-id",
         action="store",
         required=False,
-        help="Principal ID for assigning role assignments for temporarly created DNS records.",
+        help="Principal ID for assigning role assignments for temporarily created DNS records.",
     )
 
 
@@ -102,6 +103,12 @@ def config_file_path(request):
 @pytest.fixture(autouse=True)
 def principal_id(request):
     return request.config.getoption("--principal-id")
+
+
+@pytest.fixture(autouse=True)
+def throttle_integration_tests():
+    yield
+    time.sleep(30)
 
 
 @pytest.fixture(autouse=False)
