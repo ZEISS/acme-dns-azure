@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build and publish to pypi
-        uses: JRubics/poetry-publish@7100bd02517e9f82452e6247849042f6c74dde04 # v2.0
+        uses: JRubics/poetry-publish@4b3306307f536bbfcb559603629b3b4f6aef5ab8 # v2.1
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
   function_package:
@@ -59,12 +59,12 @@ jobs:
     steps:
       - name: Create changelog text
         id: changelog
-        uses: loopwerk/tag-changelog@5935b306b0f84d4ebd40175b182a0b7175509ebe # v1
+        uses: loopwerk/tag-changelog@b4e8627bdc44f527663dc36b3187e32f663d1778 # v1.6.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           exclude_types: doc
       - name: download artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: '/tmp/${{  github.ref_name }}'
       - name: Create a GitHub release

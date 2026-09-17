@@ -44,11 +44,11 @@ jobs:
         run: |
           poetry install --all-extras
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@dfe3c3f87815a1dcfe05c5eda77a4d0a1e6cd6f9 # v4.0.1
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_wrapper: false
       - name: Azure login
-        uses: azure/login@935127ca5bb3e6f8bfd2ed4c3a53ad7c5e7e1b50 # v3
+        uses: azure/login@053f7285eb20bf5469ef084617b0b24d3cec53fc # v3.1.0
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
       - name: Terraform Init

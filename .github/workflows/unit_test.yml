@@ -26,12 +26,12 @@ jobs:
           poetry run coverage run
           poetry run coverage report
           poetry run coverage xml
-      - uses: 5monkeys/cobertura-action@7b96dd4644682558a1ee411626dc831700470bad # v9
+      - uses: 5monkeys/cobertura-action@ee5787cc56634acddedc51f21c7947985531e6eb # v14
         with:
           minimum_coverage: 35
           fail_below_threshold: true
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@b3f8796819acb36dc1c0e42e6845eb4cbfc2c1ef # v2
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         with:
           files: |
             test-results/**/*.xml

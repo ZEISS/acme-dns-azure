@@ -41,7 +41,7 @@ jobs:
           echo "is_prerelease=${is_prerelease}" >> $GITHUB_OUTPUT
       - name: create git tag
         id: tag_version
-        uses: mathieudutour/github-tag-action@aacd18f07c80e33d6dd3e1df4f66f0ee76d7f5f3 # v6.1
+        uses: mathieudutour/github-tag-action@d28fa2ccfbd16e871a4bdf35e11b3ad1bd56c0c1 # v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: ${{ env.new_version }}

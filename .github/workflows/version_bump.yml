@@ -42,7 +42,7 @@ jobs:
           new_version=$(poetry version -s)
           echo "new_version=${new_version}" >> $GITHUB_ENV
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@c5a7806660ad9427f7e98952847e9c83fb9c08c0 # v6.1.0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           title: 'Create release: ${{ env.version_bump }} ${{ env.new_version }}'
           labels: automatic_bump
