@@ -38,9 +38,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [docs]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build and publish to pypi
-        uses: JRubics/poetry-publish@v2.0
+        uses: JRubics/poetry-publish@7100bd02517ef2a1fffd70c21ebe40b93c73ea84 # v2.0
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
   function_package:
@@ -59,16 +59,16 @@ jobs:
     steps:
       - name: Create changelog text
         id: changelog
-        uses: loopwerk/tag-changelog@v1
+        uses: loopwerk/tag-changelog@5935b306b0f872b4ae5bb8f07ed0d6c79b7b0c85 # v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           exclude_types: doc
       - name: download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bef5b4b85ea65fe1fb3fb9ddb7d1e # v4.3.0
         with:
           path: '/tmp/${{  github.ref_name }}'
       - name: Create a GitHub release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@339a81892b84b16ac33da99611161a8a75f93f39 # v1.21.0
         with:
           body: ${{ steps.changelog.outputs.changes }}
           artifacts: '/tmp/${{  github.ref_name }}/**/*.zip'

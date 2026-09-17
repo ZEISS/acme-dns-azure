@@ -25,8 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-      - uses: actions/checkout@v7
+        uses: snok/install-poetry@a783c322200f1f9c8e6bfef3a0fb11ea0f18e9d # v1.4.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Bump version
         run: |
           label_names='${{ toJSON(github.event.pull_request.labels) }}'
@@ -42,7 +42,7 @@ jobs:
           new_version=$(poetry version -s)
           echo "new_version=${new_version}" >> $GITHUB_ENV
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@c5a7806660ad9427f7e98952847e9c83fb9c08c0 # v6.1.0
         with:
           title: 'Create release: ${{ env.version_bump }} ${{ env.new_version }}'
           labels: automatic_bump

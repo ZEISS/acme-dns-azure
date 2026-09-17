@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-      - uses: actions/checkout@v7
+        uses: snok/install-poetry@a783c322200f1f9c8e6bfef3a0fb11ea0f18e9d # v1.4.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.x'
       - name: Install dependencies
@@ -26,12 +26,12 @@ jobs:
           poetry run coverage run
           poetry run coverage report
           poetry run coverage xml
-      - uses: 5monkeys/cobertura-action@master
+      - uses: 5monkeys/cobertura-action@7b96dd4644682558a1ee411626dc831700470bad # v9
         with:
           minimum_coverage: 35
           fail_below_threshold: true
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@b3f8796819acb36dc1c0e42e6845eb4cbfc2c1ef # v2
         with:
           files: |
             test-results/**/*.xml

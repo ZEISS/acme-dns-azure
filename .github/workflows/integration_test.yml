@@ -33,10 +33,10 @@ jobs:
       name: cicd
     steps:
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-      - uses: actions/checkout@v7
+        uses: snok/install-poetry@a783c322200f1f9c8e6bfef3a0fb11ea0f18e9d # v1.4.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
       - name: Install dependencies
@@ -44,11 +44,11 @@ jobs:
         run: |
           poetry install --all-extras
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v4
+        uses: hashicorp/setup-terraform@dfe3c3f87815a1dcfe05c5eda77a4d0a1e6cd6f9 # v4.0.1
         with:
           terraform_wrapper: false
       - name: Azure login
-        uses: azure/login@v3
+        uses: azure/login@935127ca5bb3e6f8bfd2ed4c3a53ad7c5e7e1b50 # v3
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
       - name: Terraform Init
@@ -62,7 +62,7 @@ jobs:
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value)
           source ./../../.venv/bin/activate
           pytest happy_path.py $params --resource-prefix ci-${{ github.run_number }}${{ matrix.run }} --log-cli-level='WARNING' --log-file='happy.log' --log-file-level='INFO'
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ci-${{ github.run_number }}${{ matrix.run }}-happy.log
           path: |
@@ -72,7 +72,7 @@ jobs:
           params=$(terraform -chdir="infra" output -json | jq -r .integration_test_params.value) 
           source ./../../.venv/bin/activate 
           pytest unhappy_path.py $params --resource-prefix ci-${{ github.run_number }}${{ matrix.run }} --log-cli-level='WARNING' --log-file='unhappy.log' --log-file-level='INFO'
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ci-${{ matrix.run }}${{ github.run_number }}-unhappy.log
           path: |
