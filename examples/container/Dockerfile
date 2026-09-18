@@ -47,6 +47,7 @@ RUN set -eux; \
     # Remove build-dependent system packages and files
     apk del .build-deps; \
     pip cache purge; \
+    python -m pip uninstall --yes pip-tools pip setuptools; \
     rm -rf ~/.cache /tmp/*
 
 CMD ["python", "/main.py"]
