@@ -35,7 +35,7 @@ packages = [
 ]
 readme = "README.md"
 repository = "https://github.com/ZEISS/acme-dns-azure"
-version = "1.3.0"
+version = "1.4.0"
 
 [tool.poetry_bumpversion.file."acme_dns_azure/___init___.py"]
 
