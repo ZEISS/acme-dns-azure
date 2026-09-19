@@ -1,9 +1,13 @@
 FROM python:3.12-alpine
 
-ENV TIMEZONE=${TIMEZONE:-} \
-    LANG=${LANGUAGE:-en_US}.${ENCODING:-UTF-8} \
-    LANGUAGE=${LANGUAGE:-en_US}.${ENCODING:-UTF-8} \
-    LC_ALL=${LANGUAGE:-en_US}.${ENCODING:-UTF-8}
+ARG TIMEZONE=""
+ARG LANGUAGE="en_US"
+ARG ENCODING="UTF-8"
+
+ENV TIMEZONE="${TIMEZONE}" \
+    LANG="${LANGUAGE}.${ENCODING}" \
+    LANGUAGE="${LANGUAGE}.${ENCODING}" \
+    LC_ALL="${LANGUAGE}.${ENCODING}"
 
 WORKDIR /usr/src/app
 
@@ -47,6 +51,7 @@ RUN set -eux; \
     # Remove build-dependent system packages and files
     apk del .build-deps; \
     pip cache purge; \
+    python -m pip uninstall --yes pip-tools pip setuptools; \
     rm -rf ~/.cache /tmp/*
 
 CMD ["python", "/main.py"]
