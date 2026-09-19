@@ -1,6 +1,6 @@
 # Introduction
 
-This repository aims to leverage the automatic renewal of SSL certficates within Azure Cloud in a secure manner.
+This repository aims to leverage the automatic renewal of SSL certificates within Azure Cloud in a secure manner.
 
 A wrapper library is provided to automatically renew certifactes based on the [ACME DNS-01 challenge](https://letsencrypt.org/docs/challenge-types/#:~:text=all%20of%20them.-,DNS%2D01%20challenge,-This%20challenge%20asks) by using [certbot](https://certbot.eff.org/).
 
@@ -137,7 +137,7 @@ The other placeholders are specified separately.
 See [examples](examples/README.md) for configuration examples.
 
 ```yml
-# Azure credentials choice section. Only one of the following flags should be set to true to indicate which credentials to use. Otherwise an exception would be raised by the validator. 
+# Azure credentials choice section. Only one of the following flags should be set to true to indicate which credentials to use. Otherwise an exception would be raised by the validator.
 # These values are translated into ini file as specified here: https://docs.certbot-dns-azure.co.uk/en/latest/index.html#certbot-azure-workload-identity-ini
 # If no flag is provided the program will try to use sp_client_* values to use service principal credentials first. If those are not both present it will try to use managed_identity_id.
 [use_system_assigned_identity_credentials: <boolean>]
