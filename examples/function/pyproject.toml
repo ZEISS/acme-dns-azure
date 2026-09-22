@@ -26,7 +26,7 @@ version = "1.4.0"
 acme-dns-azure = "*"
 azure-functions = {version = ">=1"}
 cffi = "*"
-python = "^3.12"
+python = "^3.14"
 
 [tool.poetry.scripts]
 add-plugins = "poetry:add_plugins"
