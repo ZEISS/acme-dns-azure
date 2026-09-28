@@ -1,4 +1,5 @@
-FROM python:3.14-alpine
+ARG PYTHON_VERSION
+FROM python:${PYTHON_VERSION}-alpine
 
 ARG TIMEZONE=""
 ARG LANGUAGE="en_US"
