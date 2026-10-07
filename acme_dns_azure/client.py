@@ -72,9 +72,7 @@ class AcmeDnsAzureClient:
             result.result in (CertbotResult.CREATED, CertbotResult.RENEWED)
             for result in results
         )
-        failed_count = sum(
-            result.result == CertbotResult.FAILED for result in results
-        )
+        failed_count = sum(result.result == CertbotResult.FAILED for result in results)
         if failed_count:
             logger.info(
                 "Certificate renewal finished: %d renewed, %d failed",
