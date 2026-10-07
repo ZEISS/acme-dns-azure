@@ -10,9 +10,13 @@ from acme_dns_azure.context import Context
 from acme_dns_azure.log import setup_custom_logger
 from acme_dns_azure.exceptions import ConfigurationError, KeyVaultError
 from acme_dns_azure.key_vault_manager import KeyVaultManager
-from acme_dns_azure.data import RotationResult
+from acme_dns_azure.data import CertbotResult, RotationResult
 
 logger = setup_custom_logger(__name__)
+
+
+def _has_failed_certificates(results: List[RotationResult]) -> bool:
+    return any(result.result == CertbotResult.FAILED for result in results)
 
 
 class AcmeDnsAzureClient:
@@ -63,7 +67,26 @@ class AcmeDnsAzureClient:
     def issue_certificates(self) -> List[RotationResult]:
         """Create/rotate all certificates based on initial client configuration."""
         logger.info("Issuing certificates...")
-        return self.certbot.renew_certificates()
+        results = self.certbot.renew_certificates()
+        renewed_count = sum(
+            result.result in (CertbotResult.CREATED, CertbotResult.RENEWED)
+            for result in results
+        )
+        failed_count = sum(
+            result.result == CertbotResult.FAILED for result in results
+        )
+        if failed_count:
+            logger.info(
+                "Certificate renewal finished: %d renewed, %d failed",
+                renewed_count,
+                failed_count,
+            )
+        else:
+            logger.info(
+                "Certificate renewal finished: %d renewed",
+                renewed_count,
+            )
+        return results
 
 
 if __name__ == "__main__":
@@ -97,4 +120,6 @@ if __name__ == "__main__":
         logger.exception("Unable to instanciate AcmeDnsAzureClient")
         sys.exit(1)
 
-    client.issue_certificates()
+    results = client.issue_certificates()
+    if _has_failed_certificates(results):
+        sys.exit(2)
