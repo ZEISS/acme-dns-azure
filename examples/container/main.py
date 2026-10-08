@@ -1,5 +1,6 @@
 import os
 import logging
+import sys
 from typing import List
 from acme_dns_azure.data import (
     RotationResult,
@@ -22,6 +23,8 @@ if __name__ == "__main__":
                 logging.warning("Skipped to rotate certificate %s.", rotation)
             else:
                 logging.info(rotation)
+        if any(rotation.result == CertbotResult.FAILED for rotation in results):
+            sys.exit(2)
 
     except Exception:
         logging.exception("Failed to rotate certificates")
