@@ -28,3 +28,4 @@ if __name__ == "__main__":
 
     except Exception:
         logging.exception("Failed to rotate certificates")
+        sys.exit(1)
