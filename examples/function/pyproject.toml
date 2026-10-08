@@ -18,7 +18,7 @@ packages = [
   {include = "function_app.py"},
 ]
 readme = "README.md"
-version = "1.7.1"
+version = "1.7.2"
 
 [tool.poetry_bumpversion.file."version.py"]
 
@@ -26,6 +26,10 @@ version = "1.7.1"
 acme-dns-azure = "*"
 azure-functions = {version = ">=1"}
 cffi = "*"
+certifi = ">=2026.10.23"
+pyjwt = ">=2.15.0"
+setuptools = ">=84.1.0"
+werkzeug = ">=3.1.9"
 python = "^3.14,<3.15"
 cryptography = "^50.0.0"
 
