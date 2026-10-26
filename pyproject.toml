@@ -73,7 +73,7 @@ types-toml = "*"
 vcrpy = "*"
 
 [tool.poetry.scripts]
-acme-dns-azure = "acme_dns_azure.cli:main"
+acme-dns-azure = "acme_dns_azure.client:main"
 
 [tool.mypy]
 show_error_codes = true
