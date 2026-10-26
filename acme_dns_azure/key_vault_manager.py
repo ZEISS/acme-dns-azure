@@ -151,7 +151,7 @@ class KeyVaultManager:
             with open(chain_file_path, "rb") as chain:
                 chain_bytes = chain.read()
             if chain_bytes:
-                cas = [x509.load_pem_x509_certificate(chain_bytes)]
+                cas = x509.load_pem_x509_certificates(chain_bytes)
 
         return pkcs12.serialize_key_and_certificates(
             name=None,
