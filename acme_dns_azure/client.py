@@ -1,3 +1,4 @@
+import os
 import sys
 import tempfile
 from typing import List
@@ -32,6 +33,9 @@ class AcmeDnsAzureClient:
     config_file -- Config path reference based on schema to yaml file
 
     file_path_prefix -- Path prefix for creating working dir witin /tmp dir. (default acme_dns_azure)
+
+    work_dir -- Persistent library working directory. Existing state is retained;
+                the caller owns cleanup. Defaults to a temporary directory.
     """
 
     def __init__(
@@ -40,13 +44,20 @@ class AcmeDnsAzureClient:
         config_env_var: str = None,
         config_file: str = None,
         file_path_prefix: str = "acme_dns_azure",
+        work_dir: str | os.PathLike[str] | None = None,
     ) -> None:
         self.ctx = Context()
-        self._work_dir = tempfile.TemporaryDirectory(prefix=file_path_prefix)
+        self._work_dir = None
+        self.ctx.preserve_work_dir = work_dir is not None
+        if work_dir is None:
+            self._work_dir = tempfile.TemporaryDirectory(prefix=file_path_prefix)
+            self.ctx.work_dir = self._work_dir.name
+        else:
+            self.ctx.work_dir = os.path.abspath(work_dir)
+            os.makedirs(self.ctx.work_dir, exist_ok=True)
         logger.info(
-            "Setting working directory for certicate renewal: %s", self._work_dir
+            "Setting working directory for certicate renewal: %s", self.ctx.work_dir
         )
-        self.ctx.work_dir = self._work_dir.name
 
         if config_yaml is not None:
             self.ctx.config = config.load(config_yaml)
@@ -62,7 +73,8 @@ class AcmeDnsAzureClient:
         self.certbot = CertbotManager(self.ctx)
 
     def __del__(self):
-        logger.info("Cleaning up directory %s", self.ctx.work_dir)
+        if getattr(self, "_work_dir", None) is not None:
+            logger.info("Cleaning up directory %s", self.ctx.work_dir)
 
     def issue_certificates(self) -> List[RotationResult]:
         """Create/rotate all certificates based on initial client configuration."""
@@ -106,8 +118,18 @@ if __name__ == "__main__":
             required=False,
             help="Name of environment variable containing config.",
         )
+        parser.add_argument(
+            "--work-dir",
+            metavar="path",
+            help="Persistent library working directory (not deleted on exit).",
+        )
         args = parser.parse_args()
-        client = AcmeDnsAzureClient(config_file=args.file, config_env_var=args.env)
+        work_dir_options = (
+            {"work_dir": args.work_dir} if args.work_dir is not None else {}
+        )
+        client = AcmeDnsAzureClient(
+            config_file=args.file, config_env_var=args.env, **work_dir_options
+        )
     except ConfigurationError as e:
         logger.error(e)
         sys.exit(1)
