@@ -68,5 +68,5 @@ The library will:
 - attempt to create (or renew if already existing) key vault certificates _tls-xyz-example-org_ and _tls-wildcard-abc-example-org_
 - renew certificate _tls-xyz-example-org_ 30 days before expiry (default value)
 - renew certificate _tls-wildcard-abc-example-org_ 40 days before expiry
-- create/renew certificates for a valid period of 90 days
+- create/renew certificates for the validity period selected by the ACME CA (currently 64 days for Let's Encrypt staging)
 - since **update_cert_domains** is _false_: Every certificate already existing within the keyvault, but containing different subject alternative names as specified within the config file, will be skipped.

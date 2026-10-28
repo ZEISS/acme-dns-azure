@@ -58,11 +58,8 @@ def test_automatic_renewal_for_existing_cert_single_domain(
     assert len(cert_versions) == 2
     cert = get_latest_properties_of_certificate_versions(cert_versions)
     assert cert.enabled
-    assert (
-        cert.expires_on
-        >= datetime.now(timezone.utc) + timedelta(days=89)
-        <= datetime.now(timezone.utc) + timedelta(days=91)
-    )
+    now = datetime.now(timezone.utc)
+    assert cert.expires_on > now + timedelta(days=30)
     for result in results:
         assert result.result == CertbotResult.RENEWED
 
@@ -153,11 +150,8 @@ def test_automatic_renewal_for_existing_cert_only_once_then_skipped(
     assert len(cert_versions) == 2
     cert = get_latest_properties_of_certificate_versions(cert_versions)
     assert cert.enabled
-    assert (
-        cert.expires_on
-        >= datetime.now(timezone.utc) + timedelta(days=89)
-        <= datetime.now(timezone.utc) + timedelta(days=91)
-    )
+    now = datetime.now(timezone.utc)
+    assert cert.expires_on > now + timedelta(days=30)
     for result in first_results:
         assert result.result == CertbotResult.RENEWED
     for result in second_results:
@@ -299,11 +293,8 @@ def test_create_new_cert_when_not_present_in_vault(
     assert len(cert_versions) == 1
     cert = get_latest_properties_of_certificate_versions(cert_versions)
     assert cert.enabled
-    assert (
-        cert.expires_on
-        >= datetime.now(timezone.utc) + timedelta(days=89)
-        <= datetime.now(timezone.utc) + timedelta(days=91)
-    )
+    now = datetime.now(timezone.utc)
+    assert cert.expires_on > now + timedelta(days=30)
     for result in results:
         assert result.result == CertbotResult.CREATED
 
@@ -384,11 +375,8 @@ def test_automatic_renewal_for_wildcard_cert(
     assert len(cert_versions) == 2
     cert = get_latest_properties_of_certificate_versions(cert_versions)
     assert cert.enabled
-    assert (
-        cert.expires_on
-        >= datetime.now(timezone.utc) + timedelta(days=89)
-        <= datetime.now(timezone.utc) + timedelta(days=91)
-    )
+    now = datetime.now(timezone.utc)
+    assert cert.expires_on > now + timedelta(days=30)
     for result in results:
         assert result.result == CertbotResult.RENEWED
     cn, san = azure_key_vault_manager.get_cn_and_san_from_certificate(
