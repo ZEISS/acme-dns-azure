@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 import base64
+import hashlib
 import traceback
 import os
 import sys
@@ -29,6 +30,7 @@ class CertbotManager:
             "keyvault_account_secret_name"
         ]
         self._os_manager = FileManager()
+        self._account_file_hashes = None
 
         self._create_certbot_init_files()
         self._create_certbot_init_directories()
@@ -82,11 +84,25 @@ class CertbotManager:
                 dest_dir_path=self._work_dir + "config/accounts",
             )
             self._os_manager.delete_file(self._work_dir + "accounts.zip")
+            self._account_file_hashes = self._get_acme_account_file_hashes()
             logger.info("Successfully restored acme accounts from keyvault")
         except Exception:
             logger.exception(
                 "Unknown error in restoring ACME account info from keyvault."
             )
+
+    def _get_acme_account_file_hashes(self):
+        # ZIP metadata changes after extraction, so compare paths and file contents.
+        account_dir = self._work_dir + "config/accounts/"
+        file_hashes = {}
+        for root, _, files in os.walk(account_dir):
+            for name in files:
+                file_path = os.path.join(root, name)
+                with open(file_path, "rb") as data:
+                    file_hashes[os.path.relpath(file_path, account_dir)] = (
+                        hashlib.file_digest(data, "sha256").digest()
+                    )
+        return file_hashes
 
     def _create_certbot_ini(self) -> List[str]:
         lines = str(self._config["certbot.ini"]).splitlines()
@@ -273,16 +289,21 @@ class CertbotManager:
                     )
                 )
         try:
-            zip_archive_path = self._os_manager.zip_archive(
-                src_dir_path=self._work_dir + "config/accounts/",
-                dest_file_path=self._work_dir + "accounts.zip",
-            )
-            logger.info("Uploading ACME account information...")
-            with open(zip_archive_path, "rb") as data:
-                encoded_archive = base64.b64encode(data.read()).decode()
-                self.ctx.keyvault.set_secret(
-                    self._keyvault_acme_account_secret_name, encoded_archive
+            account_file_hashes = self._get_acme_account_file_hashes()
+            if account_file_hashes != self._account_file_hashes:
+                zip_archive_path = self._os_manager.zip_archive(
+                    src_dir_path=self._work_dir + "config/accounts/",
+                    dest_file_path=self._work_dir + "accounts.zip",
                 )
+                logger.info("Uploading ACME account information...")
+                with open(zip_archive_path, "rb") as data:
+                    encoded_archive = base64.b64encode(data.read()).decode()
+                    self.ctx.keyvault.set_secret(
+                        self._keyvault_acme_account_secret_name, encoded_archive
+                    )
+                self._account_file_hashes = account_file_hashes
+            else:
+                logger.info("ACME account information is unchanged; skipping upload.")
         except Exception:
             logger.exception(
                 "Unknown error in uploading ACME account information to keyvault"
