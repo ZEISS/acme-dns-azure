@@ -32,24 +32,34 @@ class CertbotManager:
 
         self._create_certbot_init_files()
         self._create_certbot_init_directories()
-        if self.ctx.keyvault.secret_exists(self._keyvault_acme_account_secret_name):
+        accounts_dir = self._work_dir + "config/accounts"
+        preserve = getattr(self.ctx, "preserve_work_dir", False)
+        if (
+            not preserve or not os.listdir(accounts_dir)
+        ) and self.ctx.keyvault.secret_exists(self._keyvault_acme_account_secret_name):
             self._restore_acme_account_from_keyvault()
+
+    def _create_file(self, file_path: str, lines: List[str], chmod: int = None):
+        if getattr(self.ctx, "preserve_work_dir", False) and os.path.lexists(file_path):
+            return
+        self._os_manager.create_file(file_path, lines, chmod)
 
     def _create_certbot_init_files(self):
         logger.info("Creating init files...")
         certbot_ini_file_path = self._work_dir + "certbot.ini"
-        certbot_ini_content = self._create_certbot_ini()
-        self._os_manager.create_file(
-            file_path=certbot_ini_file_path, lines=certbot_ini_content
-        )
+        preserve = getattr(self.ctx, "preserve_work_dir", False)
+        if not preserve or not os.path.lexists(certbot_ini_file_path):
+            self._create_file(
+                file_path=certbot_ini_file_path, lines=self._create_certbot_ini()
+            )
 
         certbot_dns_azure_ini_file_path = self._work_dir + "certbot_dns_azure.ini"
-        certbot_dns_azure_ini_content = self._create_certbot_dns_azure_ini()
-        self._os_manager.create_file(
-            file_path=certbot_dns_azure_ini_file_path,
-            lines=certbot_dns_azure_ini_content,
-            chmod=0o600,
-        )
+        if not preserve or not os.path.lexists(certbot_dns_azure_ini_file_path):
+            self._create_file(
+                file_path=certbot_dns_azure_ini_file_path,
+                lines=self._create_certbot_dns_azure_ini(),
+                chmod=0o600,
+            )
 
     def _create_certbot_init_directories(self):
         logger.info("Creating init directories...")
@@ -65,7 +75,8 @@ class CertbotManager:
 
         for dir_name in directories:
             self._os_manager.create_dir(
-                dir_path=self._work_dir + dir_name, exist_ok=False
+                dir_path=self._work_dir + dir_name,
+                exist_ok=getattr(self.ctx, "preserve_work_dir", False),
             )
 
     def _restore_acme_account_from_keyvault(self):
@@ -185,7 +196,20 @@ class CertbotManager:
             for domain_ref in cert_def.domains:
                 config_domains.append(domain_ref.domain_name)
             try:
-                if self.ctx.keyvault.certificate_exists(cert_def.key_vault_cert_name):
+                renewal_file = (
+                    self._work_dir
+                    + "config/renewal/"
+                    + cert_def.certbot_cert_name
+                    + ".conf"
+                )
+                if getattr(self.ctx, "preserve_work_dir", False) and os.path.isfile(
+                    renewal_file
+                ):
+                    logger.info(
+                        "Using local certificate state for %s",
+                        cert_def.certbot_cert_name,
+                    )
+                elif self.ctx.keyvault.certificate_exists(cert_def.key_vault_cert_name):
                     logger.info("Renewing cert %s", cert_def.key_vault_cert_name)
                     base64_encoded_pfx = self.ctx.keyvault.get_certificate(
                         name=cert_def.key_vault_cert_name
@@ -370,40 +394,48 @@ class CertbotManager:
         domain_file_path = (
             self._work_dir + "config/renewal/" + certbot_cert_name + ".conf"
         )
-        self._os_manager.create_dir(self._work_dir + "config/live/" + certbot_cert_name)
+        preserve = getattr(self.ctx, "preserve_work_dir", False)
         self._os_manager.create_dir(
-            self._work_dir + "config/archive/" + certbot_cert_name
+            self._work_dir + "config/live/" + certbot_cert_name, exist_ok=preserve
         )
-        self._os_manager.create_file(
+        self._os_manager.create_dir(
+            self._work_dir + "config/archive/" + certbot_cert_name, exist_ok=preserve
+        )
+        self._create_file(
             file_path=domain_file_path,
             lines=self._create_domain_conf(certbot_cert_name, renew_before_expiry),
         )
-        self._os_manager.create_file(
+        self._create_file(
             self._work_dir + "config/archive/" + certbot_cert_name + "/cert1.pem",
             [certificate],
         )
-        self._os_manager.create_file(
+        self._create_file(
             self._work_dir + "config/archive/" + certbot_cert_name + "/privkey1.pem",
             [privkey],
         )
-        self._os_manager.create_file(
+        self._create_file(
             self._work_dir + "config/archive/" + certbot_cert_name + "/chain1.pem",
             [chain],
         )
-        self._os_manager.create_file(
+        self._create_file(
             self._work_dir + "config/archive/" + certbot_cert_name + "/fullchain1.pem",
             [fullchain],
         )
         files = ["cert", "privkey", "chain", "fullchain"]
         for cert in files:
-            self._os_manager.create_symlink(
-                src="../../archive/" + certbot_cert_name + "/" + cert + "1.pem",
-                dest=self._work_dir
+            destination = (
+                self._work_dir
                 + "config/live/"
                 + certbot_cert_name
                 + "/"
                 + cert
-                + ".pem",
+                + ".pem"
+            )
+            if preserve and os.path.lexists(destination):
+                continue
+            self._os_manager.create_symlink(
+                src="../../archive/" + certbot_cert_name + "/" + cert + "1.pem",
+                dest=destination,
             )
 
     def _create_domain_conf(
