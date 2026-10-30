@@ -1,4 +1,5 @@
 import base64
+import re
 from typing import List
 from cryptography.hazmat.primitives.serialization import (
     pkcs12,
@@ -94,6 +95,48 @@ class KeyVaultManager:
     def get_certificate(self, name: str) -> KeyVaultSecret:
         return self.get_secret(name)
 
+    def extract_certificate_data(self, certificate_data: str):
+        if "-----BEGIN CERTIFICATE-----" in certificate_data:
+            return self.extract_pem_data(certificate_data)
+        return self.extract_pfx_data(certificate_data)
+
+    def extract_pem_data(self, pem_data: str):
+        encoded_data = pem_data.encode("ascii")
+        private_key_match = re.search(
+            rb"-----BEGIN (?P<label>(?:RSA |EC )?PRIVATE KEY)-----.*?"
+            rb"-----END (?P=label)-----",
+            encoded_data,
+            re.DOTALL,
+        )
+        if private_key_match is None:
+            raise ValueError("PEM certificate does not contain a private key")
+
+        certificates = x509.load_pem_x509_certificates(encoded_data)
+        if not certificates:
+            raise ValueError("PEM certificate does not contain an X.509 certificate")
+
+        private_key = serialization.load_pem_private_key(
+            private_key_match.group(0), password=None
+        ).private_bytes(
+            encoding=Encoding.PEM,
+            format=PrivateFormat.PKCS8,
+            encryption_algorithm=NoEncryption(),
+        )
+        certificate = certificates[0]
+        certificate_pem = certificate.public_bytes(encoding=Encoding.PEM)
+        chain = b"".join(
+            chain_certificate.public_bytes(encoding=Encoding.PEM)
+            for chain_certificate in certificates[1:]
+        )
+
+        return (
+            private_key,
+            certificate_pem,
+            chain,
+            certificate_pem + chain,
+            self._get_certificate_domains(certificate),
+        )
+
     def extract_pfx_data(self, pfx_data: str):
         key_and_certs: pkcs12.PKCS12KeyAndCertificates = pkcs12.load_pkcs12(
             base64.b64decode(pfx_data), password=None
@@ -109,17 +152,7 @@ class KeyVaultManager:
             key_and_certs.additional_certs
         )
 
-        domains = []
-        try:
-            san_information: x509.SubjectAlternativeName = (
-                cert.certificate.extensions.get_extension_for_oid(
-                    x509.ObjectIdentifier("2.5.29.17")
-                )
-            )
-            for general_name in san_information.value:
-                domains.append(general_name.value)
-        except x509.extensions.ExtensionNotFound:
-            logger.info("No 'subjectAltName' extension present for certificate.")
+        domains = self._get_certificate_domains(cert.certificate)
 
         chain: bytes = b""
         for ca in additional_certs:
@@ -137,6 +170,24 @@ class KeyVaultManager:
             fullchain,
             domains,
         )
+
+    def _get_certificate_domains(self, certificate: x509.Certificate) -> List[str]:
+        domains = []
+        try:
+            san_information: x509.SubjectAlternativeName = (
+                certificate.extensions.get_extension_for_oid(
+                    x509.ObjectIdentifier("2.5.29.17")
+                )
+            )
+            for general_name in san_information.value:
+                domains.append(general_name.value)
+        except x509.extensions.ExtensionNotFound:
+            logger.info("No 'subjectAltName' extension present for certificate.")
+        return domains
+
+    def is_self_signed_certificate(self, certificate_data: bytes) -> bool:
+        certificate = x509.load_pem_x509_certificate(certificate_data)
+        return certificate.issuer == certificate.subject
 
     def generate_pfx(
         self, private_key_path: str, certificate_path: str, chain_file_path: str = None

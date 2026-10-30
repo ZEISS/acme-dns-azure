@@ -182,6 +182,7 @@ class CertbotManager:
         results: List[RotationResult] = []
         for cert_def in certs:
             config_domains = []
+            force_renewal = False
             for domain_ref in cert_def.domains:
                 config_domains.append(domain_ref.domain_name)
             try:
@@ -196,7 +197,10 @@ class CertbotManager:
                         chain,
                         fullchain,
                         certificate_domains,
-                    ) = self.ctx.keyvault.extract_pfx_data(base64_encoded_pfx)
+                    ) = self.ctx.keyvault.extract_certificate_data(
+                        base64_encoded_pfx
+                    )
+                    force_renewal = self.ctx.keyvault.is_self_signed_certificate(cert)
 
                     if (set(certificate_domains) != set(config_domains)) and (
                         self._config["update_cert_domains"] is False
@@ -224,7 +228,9 @@ class CertbotManager:
                     )
 
                 certbot_result: CertbotResult = self._create_or_renew_certificate(
-                    cert_name=cert_def.certbot_cert_name, domains=config_domains
+                    cert_name=cert_def.certbot_cert_name,
+                    domains=config_domains,
+                    force_renewal=force_renewal,
                 )
                 if (
                     certbot_result == CertbotResult.RENEWED
@@ -320,14 +326,16 @@ class CertbotManager:
     _ACME_RETRY_DELAY = 300
 
     def _create_or_renew_certificate(
-        self, cert_name: str, domains: List[str]
+        self, cert_name: str, domains: List[str], force_renewal: bool = False
     ) -> CertbotResult:
         env = os.environ.copy()
         env["PYTHONPATH"] = os.pathsep.join(sys.path)
         for attempt in range(1, self._ACME_MAX_RETRIES + 1):
             try:
                 result: subprocess.CompletedProcess = subprocess.run(
-                    args=self._generate_certonly_command(cert_name, domains),
+                    args=self._generate_certonly_command(
+                        cert_name, domains, force_renewal
+                    ),
                     capture_output=True,
                     encoding="utf-8",
                     check=True,
@@ -438,7 +446,7 @@ class CertbotManager:
         return lines
 
     def _generate_certonly_command(
-        self, cert_name: str, domains: List[str]
+        self, cert_name: str, domains: List[str], force_renewal: bool = False
     ) -> List[str]:
         certbot_path = shutil.which("certbot")
         if certbot_path:
@@ -461,6 +469,8 @@ class CertbotManager:
             "--non-interactive",
             "-v",
         ]
+        if force_renewal:
+            command.append("--force-renewal")
         for domain in domains:
             command.append("-d")
             command.append(domain)
