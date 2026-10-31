@@ -64,6 +64,57 @@ def test_automatic_renewal_for_existing_cert_single_domain(
         assert result.result == CertbotResult.RENEWED
 
 
+def test_automatic_renewal_for_self_signed_existing_cert(
+    acme_config_manager,
+    azure_key_vault_manager,
+    config_file_path,
+    resource_name,
+    dns_zone_name,
+):
+    ## Config
+    domain_name = resource_name + "." + dns_zone_name
+    key_vault_cert_name = domain_name.replace(".", "")
+    cert_validity_in_month = 3
+    acme_config_renew_before_expiry_in_days = 30
+
+    ## Init
+    acme_config_manager.base_config_from_file(file_path=config_file_path)
+    azure_key_vault_manager.create_self_signed_certificate(
+        name=key_vault_cert_name,
+        subject=f"CN={domain_name}",
+        validity_in_months=cert_validity_in_month,
+        san_dns_names=[domain_name],
+    )
+    acme_config_manager.add_certificate_to_config(
+        cert_name=key_vault_cert_name,
+        domain_references=[DnsZoneDomainReference(name=domain_name)],
+        renew_before_expiry=acme_config_renew_before_expiry_in_days,
+    )
+    existing_cert_versions = list(
+        azure_key_vault_manager.list_properties_of_certificate_versions(
+            name=key_vault_cert_name
+        )
+    )
+    assert len(existing_cert_versions) == 1
+    assert existing_cert_versions[0].expires_on > datetime.now(
+        timezone.utc
+    ) + timedelta(days=acme_config_renew_before_expiry_in_days)
+
+    ## Test
+    client = AcmeDnsAzureClient(acme_config_manager.config)
+    results: list[RotationResult] = client.issue_certificates()
+
+    ## Validate
+    cert_versions = list(
+        azure_key_vault_manager.list_properties_of_certificate_versions(
+            name=key_vault_cert_name
+        )
+    )
+    assert len(cert_versions) == 2
+    assert len(results) == 1
+    assert results[0].result == CertbotResult.RENEWED
+
+
 def test_skip_for_valid_existing_cert(
     acme_config_manager,
     azure_key_vault_manager,
