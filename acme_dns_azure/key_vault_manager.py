@@ -9,6 +9,7 @@ from cryptography.hazmat.primitives.serialization import (
 )
 from cryptography.hazmat.primitives import serialization
 from cryptography import x509
+from cryptography.exceptions import InvalidSignature
 
 from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 from azure.keyvault.secrets import SecretClient, KeyVaultSecret
@@ -187,7 +188,11 @@ class KeyVaultManager:
 
     def is_self_signed_certificate(self, certificate_data: bytes) -> bool:
         certificate = x509.load_pem_x509_certificate(certificate_data)
-        return certificate.issuer == certificate.subject
+        try:
+            certificate.verify_directly_issued_by(certificate)
+        except (InvalidSignature, ValueError):
+            return False
+        return True
 
     def generate_pfx(
         self, private_key_path: str, certificate_path: str, chain_file_path: str = None
@@ -202,7 +207,7 @@ class KeyVaultManager:
             with open(chain_file_path, "rb") as chain:
                 chain_bytes = chain.read()
             if chain_bytes:
-                cas = [x509.load_pem_x509_certificate(chain_bytes)]
+                cas = x509.load_pem_x509_certificates(chain_bytes)
 
         return pkcs12.serialize_key_and_certificates(
             name=None,

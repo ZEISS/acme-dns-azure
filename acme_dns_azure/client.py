@@ -87,7 +87,8 @@ class AcmeDnsAzureClient:
         return results
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Run the command-line certificate renewal client."""
     import argparse
 
     try:
@@ -121,3 +122,7 @@ if __name__ == "__main__":
     results = client.issue_certificates()
     if _has_failed_certificates(results):
         sys.exit(2)
+
+
+if __name__ == "__main__":
+    main()

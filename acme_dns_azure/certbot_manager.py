@@ -197,9 +197,7 @@ class CertbotManager:
                         chain,
                         fullchain,
                         certificate_domains,
-                    ) = self.ctx.keyvault.extract_certificate_data(
-                        base64_encoded_pfx
-                    )
+                    ) = self.ctx.keyvault.extract_certificate_data(base64_encoded_pfx)
                     force_renewal = self.ctx.keyvault.is_self_signed_certificate(cert)
 
                     if (set(certificate_domains) != set(config_domains)) and (
