@@ -120,6 +120,61 @@ def test_key_and_certs_extracted_from_pfx_multiple_domains(working_dir):
 
 
 @patch.object(KeyVaultManager, "__init__", keyvault_manager_init)
+def test_key_and_certs_extracted_from_pem(working_dir):
+    gen_domains = ["test.net", "test2.net"]
+    private_key, certificate = create_x509_certificate(domain=gen_domains)
+
+    key_vault_manager = KeyVaultManager(working_dir)
+    extracted_key, cert, chain, fullchain, domains = (
+        key_vault_manager.extract_certificate_data(
+            (certificate + private_key).decode("ascii")
+        )
+    )
+
+    assert isinstance(
+        serialization.load_pem_private_key(extracted_key, password=None),
+        rsa.RSAPrivateKey,
+    )
+    assert isinstance(load_pem_x509_certificate(cert), Certificate)
+    assert chain == b""
+    assert fullchain == cert
+    assert domains == gen_domains
+
+
+@patch.object(KeyVaultManager, "__init__", keyvault_manager_init)
+def test_self_signed_certificate_is_detected(working_dir):
+    _, certificate_bytes = create_x509_certificate(domain=["test.net"])
+
+    key_vault_manager = KeyVaultManager(working_dir)
+
+    assert key_vault_manager.is_self_signed_certificate(certificate_bytes)
+
+
+@patch.object(KeyVaultManager, "__init__", keyvault_manager_init)
+def test_certificate_with_matching_names_but_different_signing_key_is_not_self_signed(
+    working_dir,
+):
+    certificate_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    signing_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "company")])
+    certificate = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(subject)
+        .public_key(certificate_key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.now(timezone.utc))
+        .not_valid_after(datetime.now(timezone.utc) + timedelta(days=30))
+        .sign(signing_key, hashes.SHA256())
+    )
+    key_vault_manager = KeyVaultManager(working_dir)
+
+    assert not key_vault_manager.is_self_signed_certificate(
+        certificate.public_bytes(encoding=serialization.Encoding.PEM)
+    )
+
+
+@patch.object(KeyVaultManager, "__init__", keyvault_manager_init)
 def test_pfx_without_chain_created(
     working_dir, tmp_priv_key_path, tmp_cert_path, cleanup_tmp_privkey_and_cert
 ):

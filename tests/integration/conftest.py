@@ -4,6 +4,7 @@ import time
 from tests.integration.helper_framework.acme_config_manager import AcmeConfigManager
 from tests.integration.helper_framework.azure_key_vault_manager import (
     AzureKeyVaultManager,
+    CertificateAuthority,
 )
 from tests.integration.helper_framework.azure_dns_zone_manager import (
     AzureDnsZoneManager,
@@ -137,11 +138,19 @@ def azure_dns_zone_manager(request):
 
 
 @pytest.fixture(autouse=False)
-def azure_key_vault_manager(request):
+def azure_key_vault_manager(request, certificate_authority):
     keyvault_uri = request.config.getoption("--keyvault-uri")
-    azure_key_vault_manager = AzureKeyVaultManager(keyvault_uri=keyvault_uri)
+    azure_key_vault_manager = AzureKeyVaultManager(
+        keyvault_uri=keyvault_uri,
+        certificate_authority=certificate_authority,
+    )
     yield azure_key_vault_manager
     azure_key_vault_manager.clean_up_all_resources()
+
+
+@pytest.fixture(scope="session")
+def certificate_authority():
+    return CertificateAuthority()
 
 
 @pytest.fixture(autouse=False)

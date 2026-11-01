@@ -1,19 +1,88 @@
 import time
+from datetime import datetime, timedelta, timezone
+
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.certificates import (
-    CertificatePolicy,
     CertificateClient,
+    CertificatePolicy,
     KeyVaultCertificate,
 )
 from azure.keyvault.secrets import SecretClient
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.serialization import pkcs12
+from cryptography.x509.oid import ExtendedKeyUsageOID
+
 from acme_dns_azure.log import setup_custom_logger
 
 logger = setup_custom_logger(__name__)
 
 
+class CertificateAuthority:
+    def __init__(self):
+        self._private_key = rsa.generate_private_key(
+            public_exponent=65537, key_size=4096
+        )
+        subject = x509.Name.from_rfc4514_string("CN=acme-dns-azure integration CA")
+        now = datetime.now(timezone.utc)
+        self._certificate = (
+            x509.CertificateBuilder()
+            .subject_name(subject)
+            .issuer_name(subject)
+            .public_key(self._private_key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(now - timedelta(minutes=1))
+            .not_valid_after(now + timedelta(days=3650))
+            .add_extension(x509.BasicConstraints(ca=True, path_length=0), critical=True)
+            .sign(self._private_key, hashes.SHA256())
+        )
+
+    def issue_certificate(
+        self,
+        name: str,
+        subject: str,
+        san_dns_names: list[str],
+        validity_in_months: int,
+        key_size: int,
+    ) -> bytes:
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=key_size)
+        now = datetime.now(timezone.utc)
+        certificate = (
+            x509.CertificateBuilder()
+            .subject_name(x509.Name.from_rfc4514_string(subject))
+            .issuer_name(self._certificate.subject)
+            .public_key(private_key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(now - timedelta(minutes=1))
+            .not_valid_after(now + timedelta(days=30 * validity_in_months))
+            .add_extension(
+                x509.SubjectAlternativeName(
+                    [x509.DNSName(domain) for domain in san_dns_names]
+                ),
+                critical=False,
+            )
+            .add_extension(
+                x509.BasicConstraints(ca=False, path_length=None), critical=True
+            )
+            .add_extension(
+                x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]),
+                critical=False,
+            )
+            .sign(self._private_key, hashes.SHA256())
+        )
+        return pkcs12.serialize_key_and_certificates(
+            name=name.encode(),
+            key=private_key,
+            cert=certificate,
+            cas=[self._certificate],
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+
+
 class AzureKeyVaultManager:
-    def __init__(self, keyvault_uri):
+    def __init__(self, keyvault_uri, certificate_authority: CertificateAuthority):
         self._cert_client = CertificateClient(
             vault_url=keyvault_uri, credential=DefaultAzureCredential()
         )
@@ -24,8 +93,32 @@ class AzureKeyVaultManager:
         self._expected_secrets: list[str] = [
             "acme-account-acme-staging-v02-api-letsencrypt-org"
         ]
+        self._certificate_authority = certificate_authority
 
     def create_certificate(
+        self,
+        name,
+        subject,
+        san_dns_names,
+        validity_in_months: int,
+        key_size=4096,
+        key_type="RSA",
+    ):
+        if key_type != "RSA":
+            raise ValueError("Integration test certificates only support RSA keys")
+        certificate_bytes = self._certificate_authority.issue_certificate(
+            name=name,
+            subject=subject,
+            san_dns_names=san_dns_names,
+            validity_in_months=validity_in_months,
+            key_size=key_size,
+        )
+        certificate = self._cert_client.import_certificate(
+            certificate_name=name, certificate_bytes=certificate_bytes
+        )
+        self._created_certs.append(certificate)
+
+    def create_self_signed_certificate(
         self,
         name,
         subject,
@@ -46,8 +139,7 @@ class AzureKeyVaultManager:
             certificate_name=name, policy=policy
         )
         certificate.wait(timeout=30)
-        cert = certificate.result()
-        self._created_certs.append(cert)
+        self._created_certs.append(certificate.result())
 
     def list_properties_of_certificate_versions(self, name):
         return self._cert_client.list_properties_of_certificate_versions(name)

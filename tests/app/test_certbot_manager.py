@@ -183,3 +183,17 @@ def test_certbot_certonly_command_created(working_dir):
     command = manager._generate_certonly_command(cert_name, domains)
 
     assert len(command) == 13
+    assert "--force-renewal" not in command
+
+
+@patch.object(
+    CertbotManager, "__init__", certbot_manager_init_without_creating_init_files
+)
+def test_certbot_certonly_command_forces_placeholder_renewal(working_dir):
+    manager = CertbotManager(working_dir)
+
+    command = manager._generate_certonly_command(
+        "placeholder", ["my-domain"], force_renewal=True
+    )
+
+    assert "--force-renewal" in command
