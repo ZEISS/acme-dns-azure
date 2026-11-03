@@ -234,6 +234,39 @@ python acme_dns_azure/client.py --config-file-path $CONFIG_File_PATH
 python acme_dns_azure/client.py --config-env-var $ENV_VAR_NAME_CONTAINING_CONFIG
 ```
 
+## Persistent working directory
+
+By default, the client uses a temporary directory. Pass `work_dir` to reuse
+a persistent library directory across runs:
+
+```python
+from acme_dns_azure.client import AcmeDnsAzureClient
+
+client = AcmeDnsAzureClient(config_file="config.yaml", work_dir="./acme-state")
+client.issue_certificates()
+```
+
+The module command also accepts `--work-dir`:
+
+```bash
+python -m acme_dns_azure.client --config-file-path config.yaml --work-dir ./acme-state
+```
+
+This is the library's root directory, containing `certbot.ini`,
+`certbot_dns_azure.ini`, `config/`, `work/` and `logs/`; it is not just
+Certbot's `work/` subdirectory. Missing directories and initialization files
+are created. Existing initialization files, account data and certificate
+lineage files are retained instead of being replaced during setup. An empty
+account directory can still be restored from Key Vault. Existing local state
+therefore takes precedence over initialization data from YAML or Key Vault;
+update retained initialization files explicitly when changing their settings.
+Certbot can update its state as part of normal certificate renewal.
+
+The client never deletes a directory supplied through `work_dir`, including
+when initialization fails. The caller owns its storage and cleanup. This
+directory contains account keys and credentials; use an appropriately
+restricted directory and avoid sharing it between concurrent client runs.
+
 ## Permission Handling
 
 Best follow [security recommendations from Azure](https://docs.certbot-dns-azure.co.uk/en/latest/#:~:text=Example%3A%20Delegation%20%2B%20more,%C2%B6).
